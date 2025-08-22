@@ -1,0 +1,18 @@
+import React from 'react';
+import EmbedPlayer from '@/components/watch/embed-player';
+import { MediaType } from '@/types';
+
+export const revalidate = 3600;
+
+export default async function Page(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const id = params.slug.split('-').pop();
+  const movieId: string | undefined = params.slug.split('/').pop();
+  return (
+    <EmbedPlayer
+      movieId={movieId}
+      mediaType={movieId?.includes('t') ? MediaType.ANIME : undefined}
+      url={`https://embed.vidsrc.pk/movie/${id}`}
+    />
+  );
+}
