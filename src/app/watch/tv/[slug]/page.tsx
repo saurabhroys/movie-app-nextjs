@@ -8,5 +8,5 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
   const id = params.slug.split('-').pop();
   console.log("id",id);
   console.log("params",params);
-  return <EmbedPlayer url={`https://player.autoembed.cc/embed/tv/${id}`} />;
+  return <EmbedPlayer url={`https://player.autoembed.cc/embed/tv/${id}?server=2`} />;
 }
