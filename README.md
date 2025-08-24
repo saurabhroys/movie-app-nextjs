@@ -1,4 +1,4 @@
-# MovieWeb Kickstart Project
+# Movie App Next JS Project
 
 A launching point for building a movie streaming website.
 
@@ -21,9 +21,9 @@ A launching point for building a movie streaming website.
 
 2. Fill in the required environment variables:
 
-- `NEXT_PUBLIC_APP_URL`: The URL of your deployed project (e.g., `https://movie-web-kickstart.vercel.app`)
+- `NEXT_PUBLIC_APP_URL`: The URL of your deployed project (e.g., `https://getmo.netlify.app`)
 - `NEXT_PUBLIC_TMDB_TOKEN`: Your TMDb API key (get it [here](https://www.themoviedb.org/documentation/api), or you can use default token in .env.example file for testing)
-- `NEXT_PUBLIC_SITE_NAME`: The name of your website (e.g., `MovieWeb Kickstart`)
+- `NEXT_PUBLIC_SITE_NAME`: The name of your website (e.g., `Get Mobvie`)
 
 3. Click "Deploy" and wait for the deployment to complete.
 
@@ -34,11 +34,11 @@ To deploy on [Cloudflare Pages](https://pages.cloudflare.com/) you can use the f
 
 ## Local Development
 
-1. Clone the repository: `git clone https://github.com/bitfreee/movie-web-kickstart`
-2. Navigate to the project directory: `cd movie-web-kickstart`
-3. Install dependencies: `npm install`
+1. Clone the repository: `git clone https://github.com/Saurabhyadav831/movie-app-nextjs.git`
+2. Navigate to the project directory: `cd movie-app-nextjs`
+3. Install dependencies: `yarn install || npm install`
 4. Create .env file `cp .env.example .env`
-5. Start the development server: `npm run dev`
+5. Start the development server: `yarn dev || npm run dev`
 
 ## Tech Stack
 
@@ -48,6 +48,10 @@ To deploy on [Cloudflare Pages](https://pages.cloudflare.com/) you can use the f
 - [Vercel](https://vercel.com/) – deployments
 - [TMDb](https://www.themoviedb.org/) - movie database
 - [Vidsrc.cc](https://vidsrc.cc) - streaming links
+- [Vidsrc.pk](https://vidsrc.pk) - streaming links
+- [Vidsrc.to](https://vidsrc.to) - streaming links
+- [Autoembed.cc](https://autoembed.cc) - streaming links
+- [Videasy.net/](https://www.videasy.net) - streaming links
 
 ## Contributing
 
@@ -67,6 +71,11 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgements
 
 - The Movie Database (TMDb) for providing the movie data through their API.
-- [Vidsrc.cc](https://vidsrc.cc) for providing the movie streaming links.
+- [Vidsrc.cc](https://vidsrc.cc) - for providing the movie streaming links.
+- [Vidsrc.pk](https://vidsrc.pk) - for providing the movie streaming links.
+- [Vidsrc.to](https://vidsrc.to) - for providing the movie streaming links.
+- [Autoembed.cc](https://autoembed.cc) - for providing the movie streaming links.
+- [Vidfast.pro](https://vidfast.pro) - for providing the movie streaming links.
+- [Videasy.net/](https://www.videasy.net) - for providing the movie streaming links.
 
 ---
