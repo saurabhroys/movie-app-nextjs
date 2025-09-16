@@ -75,7 +75,7 @@ export function DebouncedInput({
         type="text"
         placeholder="Search..."
         className={cn(
-          'h-auto rounded-none py-1.5 pl-8 text-sm transition-all duration-300',
+          'h-auto rounded-xl py-1.5 pl-8 text-sm transition-all duration-300',
           open
             ? 'w-28 border md:w-40 lg:w-60'
             : 'w-0 border-none bg-transparent',

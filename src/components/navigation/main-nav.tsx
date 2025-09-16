@@ -210,7 +210,9 @@ export function MainNav({ items }: MainNavProps) {
           value={searchStore.query}
           onChange={searchShowsByQuery}
           onChangeStatusOpen={handleChangeStatusOpen}
-          containerClassName={cn(path === '/' ? 'hidden' : 'flex')}
+          containerClassName={cn(
+            // path === '/' || path === '/home' ? 'hidden' : 
+            'flex rounded-full')}
         />
         {/* <Link
           rel="noreferrer"
