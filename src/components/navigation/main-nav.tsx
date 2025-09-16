@@ -121,7 +121,7 @@ export function MainNav({ items }: MainNavProps) {
     <nav
       className={cn(
         'from-secondary/70 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
-        isScrolled ? 'bg-secondary shadow-md' : 'bg-transparent',
+        isScrolled ? 'bg-neutral-950 shadow-md text-white' : 'bg-transparent',
       )}>
       <div className="flex items-center gap-6 md:gap-10">
         <Link
@@ -143,9 +143,10 @@ export function MainNav({ items }: MainNavProps) {
                     key={index}
                     href={item.href}
                     className={cn(
-                      'text-foreground/60 hover:text-foreground/80 flex items-center text-sm font-medium transition',
+                      'flex items-center text-sm font-medium transition',
                       path === item.href && 'text-foreground font-bold',
                       item.disabled && 'cursor-not-allowed opacity-80',
+                      isScrolled ? 'text-white' : 'text-neutral-950 dark:text-white',
                     )}
                     onClick={() => handleChangeStatusOpen(false)}>
                     {item.title}
@@ -210,9 +211,9 @@ export function MainNav({ items }: MainNavProps) {
           value={searchStore.query}
           onChange={searchShowsByQuery}
           onChangeStatusOpen={handleChangeStatusOpen}
-          containerClassName={cn(
+          className={cn(
             // path === '/' || path === '/home' ? 'hidden' : 
-            'flex rounded-full')}
+            'flex')}
         />
         {/* <Link
           rel="noreferrer"
