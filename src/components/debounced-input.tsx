@@ -6,7 +6,7 @@ import { Input, type InputProps } from '@/components/ui/input';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 
 interface DebouncedInputProps extends Omit<InputProps, 'onChange'> {
-  containerClassName?: string;
+  className?: string;
   value: string;
   open: boolean;
   onChange: (value: string) => Promise<void>;
@@ -17,7 +17,6 @@ interface DebouncedInputProps extends Omit<InputProps, 'onChange'> {
 
 export function DebouncedInput({
   id = 'query',
-  containerClassName,
   open,
   value,
   onChange,
@@ -28,6 +27,7 @@ export function DebouncedInput({
   ...props
 }: DebouncedInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
   // close search input on clicking outside,
   useOnClickOutside(inputRef, () => {
@@ -55,6 +55,15 @@ export function DebouncedInput({
     };
   }, []);
 
+    // change background color on scroll
+    React.useEffect(() => {
+      const changeBgColor = () => {
+        window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
+      };
+      window.addEventListener('scroll', changeBgColor);
+      return () => window.removeEventListener('scroll', changeBgColor);
+    }, [isScrolled]);
+
   const debounceInput = React.useCallback(
     debounce((value) => {
       const strValue = value as string;
@@ -68,7 +77,7 @@ export function DebouncedInput({
   };
 
   return (
-    <div className={cn('relative', containerClassName)}>
+    <div className={cn('relative', className)}>
       <Input
         ref={inputRef}
         id={id}
@@ -77,8 +86,8 @@ export function DebouncedInput({
         className={cn(
           'h-auto rounded-xl py-1.5 pl-8 text-sm transition-all duration-300',
           open
-            ? 'w-28 border md:w-40 lg:w-60'
-            : 'w-0 border-none bg-transparent',
+            ? 'w-28 md:w-40 lg:w-60 border bg-neutral-900'
+            : 'w-0 md:w-40 lg:w-60 border-none md:border',
           className,
         )}
         defaultValue={value}
@@ -91,8 +100,8 @@ export function DebouncedInput({
         aria-label="Search"
         variant="ghost"
         className={cn(
-          'absolute top-1/2 h-auto -translate-y-1/2 rounded-full p-1 hover:bg-transparent',
-          open ? 'left-1' : 'left-[9px]',
+          'absolute top-1/2 h-auto -translate-y-1/2 rounded-full p-1',
+          open ? 'left-1' : 'left-[9px] md:left-1',
         )}
         onClick={() => {
           if (!inputRef.current) {
@@ -105,6 +114,7 @@ export function DebouncedInput({
           className={cn(
             'transition-opacity hover:opacity-75 active:scale-95',
             open ? 'h-4 w-4' : 'h-5 w-5',
+            isScrolled ? 'text-neutral-950 dark:text-white' : 'text-neutral-950 dark:text-white'
           )}
           aria-hidden="true"
         />

@@ -80,7 +80,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning
         className={cn(
-          'bg-background min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
+          'bg-neutral-950 min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
           fontSans.variable,
           fontHeading.variable,
         )}>
