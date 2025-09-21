@@ -1,8 +1,13 @@
+'use client';
 import { siteConfig } from '@/configs/site';
 import React from 'react';
 import MainNav from '@/components/navigation/main-nav';
+// import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 const SiteHeader = () => {
+  // Initialize keyboard shortcuts
+  // useKeyboardShortcuts();
+
   return (
     // <header className="sticky top-0 z-50 border-b bg-background">
     <header className="sticky top-0 z-50">
