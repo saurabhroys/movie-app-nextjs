@@ -110,7 +110,7 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const startCountdown = () => {
     setIsCountdownActive(true);
-    setCountdown(10);
+    setCountdown(5);
     
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
