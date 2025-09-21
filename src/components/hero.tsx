@@ -24,7 +24,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   const path = usePathname();
   const [trailer, setTrailer] = React.useState('');
   const [showTrailer, setShowTrailer] = React.useState(false);
-  const [countdown, setCountdown] = React.useState(10);
+  const [countdown, setCountdown] = React.useState(5);
   const [isCountdownActive, setIsCountdownActive] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(isMobile() ? true : false);
   const youtubeRef = React.useRef(null);
@@ -111,7 +111,7 @@ const Hero = ({ randomShow }: HeroProps) => {
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 500);
   };
 
   const handleTrailerPlay = () => {
