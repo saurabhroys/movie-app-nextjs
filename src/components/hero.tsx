@@ -124,7 +124,7 @@ const Hero = ({ randomShow }: HeroProps) => {
         }
         return prev - 1;
       });
-    }, 500);
+    }, 1000);
   };
 
   const handleTrailerPlay = () => {
