@@ -73,9 +73,9 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<ISeason>(`/tv/${id}/season/${season}`);
   }
 
-  static findMovieByIdAndType = cache(async (id: number, type: string) => {
+  static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
     const params: Record<string, string> = {
-      language: 'en-US',
+      language: language,
       append_to_response: 'videos,keywords',
     };
     const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(

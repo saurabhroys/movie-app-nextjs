@@ -82,7 +82,20 @@ const Hero = ({ randomShow }: HeroProps) => {
     
     try {
       const type = randomShow.media_type === MediaType.TV ? 'tv' : 'movie';
-      const data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(randomShow.id, type);
+      
+      // Try to fetch Hindi trailer first
+      let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(randomShow.id, type, 'hi-IN');
+      
+      if (data.videos?.results?.length) {
+        const trailerResult = data.videos.results.find((v: VideoResult) => v.type === 'Trailer');
+        if (trailerResult?.key) {
+          setTrailer(trailerResult.key);
+          return;
+        }
+      }
+      
+      // Fallback to English trailer if no Hindi trailer found
+      data = await MovieService.findMovieByIdAndType(randomShow.id, type, 'en-US');
       
       if (data.videos?.results?.length) {
         const trailerResult = data.videos.results.find((v: VideoResult) => v.type === 'Trailer');
