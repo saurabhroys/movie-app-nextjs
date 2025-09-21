@@ -96,10 +96,11 @@ const ShowModal = () => {
     if (!id || !type) {
       return;
     }
-    const data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(
-      id,
-      type,
-    );
+    // Try Hindi trailer first, fallback to English
+    let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(id, type, 'hi-IN');
+    if (!data.videos?.results?.length) {
+      data = await MovieService.findMovieByIdAndType(id, type, 'en-US');
+    }
 
     const keywords: KeyWord[] =
       data?.keywords?.results || data?.keywords?.keywords;

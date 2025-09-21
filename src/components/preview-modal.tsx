@@ -36,7 +36,11 @@ const PreviewModal = () => {
     (async () => {
       const id = modalStore.show?.id, type = modalStore.show?.media_type === MediaType.TV ? 'tv' : 'movie';
       if (!id || !type) return;
-      const data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(id, type);
+      // Try Hindi trailer first, fallback to English
+      let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(id, type, 'hi-IN');
+      if (!data.videos?.results?.length) {
+        data = await MovieService.findMovieByIdAndType(id, type, 'en-US');
+      }
       const keywords: KeyWord[] = data?.keywords?.results || data?.keywords?.keywords;
       if (keywords?.length) setIsAnime(!!keywords.find(k => k.name === 'anime'));
       if (data?.genres) setGenres(data.genres);
