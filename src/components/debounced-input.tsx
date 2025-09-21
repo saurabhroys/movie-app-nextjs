@@ -40,6 +40,7 @@ export function DebouncedInput({
       // close search input on pressing escape
       if (e.key === 'Escape') {
         void onChange('');
+        onChangeStatusOpen(false);
       }
       // open search input on pressing ctrl + k or cmd + k
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -53,16 +54,16 @@ export function DebouncedInput({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onChange, onChangeStatusOpen]);
 
-    // change background color on scroll
-    React.useEffect(() => {
-      const changeBgColor = () => {
-        window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
-      };
-      window.addEventListener('scroll', changeBgColor);
-      return () => window.removeEventListener('scroll', changeBgColor);
-    }, [isScrolled]);
+  // change background color on scroll
+  React.useEffect(() => {
+    const changeBgColor = () => {
+      window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
+    };
+    window.addEventListener('scroll', changeBgColor);
+    return () => window.removeEventListener('scroll', changeBgColor);
+  }, [isScrolled]);
 
   const debounceInput = React.useCallback(
     debounce((value) => {
@@ -84,9 +85,9 @@ export function DebouncedInput({
         type="text"
         placeholder="Search..."
         className={cn(
-          'h-auto rounded-xl py-1.5 pl-8 text-sm transition-all duration-300',
+          'h-auto rounded-xl py-1.5 pl-8 text-sm transition-all duration-300 bg-neutral-800 text-white',
           open
-            ? 'w-28 md:w-40 lg:w-60 border bg-neutral-900'
+            ? 'w-28 md:w-40 lg:w-60 border bg-neutral-800'
             : 'w-0 md:w-40 lg:w-60 border-none md:border',
           className,
         )}
@@ -112,13 +113,25 @@ export function DebouncedInput({
         }}>
         <Icons.search
           className={cn(
-            'transition-opacity hover:opacity-75 active:scale-95',
+            'transition-opacity text-white',
             open ? 'h-4 w-4' : 'h-5 w-5',
-            isScrolled ? 'text-neutral-950 dark:text-white' : 'text-neutral-950 dark:text-white'
           )}
           aria-hidden="true"
         />
       </Button>
+      
+      {/* Keyboard shortcut indicator */}
+      {!open && (
+        <div className="absolute top-[45%] right-2 -translate-y-1/2 pointer-events-none">
+          <kbd
+            className={cn(
+              'hidden md:inline-flex items-center px-1.5 py-0.5 text-xs font-mono rounded border border-neutral-400 text-neutral-400 '
+            )}
+          >
+            ⌘K
+          </kbd>
+        </div>
+      )}
     </div>
   );
 }

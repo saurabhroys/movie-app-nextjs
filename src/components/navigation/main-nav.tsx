@@ -25,6 +25,7 @@ import { useSearchStore } from '@/stores/search';
 import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
 import { DebouncedInput } from '@/components/debounced-input';
 import MovieService from '@/services/MovieService';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 interface MainNavProps {
   items?: NavItem[];
@@ -40,6 +41,9 @@ export function MainNav({ items }: MainNavProps) {
   // search store
   const searchStore = useSearchStore();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  
+  // Get showHelp function from keyboard shortcuts hook
+  const { showHelp } = useKeyboardShortcuts();
 
   React.useEffect(() => {
     window.addEventListener('popstate', handlePopstateEvent, false);
@@ -222,6 +226,16 @@ export function MainNav({ items }: MainNavProps) {
           className={cn(path === '/' ? 'flex' : 'hidden')}>
           <Icons.gitHub className="h-5 w-5 hover:bg-transparent" />
         </Link> */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={showHelp}
+          className="hover:bg-transparent"
+          aria-label="Show keyboard shortcuts help"
+          title="Show keyboard shortcuts (?)"
+        >
+          <Icons.helpCircle className="h-5 w-5" />
+        </Button>
         <ThemeToggle />
       </div>
     </nav>
