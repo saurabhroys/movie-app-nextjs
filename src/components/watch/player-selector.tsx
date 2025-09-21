@@ -152,8 +152,8 @@ const PlayerSelector = ({ movieId, mediaType }: PlayerSelectorProps) => {
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <div className="text-center">
+                    <TooltipContent side="top" className="max-w-xs bg-zinc-900 border-0">
+                      <div className="text-center text-neutral-50">
                         <p className="font-medium">{option.name}</p>
                         <p className="text-sm text-gray-300 mt-1">{option.description}</p>
                         {option.quality && (
