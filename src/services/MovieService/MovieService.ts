@@ -191,6 +191,34 @@ class MovieService extends BaseService {
     });
     return data;
   });
+
+  static getMovieRecommendations = cache(async (movieId: number, page?: number) => {
+    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+      `/movie/${movieId}/recommendations?language=en-US&page=${page ?? 1}`,
+    );
+    return data;
+  });
+
+  static getTvRecommendations = cache(async (tvId: number, page?: number) => {
+    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+      `/tv/${tvId}/recommendations?language=en-US&page=${page ?? 1}`,
+    );
+    return data;
+  });
+
+  static getSimilarMovies = cache(async (movieId: number, page?: number) => {
+    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+      `/movie/${movieId}/similar?language=en-US&page=${page ?? 1}`,
+    );
+    return data;
+  });
+
+  static getSimilarTvShows = cache(async (tvId: number, page?: number) => {
+    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+      `/tv/${tvId}/similar?language=en-US&page=${page ?? 1}`,
+    );
+    return data;
+  });
 }
 
 export default MovieService;

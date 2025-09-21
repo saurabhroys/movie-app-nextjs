@@ -33,7 +33,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     return () => {
       iframe?.removeEventListener('load', handleIframeLoaded);
     };
-  }, []);
+  }, [props.url]);
 
   React.useEffect(() => {
     if (!props.movieId || props.mediaType !== MediaType.ANIME) {
