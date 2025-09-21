@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     creator: siteConfig.author,
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: '/play.svg',
   },
   other: { referrer: 'no-referrer-when-downgrade' },
 };
@@ -78,44 +78,48 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning
-        className={cn(
-          'bg-neutral-950 min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
-          fontSans.variable,
-          fontHeading.variable,
-        )}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange>
-          {/* <TrpcProvider> */}
-          {children}
-          <TailwindIndicator />
-          <Analytics />
-          <SpeedInsights />
-          {/* </TrpcProvider> */}
-          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-            <>
-              <Script
-                id="_next-ga-init"
-                dangerouslySetInnerHTML={{
-                  __html: `
+      <head>
+        {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+          <>
+            <Script
+              id="_next-ga-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){window.dataLayer.push(arguments);}
           gtag('js', new Date());
 
           gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}', { cookie_flags: 'max-age=86400;secure;samesite=none' });`,
-                }}
-              />
-              <Script
-                id="_next-ga"
-                src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
-              />
-            </>
-          )}
-        </ThemeProvider>
-      </body>
+              }}
+            />
+            <Script
+              id="_next-ga"
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+            />
+          </>
+        )}
+      </head>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange>
+        <body suppressHydrationWarning
+          className={cn(
+            'bg-white dark:bg-neutral-950 min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
+            fontSans.variable,
+            fontHeading.variable,
+          )}>
+            {/* <TrpcProvider> */}
+            {children}
+            <TailwindIndicator />
+            <Analytics />
+            <SpeedInsights />
+            {/* </TrpcProvider> */}
+        </body>
+     </ThemeProvider>
     </html>
   );
 }

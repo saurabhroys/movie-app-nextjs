@@ -181,8 +181,8 @@ const ShowModal = () => {
       open={modalStore.open}
       onOpenChange={handleCloseModal}
       aria-label="Modal containing show's details">
-      <DialogContent className="w-full overflow-hidden rounded-md bg-zinc-900 p-0 text-left align-middle shadow-xl sm:max-w-3xl lg:max-w-4xl dark:bg-zinc-900">
-        <div className="video-wrapper relative aspect-video">
+      <DialogContent className="w-full overflow-hidden rounded-md bg-zinc-900 p-0 text-left align-middle shadow-xl sm:max-w-3xl lg:max-w-4xl">
+        <div className="relative aspect-video">
           <CustomImage
             fill
             priority
@@ -213,12 +213,15 @@ const ShowModal = () => {
               iframeClassName={`relative pointer-events-none w-[100%] h-[100%] z-[-10] opacity-0`}
             />
           )}
+
+          <div className='absolute bottom-[-5px] z-10 w-full h-full mask-t-from-9% mask-t-to-50% bg-zinc-900'></div>
+          
           <div className="absolute bottom-6 z-20 flex w-full items-center justify-between gap-2 px-10">
             <div className="flex items-center gap-2.5">
               <Link href={handleHref()}>
                 <Button
                   aria-label={`${isPlaying ? 'Pause' : 'Play'} show`}
-                  className="group h-auto rounded py-1.5">
+                  className="group h-auto rounded py-1.5 bg-neutral-50 text-black hover:bg-neutral-300">
                   <>
                     <Icons.play
                       className="mr-1.5 h-6 w-6 fill-current"
@@ -232,7 +235,7 @@ const ShowModal = () => {
             <Button
               aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
               variant="ghost"
-              className="h-auto rounded-full bg-neutral-800 p-1.5 opacity-50 ring-1 ring-slate-400 hover:bg-neutral-800 hover:opacity-100 hover:ring-white focus:ring-offset-0 dark:bg-neutral-800 dark:hover:bg-neutral-800"
+              className="h-auto rounded-full hover:bg-neutral-300 hover:text-black ring-neutral-100 text-neutral-300"
               onClick={handleChangeMute}>
               {isMuted ? (
                 <Icons.volumeMute className="h-6 w-6" aria-hidden="true" />
@@ -241,6 +244,7 @@ const ShowModal = () => {
               )}
             </Button>
           </div>
+
         </div>
         <div className="grid gap-2.5 px-10 pb-10">
           <DialogTitle className="text-lg leading-6 font-medium text-slate-50 sm:text-xl">
@@ -253,9 +257,9 @@ const ShowModal = () => {
               % Match
             </p>
             {modalStore.show?.release_date ? (
-              <p>{getYear(modalStore.show?.release_date)}</p>
+              <p className='text-slate-50'>{getYear(modalStore.show?.release_date)}</p>
             ) : modalStore.show?.first_air_date ? (
-              <p>{getYear(modalStore.show?.first_air_date)}</p>
+              <p className='text-slate-50'>{getYear(modalStore.show?.first_air_date)}</p>
             ) : null}
             {modalStore.show?.original_language && (
               <span className="grid h-4 w-7 place-items-center text-xs font-bold text-neutral-400 ring-1 ring-neutral-400">
@@ -263,11 +267,11 @@ const ShowModal = () => {
               </span>
             )}
           </div>
-          <DialogDescription className="line-clamp-3 text-xs text-slate-50 sm:text-sm dark:text-slate-50">
+          <DialogDescription className="line-clamp-3 text-xs text-slate-50 sm:text-sm">
             {modalStore.show?.overview ?? '-'}
           </DialogDescription>
-          <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className="text-slate-400">Genres:</span>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-400">
+            <span className="text-neutral-50">Genres:</span>
             {genres.map((genre) => genre.name).join(', ')}
           </div>
         </div>
