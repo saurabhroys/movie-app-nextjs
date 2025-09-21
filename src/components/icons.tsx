@@ -13,6 +13,10 @@ import {
   Pause,
   VolumeX,
   Volume2,
+  Plus,
+  ThumbsUp,
+  ChevronDown,
+  Star,
 } from 'lucide-react';
 
 type IconProps = LucideProps;
@@ -20,6 +24,7 @@ type IconProps = LucideProps;
 export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  chevronDown: ChevronDown,
   info: Info,
   search: Search,
   logo: PlayIcon,
@@ -27,6 +32,9 @@ export const Icons = {
   pause: Pause,
   volume: Volume2,
   volumeMute: VolumeX,
+  plus: Plus,
+  thumbsUp: ThumbsUp,
+  star: Star,
   // logo: (props: IconProps) => (
   //   <svg
   //     xmlns="http://www.w3.org/2000/svg"

@@ -143,6 +143,11 @@ const Hero = ({ randomShow }: HeroProps) => {
             <div className="from-background/0 via-background/30 to-background absolute right-0 bottom-[-1px] left-0 z-8 h-[14.7vw] bg-linear-to-b from-30% via-50% to-80%"></div>
           </div>
           <div className="relative inset-0 -z-50 mb-5 pb-[60%] sm:pb-[40%]"></div>
+          <div className='absolute bottom-1 z-0 w-full h-full mask-t-from-10% mask-t-to-50% bg-neutral-50 dark:bg-neutral-950'></div>
+          {/* Show this div in light mode only */}
+          <div className='absolute bottom-1 z-0 w-full h-full mask-b-from-0% mask-b-to-20% block dark:hidden bg-neutral-50'></div>
+          {/* Show this div in dark mode only */}
+          <div className='absolute bottom-1 z-0 w-full h-full mask-b-from-0% mask-b-to-50% hidden dark:block dark:bg-neutral-950'></div>
         </>
       )}
     </section>
