@@ -1,14 +1,13 @@
 'use client';
 
-import { useModalStore } from '@/stores/modal';
-import { MediaType, type Show } from '@/types';
+import { type Show } from '@/types';
 import * as React from 'react';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { cn, getNameFromShow, getSlug } from '@/lib/utils';
+import { cn  } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
-import CustomImage from './custom-image';
+import { ShowCard } from './show-cards';
 
 interface ShowsCarouselProps {
   title: string;
@@ -20,12 +19,50 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
 
   const showsRef = React.useRef<HTMLDivElement>(null);
   const [isScrollable, setIsScrollable] = React.useState(false);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  // Check scroll position and update button visibility
+  const checkScrollPosition = React.useCallback(() => {
+    if (!showsRef.current) return;
+
+    const { scrollLeft, scrollWidth, offsetWidth } = showsRef.current;
+    const isAtStart = scrollLeft <= 0;
+    const isAtEnd = scrollLeft + offsetWidth >= scrollWidth - 1; // -1 for floating point precision
+
+    setCanScrollLeft(!isAtStart);
+    setCanScrollRight(!isAtEnd);
+  }, []);
+
+  // Set up scroll event listener and initial check
+  React.useEffect(() => {
+    const element = showsRef.current;
+    if (!element) return;
+
+    // Small delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      // Check if carousel is scrollable
+      const isScrollable = element.scrollWidth > element.offsetWidth;
+      setIsScrollable(isScrollable);
+
+      // Initial check
+      checkScrollPosition();
+    }, 100);
+
+    // Add scroll event listener
+    element.addEventListener('scroll', checkScrollPosition);
+
+    // Cleanup
+    return () => {
+      clearTimeout(timer);
+      element.removeEventListener('scroll', checkScrollPosition);
+    };
+  }, [checkScrollPosition, shows.length]);
 
   // handle scroll to left and right
   const scrollToDirection = (direction: 'left' | 'right') => {
     if (!showsRef.current) return;
 
-    setIsScrollable(true);
     const { scrollLeft, offsetWidth } = showsRef.current;
     const handleSize = offsetWidth > 1400 ? 60 : 0.04 * offsetWidth;
     const offset =
@@ -48,6 +85,11 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
         behavior: 'smooth',
       });
     }
+
+    // Check scroll position after scrolling
+    setTimeout(() => {
+      checkScrollPosition();
+    }, 100);
   };
 
   return (
@@ -62,8 +104,8 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
               aria-label="Scroll to left"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/90 hover:text-foreground absolute top-0 left-0 z-10 mr-2 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 text-transparent md:block 2xl:w-[60px]',
-                isScrollable ? 'md:block' : 'md:hidden',
+                'hover:bg-secondary/90 hover:text-foreground absolute top-0 left-0 z-10 mr-2 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 text-foreground md:block 2xl:w-[60px]',
+                isScrollable && canScrollLeft ? 'md:block' : 'md:hidden',
               )}
               onClick={() => scrollToDirection('left')}>
               <Icons.chevronLeft className="h-8 w-8" aria-hidden="true" />
@@ -78,7 +120,10 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
             <Button
               aria-label="Scroll to right"
               variant="ghost"
-              className="hover:bg-secondary/70 hover:text-foreground absolute top-0 right-0 z-10 m-0 ml-2 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 text-transparent md:block 2xl:w-[60px]"
+              className={cn(
+                'hover:bg-secondary/70 hover:text-foreground absolute top-0 right-0 z-10 m-0 ml-2 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 text-foreground md:block 2xl:w-[60px]',
+                isScrollable && canScrollRight ? 'md:block' : 'md:hidden',
+              )}
               onClick={() => scrollToDirection('right')}>
               <Icons.chevronRight className="h-8 w-8" aria-hidden="true" />
             </Button>
@@ -90,67 +135,3 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
 };
 
 export default ShowsCarousel;
-
-export const ShowCard = ({ show }: { show: Show; pathname: string }) => {
-  const imageOnErrorHandler = (
-    event: React.SyntheticEvent<HTMLImageElement, Event>,
-  ) => {
-    event.currentTarget.src = '/images/grey-thumbnail.jpg';
-  };
-
-  return (
-    // <picture className="relative aspect-2/3 md:aspect-video">
-    <picture className="relative aspect-2/3">
-      <a
-        className="pointer-events-none"
-        aria-hidden={false}
-        role="link"
-        aria-label={getNameFromShow(show)}
-        href={`/${show.media_type}/${getSlug(show.id, getNameFromShow(show))}`}
-      />
-      {/* <source */}
-      {/*   // srcSet={`https://image.tmdb.org/t/p/w342/${show.poster_path ?? show.backdrop_path}`} */}
-      {/*   srcSet={ */}
-      {/*     show.backdrop_path ?? show.poster_path */}
-      {/*       ? `https://image.tmdb.org/t/p/w500/${ */}
-      {/*           show.backdrop_path ?? show.poster_path */}
-      {/*         }` */}
-      {/*       : '/images/grey-thumbnail.jpg' */}
-      {/*   } */}
-      {/*   media="(min-width: 780px)" */}
-      {/* /> */}
-      <CustomImage
-        src={
-          (show.poster_path ?? show.backdrop_path)
-            ? `https://image.tmdb.org/t/p/w500${
-                show.poster_path ?? show.backdrop_path
-              }`
-            : '/images/grey-thumbnail.jpg'
-        }
-        alt={show.title ?? show.name ?? 'poster'}
-        className="h-full w-full cursor-pointer rounded-lg px-1 transition-all md:hover:scale-110"
-        fill
-        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
-        style={{
-          objectFit: 'cover',
-        }}
-        onClick={() => {
-          const name = getNameFromShow(show);
-          const path: string =
-            show.media_type === MediaType.TV ? 'tv-shows' : 'movies';
-          window.history.pushState(
-            null,
-            '',
-            `${path}/${getSlug(show.id, name)}`,
-          );
-          useModalStore.setState({
-            show: show,
-            open: true,
-            play: true,
-          });
-        }}
-        onError={imageOnErrorHandler}
-      />
-    </picture>
-  );
-};
