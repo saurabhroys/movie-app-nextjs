@@ -99,7 +99,7 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
           <h2 className="text-foreground/80 hover:text-foreground m-0 pb-2 px-[4%] text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
             {title ?? '-'}
           </h2>
-          <div className="relative w-full items-center justify-center overflow-hidden">
+          <div className="relative w-full items-center justify-center overflow-hidden" data-carousel>
             <Button
               aria-label="Scroll to left"
               variant="ghost"

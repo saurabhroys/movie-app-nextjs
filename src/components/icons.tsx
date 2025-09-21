@@ -17,6 +17,7 @@ import {
   ThumbsUp,
   ChevronDown,
   Star,
+  HelpCircle,
 } from 'lucide-react';
 
 type IconProps = LucideProps;
@@ -35,6 +36,7 @@ export const Icons = {
   plus: Plus,
   thumbsUp: ThumbsUp,
   star: Star,
+  helpCircle: HelpCircle,
   // logo: (props: IconProps) => (
   //   <svg
   //     xmlns="http://www.w3.org/2000/svg"
