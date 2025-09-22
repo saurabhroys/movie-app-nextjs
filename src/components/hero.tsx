@@ -3,7 +3,6 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { getIdFromSlug, getNameFromShow, getSlug, getMobileDetect } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
-import { useModalStore } from '@/stores/modal';
 import { useSearchStore } from '@/stores/search';
 import { MediaType, type Show, type ShowWithGenreAndVideo, type VideoResult } from '@/types';
 import { type AxiosResponse } from 'axios';
@@ -12,6 +11,8 @@ import React from 'react';
 import CustomImage from './custom-image';
 import { usePathname } from 'next/navigation';
 import Youtube from 'react-youtube';
+import { useModalStore } from '@/stores/modal';
+import { usePreviewModalStore } from '@/stores/preview-modal';
 
 interface HeroProps {
   randomShow: Show | null;
@@ -30,6 +31,9 @@ const Hero = ({ randomShow }: HeroProps) => {
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
+  const prevMutedRef = React.useRef<boolean>(isMuted);
+  const modalStore = useModalStore();
+  const previewModalStore = usePreviewModalStore();
 
   const defaultOptions = {
     playerVars: {
@@ -76,6 +80,26 @@ const Hero = ({ randomShow }: HeroProps) => {
       }
     };
   }, []);
+
+  // Mute hero trailer when any modal (detail or preview) is open, and restore previous mute state when closed
+  React.useEffect(() => {
+    const videoRef: any = youtubeRef.current;
+    const isAnyModalOpen = modalStore.open || !!previewModalStore.cardPosition;
+    if (isAnyModalOpen) {
+      prevMutedRef.current = isMuted;
+      setIsMuted(true);
+      if (videoRef?.internalPlayer) {
+        videoRef.internalPlayer.mute();
+      }
+      return;
+    }
+    // Restore previous mute state on close
+    setIsMuted(prevMutedRef.current);
+    if (videoRef?.internalPlayer) {
+      if (prevMutedRef.current) videoRef.internalPlayer.mute();
+      else videoRef.internalPlayer.unMute();
+    }
+  }, [modalStore.open, previewModalStore.cardPosition]);
 
   const fetchTrailer = async () => {
     if (!randomShow?.id) return;
@@ -154,15 +178,15 @@ const Hero = ({ randomShow }: HeroProps) => {
     if (!/\d/.test(pathname)) {
       modalStore.reset();
     } else if (/\d/.test(pathname)) {
-      const movieId: number = getIdFromSlug(pathname);
-      if (!movieId) {
+      const mediaId: number = getIdFromSlug(pathname);
+      if (!mediaId) {
         return;
       }
       const findMovie: Promise<AxiosResponse<Show>> = pathname.includes(
         '/tv-shows',
       )
-        ? MovieService.findTvSeries(movieId)
-        : MovieService.findMovie(movieId);
+        ? MovieService.findTvSeries(mediaId)
+        : MovieService.findMovie(mediaId);
       findMovie
         .then((response: AxiosResponse<Show>) => {
           const { data } = response;
@@ -175,7 +199,6 @@ const Hero = ({ randomShow }: HeroProps) => {
   };
 
   // stores
-  const modalStore = useModalStore();
   const searchStore = useSearchStore();
 
   if (searchStore.query.length > 0) {
@@ -274,10 +297,10 @@ const Hero = ({ randomShow }: HeroProps) => {
                   <p className="text-green-600">
                     {Math.round(randomShow?.vote_average * 10) ?? '-'}% Match
                   </p>
-                  {/* <p className="text-gray-300">{randomShow?.release_date ?? "-"}</p> */}
+                  {/* <p className="text-neutral-300">{randomShow?.release_date ?? "-"}</p> */}
                   <p>{randomShow?.release_date ?? '-'}</p>
                 </div>
-                {/* <p className="line-clamp-4 text-sm text-gray-300 md:text-base"> */}
+                {/* <p className="line-clamp-4 text-sm text-neutral-300 md:text-base"> */}
                 <p className="hidden text-[1.2vw] sm:line-clamp-3">
                   {randomShow?.overview ?? '-'}
                 </p>
@@ -293,7 +316,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                   <Button
                     aria-label="Open show's details modal"
                     variant="outline"
-                    className="h-auto shrink-0 gap-2 rounded-xl bg-gray-900/60 backdrop-blur-md"
+                    className="h-auto shrink-0 gap-2 rounded-xl bg-neutral-900/60 backdrop-blur-md"
                     onClick={() => {
                       const name = getNameFromShow(randomShow);
                       const path: string =

@@ -8,8 +8,8 @@ export default function NotFound() {
         <div className="mb-8">
           <Icons.logo className="w-24 h-24 mx-auto text-red-600 mb-4" />
           <h1 className="text-6xl font-bold text-white mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-300 mb-2">Page Not Found</h2>
-          <p className="text-gray-400 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-semibold text-neutral-300 mb-2">Page Not Found</h2>
+          <p className="text-neutral-400 mb-8 max-w-md mx-auto">
             The page you're looking for doesn't exist or has been moved.
           </p>
         </div>
@@ -23,7 +23,7 @@ export default function NotFound() {
             Go Home
           </Link>
           
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-neutral-500">
             <Link href="/movies" className="hover:text-white transition-colors mr-4">
               Movies
             </Link>

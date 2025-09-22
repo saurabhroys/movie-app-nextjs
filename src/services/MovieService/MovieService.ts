@@ -192,9 +192,9 @@ class MovieService extends BaseService {
     return data;
   });
 
-  static getMovieRecommendations = cache(async (movieId: number, page?: number) => {
+  static getMovieRecommendations = cache(async (mediaId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/movie/${movieId}/recommendations?language=en-US&page=${page ?? 1}`,
+      `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
     );
     return data;
   });
@@ -206,9 +206,9 @@ class MovieService extends BaseService {
     return data;
   });
 
-  static getSimilarMovies = cache(async (movieId: number, page?: number) => {
+  static getSimilarMovies = cache(async (mediaId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/movie/${movieId}/similar?language=en-US&page=${page ?? 1}`,
+      `/movie/${mediaId}/similar?language=en-US&page=${page ?? 1}`,
     );
     return data;
   });

@@ -12,6 +12,8 @@ import { env } from '@/env.mjs';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
+import SiteHeader from '@/components/main/site-header';
+import GlobalShortcuts from '@/components/global-shortcuts';
 
 export const runtime = 'edge';
 
@@ -112,6 +114,9 @@ export default function RootLayout({
             fontSans.variable,
             fontHeading.variable,
           )}>
+
+            <SiteHeader/>
+            <GlobalShortcuts />
             {/* <TrpcProvider> */}
             {children}
             <TailwindIndicator />

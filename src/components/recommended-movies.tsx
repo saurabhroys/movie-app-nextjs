@@ -31,7 +31,7 @@ const RecommendedMovies = ({ shows, title = "Recommended for you", loading = fal
     return (
       <div className="p-4">
         <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
-        <p className="text-gray-400 text-sm">No recommendations available at the moment.</p>
+        <p className="text-neutral-400 text-sm">No recommendations available at the moment.</p>
       </div>
     );
   }

@@ -134,17 +134,17 @@ export function handleDefaultSearchInp(): void {
 
 export const handleMetadata = cache(
   async (slug: string, page: string, type: 'tv' | 'movie') => {
-    const movieId: number = getIdFromSlug(slug);
+    const mediaId: number = getIdFromSlug(slug);
     let keywords: string[] = [];
     let data: Show | null = null;
     try {
       const response: AxiosResponse<Show> =
         'tv' === type
-          ? await MovieService.findTvSeries(movieId)
-          : await MovieService.findMovie(movieId);
+          ? await MovieService.findTvSeries(mediaId)
+          : await MovieService.findMovie(mediaId);
       data = response.data;
       const keywordResponse: AxiosResponse<KeyWordResponse> =
-        await MovieService.getKeywords(movieId, type);
+        await MovieService.getKeywords(mediaId, type);
       const res =
         type === 'tv'
           ? keywordResponse.data.results
@@ -159,7 +159,7 @@ export const handleMetadata = cache(
       title: getNameFromShow(data),
       keywords: [
         ...keywords,
-        slug.replace(`-${movieId}`, ''),
+        slug.replace(`-${mediaId}`, ''),
         env.NEXT_PUBLIC_SITE_NAME,
       ],
       openGraph: {
@@ -188,9 +188,9 @@ export const handleMetadata = cache(
 
 export async function handleModal(slug: string): Promise<Show | null> {
   if (!slug) return null;
-  const movieId: number = getIdFromSlug(slug);
-  if (!movieId) return null;
-  return MovieService.findCurrentMovie(movieId, slug);
+  const mediaId: number = getIdFromSlug(slug);
+  if (!mediaId) return null;
+  return MovieService.findCurrentMovie(mediaId, slug);
 }
 
 export function getRandomShow(allShows: CategorizedShows[]): Show | null {

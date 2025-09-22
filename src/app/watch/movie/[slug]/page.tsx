@@ -11,13 +11,13 @@ export const revalidate = 3600;
 export default async function Page(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
   const id = params.slug.split('-').pop();
-  const movieId = id ? parseInt(id) : 0;
+  const mediaId = id ? parseInt(id) : 0;
   
   // Fetch recommended movies
   let recommendedMovies: Show[] = [];
   try {
-    if (movieId > 0) {
-      const recommendations = await MovieService.getMovieRecommendations(movieId);
+    if (mediaId > 0) {
+      const recommendations = await MovieService.getMovieRecommendations(mediaId);
       recommendedMovies = recommendations.results || [];
     }
   } catch (error) {
@@ -29,7 +29,7 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
       <ModalCloser />
       {/* Main Player */}
         {/* <EmbedPlayer url={`https://player.autoembed.cc/embed/movie/${id}?server=2`} /> */}
-        <PlayerSelector movieId={id || ''} mediaType="movie" />
+        <PlayerSelector mediaId={id || ''} mediaType="movie" selectorClass='h-screen' playerClass='' />
 
       {/* Alternative Players */}
 
