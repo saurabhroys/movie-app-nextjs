@@ -2,27 +2,20 @@
 import React from 'react';
 import Loading from '../ui/loading';
 import { useRouter } from 'next/navigation';
-import { MediaType, type IEpisode, type ISeason, type Show } from '@/types';
-import MovieService from '@/services/MovieService';
-import { type AxiosResponse } from 'axios';
-import Season from '../season';
+import { MediaType } from '@/types';
 
 interface EmbedPlayerProps {
   url: string;
-  movieId?: string;
+  mediaId?: string;
+  playerClass?: string;
   mediaType?: MediaType;
+  episode?: number;
 }
 
-function EmbedPlayer(props: EmbedPlayerProps) {
+function EmbedPlayer(props: EmbedPlayerProps ) {
   const router = useRouter();
 
-  const [seasons, setSeasons] = React.useState<ISeason[] | null>(null);
-
   React.useEffect(() => {
-    // if anime type -> handle after fetch season and episode
-    if (props.mediaType === MediaType.ANIME) {
-      return;
-    }
     if (iframeRef.current) {
       iframeRef.current.src = props.url;
     }
@@ -35,55 +28,8 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     };
   }, [props.url]);
 
-  React.useEffect(() => {
-    if (!props.movieId || props.mediaType !== MediaType.ANIME) {
-      return;
-    }
-
-    void handleAnime(props.movieId);
-  }, [props.movieId, props.mediaType]);
-
   const loadingRef = React.useRef<HTMLDivElement>(null);
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
-
-  const handleChangeEpisode = (episode: IEpisode): void => {
-    const { show_id: id, episode_number: eps } = episode;
-    handleSetIframeUrl(`https://vidsrc.cc/v2/embed/anime/tmdb${id}/${eps}/sub`);
-  };
-
-  const handleAnime = async (movieId: string) => {
-    const id = Number(movieId.replace('t-', ''));
-    const response: AxiosResponse<Show> = await MovieService.findTvSeries(id);
-    const { data } = response;
-    if (!data?.seasons?.length) {
-      return;
-    }
-    const seasons = data.seasons.filter(
-      (season: ISeason) => season.season_number,
-    );
-    const promises = seasons.map(async (season: ISeason) => {
-      return MovieService.getSeasons(id, season.season_number);
-    });
-
-    const seasonWithEpisodes = await Promise.all(promises);
-    setSeasons(
-      seasonWithEpisodes.map((res: AxiosResponse<ISeason>) => res.data),
-    );
-    handleSetIframeUrl(
-      `https://vidsrc.cc/v2/embed/anime/tmdb${id}/1/sub?autoPlay=false`,
-    );
-  };
-
-  const handleSetIframeUrl = (url: string): void => {
-    if (!iframeRef.current) {
-      return;
-    }
-    iframeRef.current.src = url;
-    const { current } = iframeRef;
-    const iframe: HTMLIFrameElement | null = current;
-    iframe.addEventListener('load', handleIframeLoaded);
-    if (loadingRef.current) loadingRef.current.style.display = 'flex';
-  };
 
   const handleIframeLoaded = () => {
     if (!iframeRef.current) {
@@ -98,17 +44,14 @@ function EmbedPlayer(props: EmbedPlayerProps) {
   };
 
   return (
-    <div
+    <div className={``}
       style={{
         width: '100%',
         height: '100%',
         position: 'absolute',
         backgroundColor: '#000',
       }}>
-      {seasons && (
-        <Season seasons={seasons ?? []} onChangeEpisode={handleChangeEpisode} />
-      )}
-      <div className="header-top absolute top-8 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-20 md:gap-x-8 md:px-10 lg:h-24">
+      <div className="group header-top absolute top-[5rem] right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14">
         <div className="flex flex-1 items-center gap-x-5 md:gap-x-8">
           <svg
             className="h-10 w-10 shrink-0 cursor-pointer transition hover:scale-125"
@@ -133,6 +76,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
       </div>
       <iframe
         width="100%"
+        className={`${props.playerClass}`}
         height="100%"
         allowFullScreen
         ref={iframeRef}
