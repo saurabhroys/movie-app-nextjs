@@ -105,8 +105,7 @@ export default function RootLayout({
       </head>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="dark"
         disableTransitionOnChange>
         <body suppressHydrationWarning
           className={cn(
