@@ -40,14 +40,14 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
     if (!/\d/.test(pathname) || modalStore.open) {
       return;
     }
-    const movieId: number = getIdFromSlug(pathname);
-    if (!movieId) {
+    const mediaId: number = getIdFromSlug(pathname);
+    if (!mediaId) {
       return;
     }
     try {
       const response: AxiosResponse<Show> = pathname.includes('/tv-shows')
-        ? await MovieService.findTvSeries(movieId)
-        : await MovieService.findMovie(movieId);
+        ? await MovieService.findTvSeries(mediaId)
+        : await MovieService.findMovie(mediaId);
       const data: Show = response.data;
 
       if (data)

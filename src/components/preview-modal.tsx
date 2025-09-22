@@ -142,7 +142,7 @@ const PreviewModal = () => {
         className="absolute w-80 max-w-[90vw] pointer-events-auto transition-all duration-200"
         style={getPosition()}
       >
-        <div className="overflow-hidden rounded-lg bg-black shadow-2xl border border-gray-600">
+        <div className="overflow-hidden rounded-lg bg-black shadow-2xl border border-neutral-600">
         <div className="relative aspect-video">
             <CustomImage 
               fill 
@@ -177,7 +177,7 @@ const PreviewModal = () => {
             <div className="flex items-center gap-2">
               <Button 
                 aria-label="Play show" 
-                className="group h-7 w-7 rounded-full bg-white text-black hover:bg-gray-200 transition-all duration-200 hover:scale-105 p-0"
+                className="group h-7 w-7 rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-200 hover:scale-105 p-0"
                 onClick={() => {
                   window.location.href = handleHref();
                 }}
@@ -202,7 +202,7 @@ const PreviewModal = () => {
             {getRuntime() && <span className="text-white text-xs font-medium">{getRuntime()}</span>}
             <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">{getQuality()}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-300 mb-1">
+          <div className="flex items-center gap-1 text-xs text-neutral-300 mb-1">
             {getGenres() && <span>{getGenres()}</span>}
           </div>
             <p className="text-white text-xs leading-snug max-w-xs">
