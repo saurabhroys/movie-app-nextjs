@@ -465,7 +465,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
 
         <div className="px-4 flex flex-col w-screen justify-center items-center">
           <h3 className="text-lg font-semibold text-white mb-4 text-center">Choose Server</h3>
-            <div className="flex flex-wrap gap-3 mb-4 justify-center">
+            <div className="flex flex-wrap gap-4 mb-4 justify-center">
               {playerOptions.map((option, index) => {
                 const IconComponent = option.icon || Icons.play;
                 return (
