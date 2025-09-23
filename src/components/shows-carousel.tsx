@@ -99,7 +99,7 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
           <h2 className="text-foreground/80 hover:text-foreground m-0 pb-2 px-[4%] text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
             {title ?? '-'}
           </h2>
-          <div className="relative w-full items-center justify-center overflow-hidden" data-carousel>
+          <div className="relative w-full items-center justify-center overflow-disable" data-carousel>
             <Button
               aria-label="Scroll to left"
               variant="ghost"
@@ -112,7 +112,8 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
             </Button>
             <div
               ref={showsRef}
-              className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto overflow-y-hidden px-[4%] py-0 duration-500 ease-in-out sm:auto-cols-[25%] md:touch-pan-y lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]">
+              data-carousel-scroll
+              className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 duration-500 ease-in-out sm:auto-cols-[25%] md:touch-pan-y lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]">
               {shows.map((show) => (
                 <ShowCard key={show.id} show={show} pathname={pathname} />
               ))}
