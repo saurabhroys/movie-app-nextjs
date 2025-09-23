@@ -14,6 +14,9 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 import SiteHeader from '@/components/main/site-header';
 import GlobalShortcuts from '@/components/global-shortcuts';
+import SiteFooter from '@/components/main/site-footer';
+import AttributeTooltipManager from '@/components/attribute-tooltip';
+import PreviewModal from '@/components/preview-modal';
 
 export const runtime = 'edge';
 
@@ -118,9 +121,12 @@ export default function RootLayout({
             <GlobalShortcuts />
             {/* <TrpcProvider> */}
             {children}
+            <PreviewModal />
+            <SiteFooter/>
             <TailwindIndicator />
             <Analytics />
             <SpeedInsights />
+            <AttributeTooltipManager />
             {/* </TrpcProvider> */}
         </body>
      </ThemeProvider>

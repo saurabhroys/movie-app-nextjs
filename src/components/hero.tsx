@@ -35,10 +35,12 @@ const Hero = ({ randomShow }: HeroProps) => {
   const modalStore = useModalStore();
   const previewModalStore = usePreviewModalStore();
 
-  const defaultOptions = {
+
+  const defaultOptions = React.useMemo(() => ({
     playerVars: {
       rel: 0,
-      mute: isMuted ? 1 : 0,
+      // Keep mute fixed here to avoid reinitializing the player on state changes
+      mute: 0,
       loop: 1,
       autoplay: 1,
       controls: 0,
@@ -49,7 +51,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       cc_load_policy: 0,
       modestbranding: 3,
     },
-  };
+  }), []);
 
   React.useEffect(() => {
     window.addEventListener('popstate', handlePopstateEvent, false);
@@ -84,7 +86,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   // Mute hero trailer when any modal (detail or preview) is open, and restore previous mute state when closed
   React.useEffect(() => {
     const videoRef: any = youtubeRef.current;
-    const isAnyModalOpen = modalStore.open || !!previewModalStore.cardPosition;
+    const isAnyModalOpen = modalStore.open || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       prevMutedRef.current = isMuted;
       setIsMuted(true);
@@ -99,7 +101,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       if (prevMutedRef.current) videoRef.internalPlayer.mute();
       else videoRef.internalPlayer.unMute();
     }
-  }, [modalStore.open, previewModalStore.cardPosition]);
+  }, [modalStore.open, previewModalStore.isOpen]);
 
   const fetchTrailer = async () => {
     if (!randomShow?.id) return;
