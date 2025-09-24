@@ -6,19 +6,46 @@ import PlayerSelector from '@/components/watch/player-selector';
 import ModalCloser from '@/components/modal-closer';
 import MovieService from '@/services/MovieService';
 import { Show } from '@/types';
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 export default function Page(props: { params: Promise<{ slug: string }> }) {
   const [showScrollHint, setShowScrollHint] = React.useState(true);
+  const [showScrollHintBackdrop, setShowScrollHintBackdrop] = React.useState(true);
   const [recommendedMovies, setRecommendedMovies] = React.useState<Show[]>([]);
   const [params, setParams] = React.useState<{ slug: string } | null>(null);
+  const [serverRecommendationEnabled, setServerRecommendationEnabled] = React.useState<boolean>(true);
 
   // Initialize params
   React.useEffect(() => {
     props.params.then(setParams);
   }, [props.params]);
 
+  // Initialize server recommendation flag from localStorage (default true on first visit)
+  React.useEffect(() => {
+    try {
+      const key = 'serverRecommandationSystem';
+      const stored = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+      if (stored === null) {
+        window.localStorage.setItem(key, 'true');
+        setServerRecommendationEnabled(true);
+      } else {
+        const enabled = stored === 'true';
+        setServerRecommendationEnabled(enabled);
+        if (!enabled) {
+          setShowScrollHint(false);
+          setShowScrollHintBackdrop(false);
+        }
+      }
+    } catch {
+      // If localStorage fails, keep default true
+      setServerRecommendationEnabled(true);
+    }
+  }, []);
+
   // Auto scroll down to 70% and then back to top
   React.useEffect(() => {
+    if (!serverRecommendationEnabled) return;
     const autoScrollSequence = () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const targetScroll = scrollHeight * 0.7;
@@ -85,10 +112,11 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     // Delay to ensure page is fully rendered
     const timer = setTimeout(autoScrollSequence, 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [serverRecommendationEnabled]);
 
   // Hide scroll hint and scroll back to top after 30 seconds
   React.useEffect(() => {
+    if (!serverRecommendationEnabled) return;
     const timer = setTimeout(() => {
       window.scrollTo({
         top: 0,
@@ -96,15 +124,24 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       });
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [serverRecommendationEnabled]);
 
 
   React.useEffect(() => {
+    if (!serverRecommendationEnabled) return;
     const timer = setTimeout(() => {
       setShowScrollHint(false);
     }, 50000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [serverRecommendationEnabled]);
+
+  React.useEffect(() => {
+    if (!serverRecommendationEnabled) return;
+    const timer = setTimeout(() => {
+      setShowScrollHintBackdrop(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [serverRecommendationEnabled]);
 
   // Fetch recommended movies
   React.useEffect(() => {
@@ -132,13 +169,62 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     <div className="min-h-screen bg-black relative">
       <ModalCloser />
       {/* Main Player */}
-      <div className="absolute w-full min-h-screen">
+      <div className={`absolute w-full min-h-screen z-10 ${serverRecommendationEnabled ? 'bg-neutral-950/60 backdrop:blur-sm block' : 'hidden'}`}>
         {/* <EmbedPlayer url={`https://player.autoembed.cc/embed/movie/${id}?server=2`} /> */}
         {/* Scroll hint to choose server */}
-        {showScrollHint && (
+          {serverRecommendationEnabled && showScrollHint && (
+            
+            <div className={`h-screen text-center justify-center place-content-center`}>
+
+              <div className="flex items-center justify-center space-x-2 mx-auto">
+                <div className="p-4 flex justify-center gap-3 bg-neutral-800/50 backdrop-blur-md rounded-xl border items-center">
+                  <Switch id="airplane-mode"
+                    checked={serverRecommendationEnabled}
+                    onCheckedChange={(checked) => {
+                      try {
+                        window.localStorage.setItem('serverRecommandationSystem', String(checked));
+                      } catch {}
+                      setServerRecommendationEnabled(checked);
+                      if (!checked) {
+                        setShowScrollHint(false);
+                        setShowScrollHintBackdrop(false);
+                        window.scrollTo({ top: 0 });
+                      }
+                    }}
+                  />
+                  <Label htmlFor="airplane-mode">Turn Off Scroll Down Suggestion</Label>
+                </div>
+              </div>
+
+              <h1 className={`text-3xl text-neutral-50/80 hover:text-white/80 mb-10`}>Multiple Streaming Server Available</h1>
+              <a
+                href="#servers"
+                className="text-neutral-50/80 hover:text-white/80 transition-colors mt-5"
+                aria-label="Scroll to choose server"
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-3xl text-center">
+                    {/* Choose Another Server 
+                    <br />  */}
+                    Scroll Down
+                    </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-10 w-10 animate-bounce"
+                  >
+                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v12.19l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </a>
+
+            </div>
+          )}
+        {serverRecommendationEnabled && showScrollHint && (
           <a
             href="#servers"
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20 text-neutral-400 hover:text-white transition-colors"
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20 text-neutral-50 hover:text-white/80 transition-colors"
             aria-label="Scroll to choose server"
           >
             <div className="flex flex-col items-center gap-1">
@@ -176,4 +262,40 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       </div>
     </div>
   );
+};
+
+export function ServerRecommendationSwitch({ text = '', switchClass = '', tooltipText = '' }: { text?: string; switchClass?: string; tooltipText?: string; }) {
+  const [serverRecommendationEnabled, setServerRecommendationEnabled] = React.useState<boolean>(true);
+  // Initialize server recommendation flag from localStorage (default true on first visit)
+  React.useEffect(() => {
+    try {
+      const key = 'serverRecommandationSystem';
+      const stored = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+      if (stored === null) {
+        window.localStorage.setItem(key, 'true');
+        setServerRecommendationEnabled(true);
+      } else {
+        const enabled = stored === 'true';
+        setServerRecommendationEnabled(enabled);
+      }
+    } catch {
+      // If localStorage fails, keep default true
+      setServerRecommendationEnabled(true);
+    }
+  }, []);
+
+  return (
+    <div className={`${switchClass} ${!switchClass ? 'space-x-2' : ''}`}>
+      <Switch id="airplane-mode" data-tooltip={tooltipText}
+        checked={serverRecommendationEnabled}
+        onCheckedChange={(checked) => {
+          try {
+            window.localStorage.setItem('serverRecommandationSystem', String(checked));
+          } catch {}
+          setServerRecommendationEnabled(checked);
+        }}
+      />
+      <Label htmlFor="airplane-mode">{text}</Label>
+    </div>
+  )
 }
