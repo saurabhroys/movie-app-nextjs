@@ -17,19 +17,73 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     props.params.then(setParams);
   }, [props.params]);
 
-  // Scroll to 70% on initial visit
+  // Auto scroll down to 70% and then back to top
   React.useEffect(() => {
-    const scrollView = () => {
+    const autoScrollSequence = () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const targetScroll = scrollHeight * 0.7;
-      window.scrollTo({
-        top: targetScroll,
-        behavior: 'smooth'
-      });
+      
+      // First: Scroll down to 70%
+      const scrollDown = () => {
+        const startScroll = window.pageYOffset;
+        const distance = targetScroll - startScroll;
+        const duration = 3000; // 3 seconds to scroll down
+        let startTime: number;
+        
+        const animateScrollDown = (currentTime: number) => {
+          if (!startTime) startTime = currentTime;
+          const timeElapsed = currentTime - startTime;
+          const progress = Math.min(timeElapsed / duration, 1);
+          
+          // Smooth easing
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          const currentScroll = startScroll + (distance * easeOutCubic);
+          
+          window.scrollTo(0, currentScroll);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateScrollDown);
+          } else {
+            // After scrolling down, wait 2 seconds then scroll back to top
+            setTimeout(scrollBackToTop, 2000);
+          }
+        };
+        
+        requestAnimationFrame(animateScrollDown);
+      };
+      
+      // Second: Scroll back to top
+      const scrollBackToTop = () => {
+        const startScroll = window.pageYOffset;
+        const distance = 0 - startScroll;
+        const duration = 2000; // 2 seconds to scroll back up
+        let startTime: number;
+        
+        const animateScrollUp = (currentTime: number) => {
+          if (!startTime) startTime = currentTime;
+          const timeElapsed = currentTime - startTime;
+          const progress = Math.min(timeElapsed / duration, 1);
+          
+          // Smooth easing
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          const currentScroll = startScroll + (distance * easeOutCubic);
+          
+          window.scrollTo(0, currentScroll);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateScrollUp);
+          }
+        };
+        
+        requestAnimationFrame(animateScrollUp);
+      };
+      
+      // Start the sequence
+      scrollDown();
     };
     
-    // Small delay to ensure page is fully rendered
-    const timer = setTimeout(scrollView, 100);
+    // Delay to ensure page is fully rendered
+    const timer = setTimeout(autoScrollSequence, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -41,7 +95,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
         top: 0,
         behavior: 'smooth'
       });
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
