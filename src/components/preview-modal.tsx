@@ -17,7 +17,7 @@ const { isMobile } = getMobileDetect(userAgent);
 const defaultOptions = {
   playerVars: {
     rel: 0,
-    mute: isMobile() ? 1 : 0,
+    mute: 0,
     loop: 1,
     autoplay: 1,
     controls: 0,
@@ -27,8 +27,6 @@ const defaultOptions = {
     playsinline: 1,
     cc_load_policy: 0,
     modestbranding: 3,
-    iv_load_policy: 3,
-    fs: 0,
   },
 };
 
@@ -116,12 +114,12 @@ const PreviewModal = () => {
 
   // Stop trailer when preview closes
   React.useEffect(() => {
-    const player: any = youtubeRef.current;
-    if (!player?.internalPlayer) return;
+    const videoRef: any = youtubeRef.current;
+    if (!videoRef?.internalPlayer) return;
     if (!p.isOpen) {
       try {
-        player.internalPlayer.stopVideo?.();
-        player.internalPlayer.seekTo?.(0);
+        videoRef.internalPlayer.stopVideo?.();
+        videoRef.internalPlayer.seekTo?.(0);
       } catch {}
       if (imageRef.current) imageRef.current.style.opacity = '1';
     }
@@ -135,6 +133,7 @@ const PreviewModal = () => {
       p.setIsOpen(false);
       p.setAnchorRect(null);
       p.setShow(null);
+      p.reset();
     };
     const onWheel = () => close();
     const onScroll = () => close();
@@ -158,8 +157,8 @@ const PreviewModal = () => {
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     }
     const modalWidth = 320; // w-80
-    const modalHeight = 240; // approx
-    const y = Math.max(8, rect.top - modalHeight * 0.3);
+    const modalHeight = 220; // approx
+    const y = Math.max(8, rect.top - modalHeight * 0.4);
     let x = rect.left + rect.width / 2 - modalWidth / 2;
     x = Math.max(8, Math.min(x, window.innerWidth - modalWidth - 8));
     return { top: `${Math.round(y)}px`, left: `${Math.round(x)}px` };
@@ -170,10 +169,10 @@ const PreviewModal = () => {
     const current = p.show;
     const name = getNameFromShow(current);
     const path: string = current.media_type === MediaType.TV ? 'tv-shows' : 'movies';
-    const player: any = youtubeRef.current;
+    const videoRef: any = youtubeRef.current;
     try {
-      player?.internalPlayer?.pauseVideo?.();
-      player?.internalPlayer?.stopVideo?.();
+		videoRef?.internalPlayer?.pauseVideo?.();
+		videoRef?.internalPlayer?.stopVideo?.();
     } catch {}
     // Open the main modal on the next frame for smoother transition
     requestAnimationFrame(() => {
@@ -183,11 +182,22 @@ const PreviewModal = () => {
   };
 
 
-  console.log("detailedShow", detailedShow);
+  const handleTrailerPlay = () => {
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '0';
+    }
+  };
+
+  const handleTrailerEnd = (e: any) => {
+    e.target.seekTo(0);
+  };
+
+  const handleTrailerReady = (e: any) => {
+    e.target.playVideo();
+  };
+
+  console.log(detailedShow);
   
-
-
-
   return (
     <div
       className="fixed inset-0 z-[9999] pointer-events-none"
@@ -198,6 +208,7 @@ const PreviewModal = () => {
         p.setIsOpen(false);
         p.setAnchorRect(null);
         p.setShow(null);
+		handleCloseModal();
       }}
     >
       <div
@@ -209,53 +220,36 @@ const PreviewModal = () => {
           p.setIsOpen(false);
           p.setAnchorRect(null);
           p.setShow(null);
+          p.reset();
         }}
       >
-        <div className="overflow-hidden rounded-md bg-black border shadow-md shadow-neutral-800">
-			<div className="relative aspect-video">
+        <div className="overflow-hidden rounded-xl bg-black border shadow-md shadow-neutral-800">
+			<div  className="relative aspect-video">
 				<CustomImage 
-				fill 
-				priority 
-				ref={imageRef} 
-				alt={p?.show?.title ?? 'poster'}
-				className="z-1 h-auto w-full object-cover"
-				src={`https://image.tmdb.org/t/p/original${p.show?.backdrop_path ?? p.show?.poster_path}`}
-				sizes="50vw"
-			/>
-			{trailer && (
-				<Youtube
-				key={trailer}
-				opts={options}
-				onEnd={(e: any) => {
-					try {
-					e.target.seekTo(0);
-					if (p.isOpen) e.target.playVideo();
-					else e.target.stopVideo?.();
-					} catch {}
-				}}
-				onPlay={(e: any) => {
-					if (!p.isOpen) {
-					try { e.target.pauseVideo(); } catch {}
-					return;
-					}
-					if (imageRef.current) imageRef.current.style.opacity = '0';
-					const i = document.getElementById('video-trailer');
-					if (i) i.classList.remove('opacity-0');
-				}}
-				ref={youtubeRef}
-				onReady={(e: any) => {
-					try {
-					if (p.isOpen) e.target.playVideo();
-					} catch {}
-				}}
-				videoId={trailer}
-				id="video-trailer"
-				title={p.show?.title ?? p.show?.name ?? 'video-trailer'}
-				className="relative aspect-video w-full h-full"
-				iframeClassName="relative pointer-events-none w-full h-full"
+					fill 
+					priority 
+					ref={imageRef} 
+					alt={p?.show?.title ?? 'poster'}
+					className="z-1 h-auto w-full object-cover"
+					src={`https://image.tmdb.org/t/p/original${p.show?.backdrop_path ?? p.show?.poster_path}`}
+					sizes="50vw"
 				/>
-			)}
-			<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></div>
+				{trailer && (
+					<Youtube
+					opts={defaultOptions}
+					onEnd={handleTrailerEnd}
+					onPlay={handleTrailerPlay}
+					ref={youtubeRef}
+					onReady={handleTrailerReady}
+					videoId={trailer}
+					id="hero-trailer"
+					title={p.show?.title ?? p.show?.name ?? 'hero-trailer'}
+					className="z-0 h-full w-full"
+					style={{ width: '100%', height: '100%' }}
+					iframeClassName="w-full h-full z-10"
+					/>
+				)}
+			<Link href={handleHref()} className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></Link>
 			<div className="absolute bottom-2 z-20 flex w-full items-center justify-between gap-2 px-2">
 				<div className="flex items-center gap-2">
 
@@ -265,7 +259,7 @@ const PreviewModal = () => {
 				</Button>
 			</div>
 			</div>
-			<Link className="bg-black px-3" href={handleHref()} >
+			<a className="bg-black px-3 cursor-pointer" onClick={handleMoreDetails} >
 				<div className="w-full px-2">
 					<div className="flex items-center justify-between gap-2 mb-2">
 
@@ -291,25 +285,52 @@ const PreviewModal = () => {
 						</Button>
 
 					</div>
-					<div className="flex items-center gap-1 text-xs text-neutral-300 mb-1">
+					<div className="flex items-center gap-1 text-xs text-neutral-300">
 					{getGenres() && <span>{getGenres()}</span>}
 					</div>
 					<h1 className="text-white text-md font-medium">{p.show.title || p.show.name}</h1>
-					<span className="text-white text-xs font-medium">{p.show.release_date}</span>
-					<span className="border text-white font-bold text-[8px] px-1 py-0.5 rounded">
-						{detailedShow?.media_type === MediaType.MOVIE 
+					<span className="text-white text-xs font-medium">{p.show?.release_date || detailedShow?.release_date}</span>
+					<span className="border text-white font-bold text-[11px] px-1 py-0.5 rounded">
+						{detailedShow?.media_type === MediaType.MOVIE
 							? (() => {
-								const runtime = detailedShow.runtime;
+								const runtime = detailedShow?.runtime;
 								if (!runtime) return 'N/A';
 								const hours = Math.floor(runtime / 60);
 								const minutes = runtime % 60;
 								return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 							})()
-							: `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
+							: detailedShow?.media_type === MediaType.TV
+							? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
+							: (() => {
+								// Fallback to basic show data if detailedShow is not available
+								const show = p.show;
+								if (show?.media_type === MediaType.MOVIE) {
+									const runtime = detailedShow?.runtime;
+									if (!runtime) return 'N/A';
+									const hours = Math.floor(runtime / 60);
+									const minutes = runtime % 60;
+									return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+								}
+								return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
+							})()
 						}
 					</span>
+					{detailedShow?.networks && detailedShow?.networks.length > 0 && (
+						<div className="flex flex-row items-end justify-end gap-1 absolute w-[90%] pb-2">
+							{detailedShow?.networks.map((network, index) => (
+								network.logo_path && (
+									<img 
+										key={index}
+										src={`https://image.tmdb.org/t/p/w92${network.logo_path}`} 
+										alt={network.name || 'Network logo'}
+										className="h-4 w-auto object-contain"
+									/>
+								)
+							))}
+						</div>
+					)}
 				</div>
-			</Link>
+			</a>
         </div>
       </div>
     </div>
@@ -317,3 +338,4 @@ const PreviewModal = () => {
 };
 
 export default PreviewModal;
+

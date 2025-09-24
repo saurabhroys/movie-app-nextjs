@@ -54,6 +54,14 @@ export type Show = {
   original_name?: string;
   keywords: KeyWordResponse;
   seasons: ISeason[];
+  networks?: Network[];
+};
+
+export type Network = {
+  id: number;
+  name: string;
+  logo_path: string | null;
+  origin_country: string;
 };
 
 export type KeyWord = {
