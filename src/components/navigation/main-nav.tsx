@@ -22,10 +22,11 @@ import { DropdownMenuTrigger } from '@/components/compat/react19-compat';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSearchStore } from '@/stores/search';
-import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
+// import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
 import { DebouncedInput } from '@/components/debounced-input';
 import MovieService from '@/services/MovieService';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { ServerRecommendationSwitch } from '@/app/watch/movie/[slug]/page';
 
 interface MainNavProps {
   items?: NavItem[];
@@ -120,6 +121,8 @@ export function MainNav({ items }: MainNavProps) {
     searchStore.setOpen(value);
     if (!value) searchStore.reset();
   };
+
+  const isMovieWatchPage = path.startsWith('/movie')
 
   return (
     <nav
@@ -236,7 +239,8 @@ export function MainNav({ items }: MainNavProps) {
         >
           <Icons.helpCircle className="h-5 w-5" />
         </Button>
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
+        <ServerRecommendationSwitch switchClass='flex item--center gap-2 place-content-center text-sm' text="" tooltipText="enable or disable scroll down suggestion"/>
       </div>
     </nav>
   );

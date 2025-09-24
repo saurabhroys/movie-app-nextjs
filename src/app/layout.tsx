@@ -109,10 +109,13 @@ export default function RootLayout({
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
+        forcedTheme="dark"
+        enableSystem={false}
+        themes={["dark"]}
         disableTransitionOnChange>
         <body suppressHydrationWarning
           className={cn(
-            'bg-white dark:bg-neutral-950 min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
+            'bg-white dark:bg-[#141414] min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
             fontSans.variable,
             fontHeading.variable,
           )}>

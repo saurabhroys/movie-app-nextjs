@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+
+  --shadow-xl: 0 35px 35px rgba(0, 0, 0, 0.25);
+
   --breakpoint-*: initial;
   --breakpoint-xs: 500px;
   --breakpoint-sm: 640px;
@@ -410,9 +413,28 @@
   display: none;
 }
 
-[data-tooltip]:hover::after,
-[tooltip]:hover::after {
-  display: block;
+/* Arrow for CSS-only tooltips attached to anchors */
+[data-tooltip]::before,
+[tooltip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 0px);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+  display: none;
+}
+
+/* Disable CSS hover tooltips when JS manager is active to avoid flicker */
+.attr-tooltip-active [data-tooltip]::after,
+.attr-tooltip-active [tooltip]::after,
+.attr-tooltip-active [data-tooltip]::before,
+.attr-tooltip-active [tooltip]::before {
+  display: none !important;
 }
 
 [tooltip]::after {
@@ -429,6 +451,20 @@
   border-radius: 4px;
   white-space: nowrap;
   display: none;
+}
+
+/* JS-managed tooltip arrow (the bubble is positioned above the anchor) */
+#__attr_tooltip__::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.85);
 }
 
 
