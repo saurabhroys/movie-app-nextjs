@@ -21,11 +21,12 @@ interface HeroProps {
 const userAgent = typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
 const { isMobile } = getMobileDetect(userAgent);
 
+const count = 1;
 const Hero = ({ randomShow }: HeroProps) => {
   const path = usePathname();
   const [trailer, setTrailer] = React.useState('');
   const [showTrailer, setShowTrailer] = React.useState(false);
-  const [countdown, setCountdown] = React.useState(5);
+  const [countdown, setCountdown] = React.useState(count);
   const [isCountdownActive, setIsCountdownActive] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(isMobile() ? true : false);
   const youtubeRef = React.useRef(null);
@@ -39,7 +40,6 @@ const Hero = ({ randomShow }: HeroProps) => {
   const defaultOptions = React.useMemo(() => ({
     playerVars: {
       rel: 0,
-      // Keep mute fixed here to avoid reinitializing the player on state changes
       mute: 0,
       loop: 1,
       autoplay: 1,
@@ -136,7 +136,7 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const startCountdown = () => {
     setIsCountdownActive(true);
-    setCountdown(5);
+    setCountdown(count);
     
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
