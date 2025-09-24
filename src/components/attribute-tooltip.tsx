@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect } from "react";
 
 const TOOLTIP_ID = '__attr_tooltip__';
 const OFFSET_Y = 8; // px above the element
@@ -39,7 +38,14 @@ function getAttrText(target: Element | null): string | null {
   if (data) return data;
   const plain = target.getAttribute('tooltip');
   if (plain) return plain;
+  const nativeTitle = target.getAttribute('title');
+  if (nativeTitle) return nativeTitle;
   return null;
+}
+
+function findTooltipAnchor(start: Element | null): Element | null {
+  if (!start) return null;
+  return start.closest('[data-tooltip],[tooltip],[title]');
 }
 
 function positionTooltip(el: HTMLElement, anchor: Element) {
@@ -57,6 +63,8 @@ function positionTooltip(el: HTMLElement, anchor: Element) {
 
 const AttributeTooltipManager = () => {
   React.useEffect(() => {
+    // Mark root as active to disable CSS tooltips
+    document.documentElement.classList.add('attr-tooltip-active');
     const tooltipEl = ensureTooltipEl();
     let currentAnchor: Element | null = null;
     let raf: number | null = null;
@@ -64,6 +72,18 @@ const AttributeTooltipManager = () => {
     const hide = () => {
       tooltipEl.style.transform = 'translate(-9999px, -9999px)';
       tooltipEl.textContent = '';
+      // Restore native title and clean ARIA linkage
+      if (currentAnchor) {
+        const anchorEl = currentAnchor as HTMLElement;
+        const savedTitle = anchorEl.getAttribute('data-original-title');
+        if (savedTitle) {
+          anchorEl.setAttribute('title', savedTitle);
+          anchorEl.removeAttribute('data-original-title');
+        }
+        if (anchorEl.getAttribute('aria-describedby') === TOOLTIP_ID) {
+          anchorEl.removeAttribute('aria-describedby');
+        }
+      }
       currentAnchor = null;
       if (raf) {
         cancelAnimationFrame(raf);
@@ -79,11 +99,21 @@ const AttributeTooltipManager = () => {
     };
 
     const onPointerEnter = (e: Event) => {
-      const target = e.target as Element | null;
+      const rawTarget = e.target as Element | null;
+      const target = findTooltipAnchor(rawTarget);
       if (!target) return;
       const text = getAttrText(target);
       if (!text) return;
       currentAnchor = target as Element;
+      const anchorEl = currentAnchor as HTMLElement;
+      // Suppress native title tooltips while our tooltip is visible
+      const title = anchorEl.getAttribute('title');
+      if (title) {
+        anchorEl.setAttribute('data-original-title', title);
+        anchorEl.removeAttribute('title');
+      }
+      // Link via ARIA to avoid screen reader duplication
+      anchorEl.setAttribute('aria-describedby', TOOLTIP_ID);
       tooltipEl.textContent = text;
       // Pre-measure by placing text then positioning
       positionTooltip(tooltipEl, target as Element);
@@ -93,7 +123,11 @@ const AttributeTooltipManager = () => {
     const onPointerLeave = (e: Event) => {
       if (!currentAnchor) return;
       const target = e.target as Element | null;
-      if (target === currentAnchor) hide();
+      const anchor = findTooltipAnchor(target);
+      // If moving to an element still inside the current anchor, do nothing
+      const related = (e as MouseEvent).relatedTarget as Node | null;
+      if (related && (currentAnchor as HTMLElement).contains(related)) return;
+      if (anchor === currentAnchor) hide();
     };
 
     const onScrollOrResize = () => {
@@ -114,6 +148,7 @@ const AttributeTooltipManager = () => {
       document.removeEventListener('focusout', onPointerLeave, true);
       window.removeEventListener('scroll', onScrollOrResize, true);
       window.removeEventListener('resize', onScrollOrResize, true);
+      document.documentElement.classList.remove('attr-tooltip-active');
     };
   }, []);
 
