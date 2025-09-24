@@ -90,12 +90,19 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
   // Hide scroll hint and scroll back to top after 30 seconds
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      setShowScrollHint(false);
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowScrollHint(false);
+    }, 50000);
     return () => clearTimeout(timer);
   }, []);
 
