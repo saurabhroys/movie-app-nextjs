@@ -7,6 +7,7 @@ import type {
   Show,
   ShowWithGenreAndVideo,
 } from '@/types';
+import type { ImagesResponse } from '@/types';
 import { type AxiosResponse } from 'axios';
 import BaseService from '../BaseService/BaseService';
 import {
@@ -71,6 +72,13 @@ class MovieService extends BaseService {
     season: number,
   ): Promise<AxiosResponse<ISeason>> {
     return this.axios(baseUrl).get<ISeason>(`/tv/${id}/season/${season}`);
+  }
+
+  static async getImages(
+    mediaType: 'movie' | 'tv' | 'anime',
+    mediaId: number,
+  ): Promise<AxiosResponse<ImagesResponse>> {
+    return this.axios(baseUrl).get<ImagesResponse>(`/${mediaType}/${mediaId}/images`);
   }
 
   static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
