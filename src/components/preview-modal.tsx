@@ -42,6 +42,26 @@ const PreviewModal = () => {
   const [detailedShow, setDetailedShow] = React.useState<Show | null>(null);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
+  const [logoPath, setLogoPath] = React.useState<string | null>(null);
+
+	React.useEffect(() => {
+		let isActive = true;
+		(async () => {
+			try {
+				if (!p.show?.id) return;
+				const apiMediaType = p.show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+				const { data } = await MovieService.getImages(apiMediaType, p.show.id);
+				const preferred = data.logos?.find(l => l.iso_639_1 === 'en') ?? data.logos?.[0];
+				if (isActive) setLogoPath(preferred ? preferred.file_path : null);
+			} catch {
+				if (isActive) setLogoPath(null);
+			}
+		})();
+		return () => {
+			isActive = false;
+		};
+	}, [p.show?.id, p.show?.media_type]);
+
 
   React.useEffect(() => {
     if (IS_MOBILE) setOptions(s => ({ ...s, playerVars: { ...s.playerVars, mute: 1 } }));
@@ -196,7 +216,7 @@ const PreviewModal = () => {
     e.target.playVideo();
   };
 
-  console.log(detailedShow);
+  // console.log(detailedShow);
 
   return (
     <div 
@@ -224,112 +244,124 @@ const PreviewModal = () => {
         }}
       >
         <div className="overflow-hidden rounded-xl bg-neutral-900 shadow-lg shadow-black">
-			<div  className="relative aspect-video">
-            <CustomImage 
-              fill 
-              priority 
-              ref={imageRef} 
-					alt={p?.show?.title ?? 'poster'}
-            className="z-1 h-auto w-full object-cover"
-					src={`https://image.tmdb.org/t/p/original${p.show?.backdrop_path ?? p.show?.poster_path}`}
-            sizes="50vw"
-          />
-          {trailer && (
-            <Youtube
-					opts={defaultOptions}
-					onEnd={handleTrailerEnd}
-					onPlay={handleTrailerPlay}
-              ref={youtubeRef}
-					onReady={handleTrailerReady}
-              videoId={trailer}
-					id="hero-trailer"
-					title={p.show?.title ?? p.show?.name ?? 'hero-trailer'}
-					className="z-0 h-full w-full"
-              style={{ width: '100%', height: '100%' }}
-					iframeClassName="w-full h-full z-10"
-            />
-          )}
-			<Link href={handleHref()} className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/20 to-transparent z-10"></Link>
-          <div className="absolute bottom-2 z-20 flex w-full items-center justify-between gap-2 px-2">
-				<div className="flex items-center gap-2">
+          <div  className="relative aspect-video group">
+                <CustomImage 
+                  fill 
+                  priority 
+                  ref={imageRef} 
+              alt={p?.show?.title ?? 'poster'}
+                className="z-1 h-auto w-full object-cover"
+              src={`https://image.tmdb.org/t/p/original${p.show?.backdrop_path ?? p.show?.poster_path}`}
+                sizes="50vw"
+                />
+                {trailer && (
+                  <Youtube
+                opts={defaultOptions}
+                onEnd={handleTrailerEnd}
+                onPlay={handleTrailerPlay}
+                    ref={youtubeRef}
+                onReady={handleTrailerReady}
+                    videoId={trailer}
+                id="hero-trailer"
+                title={p.show?.title ?? p.show?.name ?? 'hero-trailer'}
+                className="z-0 h-full w-full"
+                    style={{ width: '100%', height: '100%' }}
+                iframeClassName="w-full h-full z-10"
+                  />
+                )}
+                {logoPath && (
+                  <div className="absolute bottom-2 left-2 z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${logoPath}`}
+                      alt={p.show.title ?? p.show.name ?? 'logo'}
+                      className="max-h-12 max-w-[80%] h-auto w-auto object-contain"
+                    />
+                  </div>
+                )}
 
-				</div>
-				<Button aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`} className="h-7 w-7 rounded-full bg-neutral-950/50 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0" onClick={handleChangeMute}>
-				{isMuted ? <Icons.volumeMute className="h-4 w-4" /> : <Icons.volume className="h-4 w-4" />}
-				</Button>
-			</div>
-			</div>
-			<a className="px-3 cursor-pointer" onClick={handleMoreDetails} >
-				<div className="w-full px-2">
-					<div className="flex items-center justify-between gap-2 mb-2">
+              <Link href={handleHref()} className="absolute inset-0 z-10 bg-gradient-to-t from-neutral-900 via-neutral-900/20 to-transparent">
+              </Link>
+              
+              <div className="absolute pointer-events-auto bottom-2 flex w-full items-center justify-between gap-2 px-2">
+                <div className="flex items-center gap-2">
 
-            <div className="flex items-center gap-2">
-              <Button 
-                aria-label="Play show" 
-                className="group h-7 w-7 rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-200 hover:scale-105 p-0"
-                onClick={() => {
-                  window.location.href = handleHref();
-                }}
-              >
-                <Icons.play className="h-4 w-4 fill-current" />
-              </Button>
-							{getRuntime() && <span className="text-white text-xs font-medium">{getRuntime()}</span>}
-							<span className="border text-white font-bold text-[8px] px-1 py-0.5 rounded">{getQuality()}</span>
+                </div>
+                <Button aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`} className="h-7 w-7 z-10 rounded-full bg-neutral-950/50 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0" onClick={handleChangeMute}>
+                {isMuted ? <Icons.volumeMute className="h-4 w-4" /> : <Icons.volume className="h-4 w-4" />}
+                </Button>
+              </div>
+          </div>
+          <a className="px-3 cursor-pointer" onClick={handleMoreDetails} >
+            <div className="w-full px-2">
+              <div className="flex items-center justify-between gap-2 mb-2">
+
+                <div className="flex items-center gap-2">
+                  <Button 
+                    aria-label="Play show" 
+                    className="group h-7 w-7 rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-200 hover:scale-105 p-0"
+                    onClick={() => {
+                      window.location.href = handleHref();
+                    }}
+                  >
+                    <Icons.play className="h-4 w-4 fill-current" />
+                  </Button>
+                  {getRuntime() && <span className="text-white text-xs font-medium">{getRuntime()}</span>}
+                  <span className="border text-white font-bold text-[8px] px-1 py-0.5 rounded">{getQuality()}</span>
+                </div>
+
+                <Button className="h-7 w-7 rounded-full bg-black/50 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0" 
+                  onClick={handleMoreDetails}
+                  data-tooltip="More details"
+                  >
+                  <Icons.chevronDown className="h-4 w-4"/>
+                </Button>
+
+              </div>
+              <div className="flex items-center gap-1 text-xs text-neutral-300">
+                {getGenres() && <span>{getGenres()}</span>}
+              </div>
+              <h1 className="text-white text-md font-medium">{p.show.title || p.show.name}</h1>
+              <span className="text-white text-xs font-medium">{p.show?.release_date || detailedShow?.release_date}</span>
+              <span className="border text-white font-bold text-[11px] px-1 py-0.5 rounded">
+                {detailedShow?.media_type === MediaType.MOVIE
+                  ? (() => {
+                    const runtime = detailedShow?.runtime;
+                    if (!runtime) return 'N/A';
+                    const hours = Math.floor(runtime / 60);
+                    const minutes = runtime % 60;
+                    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                  })()
+                  : detailedShow?.media_type === MediaType.TV
+                  ? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
+                  : (() => {
+                    // Fallback to basic show data if detailedShow is not available
+                    const show = p.show;
+                    if (show?.media_type === MediaType.MOVIE) {
+                      const runtime = detailedShow?.runtime;
+                      if (!runtime) return 'N/A';
+                      const hours = Math.floor(runtime / 60);
+                      const minutes = runtime % 60;
+                      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                    }
+                    return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
+                  })()
+                }
+              </span>
+              {detailedShow?.networks && detailedShow?.networks.length > 0 && (
+                <div className="flex flex-row items-end justify-end overflow-hidden gap-2 absolute w-[95%] pb-2">
+                  {detailedShow?.networks.map((network, index) => (
+                    network.logo_path && (
+                      <img 
+                        key={index}
+                        src={`https://image.tmdb.org/t/p/w92${network.logo_path}`} 
+                        alt={network.name || 'Network logo'}
+                        className="h-4 w-auto object-contain"
+                      />
+                    )
+                  ))}
+                </div>
+              )}
             </div>
-
-						<Button className="h-7 w-7 rounded-full bg-black/50 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0" 
-							onClick={handleMoreDetails}
-							data-tooltip="More details"
-							>
-							<Icons.chevronDown className="h-4 w-4"/>
-            </Button>
-
-          </div>
-					<div className="flex items-center gap-1 text-xs text-neutral-300">
-            {getGenres() && <span>{getGenres()}</span>}
-          </div>
-					<h1 className="text-white text-md font-medium">{p.show.title || p.show.name}</h1>
-					<span className="text-white text-xs font-medium">{p.show?.release_date || detailedShow?.release_date}</span>
-					<span className="border text-white font-bold text-[11px] px-1 py-0.5 rounded">
-						{detailedShow?.media_type === MediaType.MOVIE
-							? (() => {
-								const runtime = detailedShow?.runtime;
-								if (!runtime) return 'N/A';
-								const hours = Math.floor(runtime / 60);
-								const minutes = runtime % 60;
-								return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-							})()
-							: detailedShow?.media_type === MediaType.TV
-							? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
-							: (() => {
-								// Fallback to basic show data if detailedShow is not available
-								const show = p.show;
-								if (show?.media_type === MediaType.MOVIE) {
-									const runtime = detailedShow?.runtime;
-									if (!runtime) return 'N/A';
-									const hours = Math.floor(runtime / 60);
-									const minutes = runtime % 60;
-									return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-								}
-								return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
-							})()
-						}
-					</span>
-					{detailedShow?.networks && detailedShow?.networks.length > 0 && (
-						<div className="flex flex-row items-end justify-end overflow-hidden gap-2 absolute w-[95%] pb-2">
-							{detailedShow?.networks.map((network, index) => (
-								network.logo_path && (
-									<img 
-										key={index}
-										src={`https://image.tmdb.org/t/p/w92${network.logo_path}`} 
-										alt={network.name || 'Network logo'}
-										className="h-4 w-auto object-contain"
-									/>
-								)
-							))}
-						</div>
-					)}
-				</div>
           </a>
         </div>
       </div>

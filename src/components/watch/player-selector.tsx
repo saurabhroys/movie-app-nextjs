@@ -294,7 +294,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
       );
     }
 
-    console.log("animepage =", "mediaType-", mediaType, "mediaId-", mediaId, "episode-", episode )
+    // console.log("animepage =", "mediaType-", mediaType, "mediaId-", mediaId, "episode-", episode )
     
     if (mediaType === 'anime') {
       baseOptions.push(
@@ -420,7 +420,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
   const handlePlayerChange = (index: number) => {
     setIsLoading(true);
     setActivePlayer(index);
-    console.log('Switching to player:', playerOptions[index]?.name, 'URL:', playerOptions[index]?.url);
+    // console.log('Switching to player:', playerOptions[index]?.name, 'URL:', playerOptions[index]?.url);
     // Reset loading state after a short delay
     setTimeout(() => setIsLoading(false), 1000);
   };
