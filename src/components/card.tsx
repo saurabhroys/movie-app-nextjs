@@ -92,7 +92,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
           play: true,
         });
 	  };
-	  console.log("show in ShowCard", show);
+	//   console.log("show in ShowCard", show);
   
     return (
       <div className="relative aspect-video group hover:scale-125 transition-all duration-10 hover:z-50" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>

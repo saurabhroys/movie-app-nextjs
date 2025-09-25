@@ -2,6 +2,7 @@ import { useModalStore } from '@/stores/modal';
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import { Genre, MediaType, type Show } from '@/types';
 import * as React from 'react';
+import MovieService from '@/services/MovieService';
 
 import { getMobileDetect, getNameFromShow, getSlug } from '@/lib/utils';
 import CustomImage from './custom-image';
@@ -80,6 +81,24 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
 	const [options, setOptions] = React.useState(defaultOptions);
 	const youtubeRef = React.useRef(null);
 	const imageRef = React.useRef<HTMLImageElement>(null);
+	const [logoPath, setLogoPath] = React.useState<string | null>(null);
+
+	React.useEffect(() => {
+		let isActive = true;
+		(async () => {
+			try {
+				const apiMediaType = show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+				const { data } = await MovieService.getImages(apiMediaType, show.id);
+				const preferred = data.logos?.find(l => l.iso_639_1 === 'en') ?? data.logos?.[0];
+				if (isActive) setLogoPath(preferred ? preferred.file_path : null);
+			} catch {
+				if (isActive) setLogoPath(null);
+			}
+		})();
+		return () => {
+			isActive = false;
+		};
+	}, [show.id, show.media_type]);
 
 	const handleHref = () => {
 		const type = isAnime ? 'anime' : show?.media_type === MediaType.MOVIE ? 'movie' : 'tv';
@@ -135,7 +154,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
           aria-label={getNameFromShow(show)}
           href={`/${show.media_type}/${getSlug(show.id, getNameFromShow(show))}`}
         />
-        <CustomImage
+        <img
           src={
             (show.backdrop_path ?? show.poster_path)
               ? `https://image.tmdb.org/t/p/w780${
@@ -145,7 +164,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
           }
           alt={show.title ?? show.name ?? 'poster'}
           className="h-full w-full cursor-pointer rounded-lg px-1 transition-all"
-          fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
           style={{
             objectFit: 'cover',
@@ -167,6 +185,16 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
         //   }}
           onError={imageOnErrorHandler}
         />
+		{logoPath && (
+			<div className="absolute inset-0 z-10 pointer-events-none flex justify-center items-center overflow-hidden px-2">
+				<img
+					src={`https://image.tmdb.org/t/p/w500${logoPath}`}
+					alt={show.title ?? show.name ?? 'logo'}
+					className="max-h-12 max-w-[85%] h-auto w-auto object-contain"
+					onError={imageOnErrorHandler}
+				/>
+			</div>
+		)}
 
         {/* Hover preview is now portal-based via PreviewModal */}
         </div>

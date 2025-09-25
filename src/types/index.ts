@@ -55,6 +55,7 @@ export type Show = {
   keywords: KeyWordResponse;
   seasons: ISeason[];
   networks?: Network[];
+  logos?: Logo[];
 };
 
 export type Network = {
@@ -62,6 +63,22 @@ export type Network = {
   name: string;
   logo_path: string | null;
   origin_country: string;
+};
+
+export type Logo = {
+  aspect_ratio: number,
+  height: number,
+  iso_639_1: string,
+  file_path: string,
+  vote_average: number,
+  vote_count: number,
+  width: number
+};
+
+export type ImagesResponse = {
+  backdrops: Logo[];
+  logos: Logo[];
+  posters: Logo[];
 };
 
 export type KeyWord = {

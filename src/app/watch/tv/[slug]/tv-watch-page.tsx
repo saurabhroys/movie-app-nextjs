@@ -23,7 +23,7 @@ const TvWatchPage = ({ tvShow, seasons, tvId, mediaId, recommendedShows }: TvWat
     setSelectedEpisode(episode);
   };
 
-  console.log("tvShow-",tvShow,"seasons-", seasons,"tvId-", tvId,"mediaId-", mediaId,)
+  // console.log("tvShow-",tvShow,"seasons-", seasons,"tvId-", tvId,"mediaId-", mediaId,)
 
   return (
     <div className="min-h-screen w-screen bg-black">
