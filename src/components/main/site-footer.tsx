@@ -7,7 +7,7 @@ import { Icons } from '@/components/icons';
 const SiteFooter = () => {
   return (
     <footer aria-label="Footer" className="w-full">
-      <div className="container grid w-full max-w-6xl gap-7 py-10">
+      {/* <div className="container grid w-full max-w-6xl gap-7 py-10">
         <div className="flex flex-wrap items-center gap-2">
           {siteConfig.socialLinks.map(
             (item, i) =>
@@ -43,34 +43,34 @@ const SiteFooter = () => {
         <p className="text-foreground/60 text-xs sm:text-sm">
           @ 2023-{new Date().getFullYear()} {siteConfig.author}.
         </p>
-      </div>
-      {/* <div className="container flex flex-col items-center justify-between md:h-24 md:flex-row md:py-0 gap-4"> */}
+      </div> */}
+      <div className="container flex flex-col items-center justify-center md:h-10 md:flex-row md:py-0 gap-4">
       {/* copyright text */}
-      {/* <div className="container flex h-24 items-center gap-2 px-8">
+      <div className="flex h-20 items-center gap-2 px-8">
           <Icons.play className="hidden h-6 w-6 md:block" />
-          <p className="text-center text-xs leading-loose sm:text-sm md:text-left">
-            Built by{" "}
-            <a
+          <p className="text-center text-xs place-content-center leading-loose sm:text-sm md:text-left">
+            Made with ❤️ and dedication by{" Saurabh "}
+            {/* <a
               href={siteConfig.links.twitter}
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
               {siteConfig.author}
-            </a>
-            . The source code is available on{" "}
+            </a> */}
+            . Inspired by{" "}
             <a
               href={siteConfig.links.github}
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
-              GitHub
+              Netflix
             </a>
             .
           </p>
-        </div> */}
-      {/* </div> */}
+        </div>
+      </div>
     </footer>
   );
 };
