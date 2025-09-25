@@ -86,25 +86,16 @@ export function MainNav({ items }: MainNavProps) {
       if (path === '/search') {
         router.push('/home');
       } else {
-        window.history.pushState(null, '', path);
+        router.replace(path);
       }
       return;
     }
 
+    // Navigate to search page - let the search page handle data fetching
     if (getSearchValue('q')?.trim()?.length) {
-      window.history.replaceState(null, '', `search?q=${value}`);
+      router.replace(`/search?q=${value}`);
     } else {
-      window.history.pushState(null, '', `search?q=${value}`);
-    }
-
-    searchStore.setQuery(value);
-    searchStore.setLoading(true);
-    const shows = await MovieService.searchMovies(value);
-    searchStore.setLoading(false);
-    void searchStore.setShows(shows.results);
-
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      router.push(`/search?q=${value}`);
     }
   }
 

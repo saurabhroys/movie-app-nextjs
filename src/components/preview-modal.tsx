@@ -168,6 +168,47 @@ const PreviewModal = () => {
     };
   }, [p.isOpen]);
 
+  // Close preview modal on navigation or window minimize
+  React.useEffect(() => {
+    if (!p.isOpen) return;
+    
+    const close = () => {
+      p.setIsActive(false);
+      p.setIsOpen(false);
+      p.setAnchorRect(null);
+      p.setShow(null);
+      p.reset();
+    };
+
+    // Close on navigation (popstate event)
+    const handlePopState = () => close();
+    
+    // Close on window visibility change (minimize/restore)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        close();
+      }
+    };
+
+    // Close on beforeunload (page unload)
+    const handleBeforeUnload = () => close();
+
+    // Close on focus loss (when user switches tabs/apps)
+    const handleBlur = () => close();
+
+    window.addEventListener('popstate', handlePopState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [p.isOpen]);
+
   if (!p.isOpen || !p.show) return null;
 
   // Calculate position based on anchor rect
