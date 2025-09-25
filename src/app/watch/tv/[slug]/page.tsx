@@ -6,6 +6,7 @@ import SeasonsEpisodesSelector from '@/components/season';
 import MovieService from '@/services/MovieService';
 import { Show } from '@/types';
 import TvWatchPage from './tv-watch-page';
+import NotFound from '../../../../components/watch/not-found-redirect';
 
 export const revalidate = 3600;
 
@@ -59,12 +60,7 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
           recommendedShows={recommendedShows}
         />
       ) : (
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center text-neutral-400">
-            <span className="text-4xl mb-4 block">📺</span>
-            <span>Loading TV show data...</span>
-          </div>
-        </div>
+        <NotFound />
       )}
     </div>
   );

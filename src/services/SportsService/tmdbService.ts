@@ -38,11 +38,16 @@ export async function searchMovies(query: string, page: number) {
   const { data } = await tmdbClient.get<TmdbPagingResponse>(
     `/search/multi?query=${encodeURIComponent(
       query,
-    )}&language=en-US&page=${page}`,
+    )}&language=en-US&page=${page}&include_adult=false`,
   );
-  data.results.sort((a, b) => {
-    return b.popularity - a.popularity;
-  });
+  
+  // Filter out results without proper media_type and sort by popularity
+  data.results = data.results
+    .filter((item) => item.media_type && (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person'))
+    .sort((a, b) => {
+      return b.popularity - a.popularity;
+    });
+  
   return data;
 }
 
