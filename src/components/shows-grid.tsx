@@ -42,7 +42,7 @@ const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
         ) : (
           <div
             className={cn(
-              'xxs:grid-cols-1 xxs:gap-x-1.5 xxs:gap-y-5 xs:grid-cols-2 xs:gap-y-7 grid gap-y-3.5 sm:grid-cols-2 sm:gap-y-10 md:grid-cols-3 md:gap-y-12 lg:gap-y-14 xl:grid-cols-4 xl:gap-y-16',
+              'xxs:grid-cols-1 xxs:gap-x-1.5 xxs:gap-y-5 xs:grid-cols-2 xs:gap-y-7 grid gap-y-3.5 sm:grid-cols-2 sm:gap-y-10 md:grid-cols-4 md:gap-y-12 lg:gap-y-14 xl:grid-cols-6 xl:gap-y-16',
               query && 'max-[375px]:grid-cols-1 max-sm:grid-cols-2',
             )}>
             {shows.map((show: Show) => (
