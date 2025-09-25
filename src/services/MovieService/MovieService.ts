@@ -191,12 +191,16 @@ class MovieService extends BaseService {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
         page ?? 1
-      }`,
+      }&include_adult=true`,
     );
 
-    data.results.sort((a, b) => {
-      return b.popularity - a.popularity;
-    });
+    // Filter out results without proper media_type and sort by popularity
+    data.results = data.results
+      .filter((item) => item.media_type && (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person'))
+      .sort((a, b) => {
+        return b.popularity - a.popularity;
+      });
+    
     return data;
   });
 
