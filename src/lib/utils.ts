@@ -149,7 +149,7 @@ export const handleMetadata = cache(
         type === 'tv'
           ? keywordResponse.data.results
           : keywordResponse.data.keywords;
-      keywords = res.map((item: KeyWord) => item.name);
+      keywords = res.map((item: KeyWord) => item.name).filter(Boolean);
     } catch (error) {
       console.error(error);
     }
@@ -160,8 +160,8 @@ export const handleMetadata = cache(
       keywords: [
         ...keywords,
         slug.replace(`-${mediaId}`, ''),
-        env.NEXT_PUBLIC_SITE_NAME,
-      ],
+        env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
+      ].filter(Boolean),
       openGraph: {
         type: 'website',
         locale: 'en_US',
@@ -171,7 +171,7 @@ export const handleMetadata = cache(
         }`,
         title: getNameFromShow(data),
         description: data?.overview ?? '',
-        siteName: siteConfig.name,
+        siteName: siteConfig.name || 'TuneBox',
       },
       twitter: {
         card: 'summary_large_image',

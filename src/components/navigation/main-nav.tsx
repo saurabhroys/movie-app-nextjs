@@ -26,7 +26,7 @@ import { useSearchStore } from '@/stores/search';
 import { DebouncedInput } from '@/components/debounced-input';
 import MovieService from '@/services/MovieService';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
-import { ServerRecommendationSwitch } from '@/app/watch/movie/[slug]/page';
+import { ServerRecommendationSwitch } from '@/components/server-recommendation-switch';
 
 interface MainNavProps {
   items?: NavItem[];

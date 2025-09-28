@@ -26,11 +26,12 @@ const config = {
     deviceSizes: [128, 256, 512, 1200],
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ['@trpc/server'],
 };
 
 export default config;

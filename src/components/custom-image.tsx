@@ -53,7 +53,7 @@ const CustomImage = forwardRef(function CustomImage(
       {...props}
       loader={customLoader}
       ref={ref}
-      alt={props.alt || env.NEXT_PUBLIC_SITE_NAME}
+      alt={props.alt || env.NEXT_PUBLIC_SITE_NAME || 'TuneBox'}
     />
   );
 });

@@ -35,9 +35,9 @@ export const TrpcProvider: React.FC<{ children: React.ReactNode }> = ({
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          transformer: superjson,
         }),
       ],
-      transformer: superjson,
     }),
   );
   return (

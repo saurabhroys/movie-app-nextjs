@@ -59,17 +59,14 @@ const ShowsSkeleton = ({
           </div>
         </div>
       ) : (
-        <motion.div
-          className="no-scrollbar container mx-0 flex w-full items-center gap-1.5 overflow-x-auto overflow-y-hidden"
-          initial="hidden"
-          animate="visible"
-          variants={itemsReveal}>
+        <div
+          className="no-scrollbar container mx-0 flex w-full items-center gap-1.5 overflow-x-auto overflow-y-hidden">
           {Array.from({ length: count }, (_, i) => (
             <motion.div key={i} variants={itemFade}>
               <Skeleton className="aspect-2/3 min-w-[15rem] rounded bg-neutral-700" />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       )}
     </>
   );
