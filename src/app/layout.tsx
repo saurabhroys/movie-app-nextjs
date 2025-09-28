@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     creator: siteConfig.author,
   },
   icons: {
-    icon: '/play.svg',
+    icon: '/favicon.ico',
   },
   other: { referrer: 'no-referrer-when-downgrade' },
 };
