@@ -48,7 +48,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.11.3",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/eslint": "^8.44.2",
     "@types/node": "^20.6.2",

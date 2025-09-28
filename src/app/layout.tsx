@@ -18,7 +18,7 @@ import SiteFooter from '@/components/main/site-footer';
 import AttributeTooltipManager from '@/components/attribute-tooltip';
 import PreviewModal from '@/components/preview-modal';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 const fontSans = FontSans({
   subsets: ['latin'],
