@@ -4,7 +4,7 @@ import TvShowPage from '../page';
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export const revalidate = 3600;
