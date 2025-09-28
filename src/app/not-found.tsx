@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="mb-8">
-          <Icons.logo className="w-24 h-24 mx-auto text-red-600 mb-4" />
+          <Icons.logo_long className="w-24 h-auto mx-auto text-neutral-800 mb-4" />
           <h1 className="text-6xl font-bold text-white mb-4">404</h1>
           <h2 className="text-2xl font-semibold text-neutral-300 mb-2">Page Not Found</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">
@@ -19,7 +19,7 @@ export default function NotFound() {
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
-            <Icons.play className="w-4 h-4" />
+            <Icons.logo_long className="w-7 h-auto" />
             Go Home
           </Link>
           

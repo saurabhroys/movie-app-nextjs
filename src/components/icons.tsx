@@ -19,16 +19,19 @@ import {
   Star,
   HelpCircle,
 } from 'lucide-react';
+import { Logo, LogoLong } from './logo';
 
 type IconProps = LucideProps;
 
 export const Icons = {
+  logo: Logo,
+  logo_long: LogoLong,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   chevronDown: ChevronDown,
   info: Info,
   search: Search,
-  logo: PlayIcon,
+  // logo: PlayIcon,
   play: PlayIcon,
   pause: Pause,
   volume: Volume2,

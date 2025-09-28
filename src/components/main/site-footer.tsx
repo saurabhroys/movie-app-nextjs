@@ -47,7 +47,7 @@ const SiteFooter = () => {
       <div className="container flex flex-col items-center justify-center md:h-10 md:flex-row md:py-0 gap-4">
       {/* copyright text */}
       <div className="flex h-20 items-center gap-2 px-8">
-          <Icons.play className="hidden h-6 w-6 md:block" />
+          <Icons.logo_long className="hidden h-6 w-auto md:block" />
           <p className="text-center text-xs place-content-center leading-loose sm:text-sm md:text-left">
             Made with ❤️ and dedication by{" Saurabh "}
             {/* <a
