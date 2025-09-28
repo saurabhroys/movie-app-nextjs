@@ -9,8 +9,8 @@ import { env } from '@/env.mjs';
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: env.NEXT_PUBLIC_SITE_NAME,
-  author: env.NEXT_PUBLIC_SITE_NAME,
+  name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
+  author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',
   description:
     'Watch movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more.',
@@ -29,10 +29,10 @@ export const siteConfig = {
     'watch TV online',
     'no download',
     'full length movies',
-    env.NEXT_PUBLIC_SITE_NAME,
+    env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   ],
-  url: env.NEXT_PUBLIC_APP_URL,
-  ogImage: `${env.NEXT_PUBLIC_APP_URL}/images/hero.jpg`,
+  url: env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000',
+  ogImage: `${env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/images/hero.jpg`,
   links: {
     twitter: `${env.NEXT_PUBLIC_TWITTER}`,
     github: 'https://www.netflix.com',
