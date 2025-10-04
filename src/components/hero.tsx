@@ -26,12 +26,19 @@ const Hero = ({ randomShow }: HeroProps) => {
   const path = usePathname();
   const [trailer, setTrailer] = React.useState('');
   const [showTrailer, setShowTrailer] = React.useState(false);
+  const [trailerFinished, setTrailerFinished] = React.useState(false);
   const [countdown, setCountdown] = React.useState(count);
   const [isCountdownActive, setIsCountdownActive] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(isMobile() ? true : false);
+  const [showControls, setShowControls] = React.useState(false);
+  const [isPaused, setIsPaused] = React.useState(false);
+  const [showLogo, setShowLogo] = React.useState(false);
+  const [logoPath, setLogoPath] = React.useState<string | null>(null);
+  const [showTextElements, setShowTextElements] = React.useState(true);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
+  const textHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const prevMutedRef = React.useRef<boolean>(isMuted);
   const modalStore = useModalStore();
   const previewModalStore = usePreviewModalStore();
@@ -41,7 +48,7 @@ const Hero = ({ randomShow }: HeroProps) => {
     playerVars: {
       rel: 0,
       mute: 0,
-      loop: 1,
+      loop: 0,
       autoplay: 1,
       controls: 0,
       showinfo: 0,
@@ -60,48 +67,64 @@ const Hero = ({ randomShow }: HeroProps) => {
     };
   }, []);
 
-  // Fetch trailer when randomShow changes
+  // Fetch logo immediately when randomShow changes
   React.useEffect(() => {
     if (randomShow?.id) {
+      fetchLogo();
+      setShowLogo(true); // Show logo immediately when poster loads
+    }
+  }, [randomShow?.id]);
+
+  // Fetch trailer and reset states when randomShow changes
+  React.useEffect(() => {
+    if (randomShow?.id) {
+      setTrailerFinished(false);
+      setShowControls(false);
+      setIsPaused(false);
+      setShowTextElements(true);
+      if (textHideTimerRef.current) {
+        clearTimeout(textHideTimerRef.current);
+      }
       fetchTrailer();
     }
   }, [randomShow?.id]);
 
-  // Start countdown when trailer is available
+  // Start countdown when trailer is available and not finished
   React.useEffect(() => {
-    if (trailer && !isCountdownActive) {
+    if (trailer && !isCountdownActive && !trailerFinished) {
       startCountdown();
     }
-  }, [trailer]);
+  }, [trailer, trailerFinished]);
 
-  // Cleanup countdown on unmount
+  // Cleanup timers on unmount
   React.useEffect(() => {
     return () => {
       if (countdownRef.current) {
         clearInterval(countdownRef.current);
       }
+      if (textHideTimerRef.current) {
+        clearTimeout(textHideTimerRef.current);
+      }
     };
   }, []);
 
-  // Mute hero trailer when any modal (detail or preview) is open, and restore previous mute state when closed
+  // Pause hero trailer when any modal (detail or preview) is open, and resume when closed
   React.useEffect(() => {
     const videoRef: any = youtubeRef.current;
     const isAnyModalOpen = modalStore.open || previewModalStore.isOpen;
     if (isAnyModalOpen) {
-      prevMutedRef.current = isMuted;
-      setIsMuted(true);
-      if (videoRef?.internalPlayer) {
-        videoRef.internalPlayer.mute();
+      if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
+        videoRef.internalPlayer.pauseVideo();
+        setIsPaused(true);
       }
       return;
     }
-    // Restore previous mute state on close
-    setIsMuted(prevMutedRef.current);
-    if (videoRef?.internalPlayer) {
-      if (prevMutedRef.current) videoRef.internalPlayer.mute();
-      else videoRef.internalPlayer.unMute();
+    // Resume trailer when modal closes
+    if (videoRef?.internalPlayer && showTrailer && !trailerFinished && isPaused) {
+      videoRef.internalPlayer.playVideo();
+      setIsPaused(false);
     }
-  }, [modalStore.open, previewModalStore.isOpen]);
+  }, [modalStore.open, previewModalStore.isOpen, showTrailer, trailerFinished]);
 
   const fetchTrailer = async () => {
     if (!randomShow?.id) return;
@@ -134,6 +157,20 @@ const Hero = ({ randomShow }: HeroProps) => {
     }
   };
 
+  const fetchLogo = async () => {
+    if (!randomShow?.id) return;
+    
+    try {
+      const type = randomShow.media_type === MediaType.TV ? 'tv' : 'movie';
+      const { data } = await MovieService.getImages(type, randomShow.id);
+      const preferred = data.logos?.find(l => l.iso_639_1 === 'en') ?? data.logos?.[0];
+      setLogoPath(preferred ? preferred.file_path : null);
+    } catch (error) {
+      console.error('Failed to fetch logo:', error);
+      setLogoPath(null);
+    }
+  };
+
   const startCountdown = () => {
     setIsCountdownActive(true);
     setCountdown(count);
@@ -157,10 +194,21 @@ const Hero = ({ randomShow }: HeroProps) => {
     if (imageRef.current) {
       imageRef.current.style.opacity = '0';
     }
+    setShowControls(true);
+    
+    // Start 10-second timer to hide text elements
+    textHideTimerRef.current = setTimeout(() => {
+      setShowTextElements(false);
+    }, 10000);
   };
 
   const handleTrailerEnd = (e: any) => {
-    e.target.seekTo(0);
+    setTrailerFinished(true);
+    setShowTrailer(false);
+    setShowTextElements(true); // Show text elements again when trailer ends
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '1';
+    }
   };
 
   const handleTrailerReady = (e: any) => {
@@ -173,6 +221,27 @@ const Hero = ({ randomShow }: HeroProps) => {
     if (!videoRef) return;
     if (isMuted) videoRef.internalPlayer.unMute();
     else videoRef.internalPlayer.mute();
+  };
+
+  const handleReplayTrailer = () => {
+    setTrailerFinished(false);
+    setShowTrailer(true);
+    setShowControls(true);
+    setIsPaused(false);
+    setShowTextElements(true);
+    
+    // Clear existing timers and start new ones
+    if (textHideTimerRef.current) {
+      clearTimeout(textHideTimerRef.current);
+    }
+    
+    textHideTimerRef.current = setTimeout(() => {
+      setShowTextElements(false);
+    }, 10000);
+    
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '0';
+    }
   };
 
   const handlePopstateEvent = () => {
@@ -239,7 +308,7 @@ const Hero = ({ randomShow }: HeroProps) => {
               fill
               priority
               />
-            {trailer && showTrailer && (
+            {trailer && showTrailer && !trailerFinished && (
               <Youtube
                 opts={defaultOptions}
                 onEnd={handleTrailerEnd}
@@ -271,7 +340,8 @@ const Hero = ({ randomShow }: HeroProps) => {
               </div>
             )}
 
-              {/* Volume controls */}
+              {/* Controls */}
+              {showControls && (
               <div
                 className="absolute z-50 flex items-center gap-2 cursor-pointer"
                 style={{
@@ -280,6 +350,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                   transform: 'translateY(-50%)',
                 }}
                 >
+                  {!trailerFinished ? (
                 <Button
                   aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
                   className="h-12 w-12 rounded-full bg-black/70 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0"
@@ -287,25 +358,78 @@ const Hero = ({ randomShow }: HeroProps) => {
                 >
                   {isMuted ? <Icons.volumeMute className="h-5 w-5" /> : <Icons.volume className="h-5 w-5" />}
                 </Button>
+                  ) : (
+                    <Button
+                      aria-label="Replay trailer"
+                      className="h-12 w-12 rounded-full bg-black/70 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0"
+                      onClick={handleReplayTrailer}
+                    >
+                      <Icons.replay className="h-5 w-5" />
+                    </Button>
+                  )}
               </div>
+              )}
 
             {/* Title and buttons */}
             <div className="absolute top-0 z-30 right-0 bottom-0 left-0">
               <div className="absolute top-0 bottom-[35%] left-[4%] flex w-[36%] flex-col justify-end space-y-2">
-                <h1 className="text-[3vw] font-bold">
-                  {randomShow?.title ?? randomShow?.name}
-                </h1>
-                <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
-                  <p className="text-green-600">
-                    {Math.round(randomShow?.vote_average * 10) ?? '-'}% Match
+                {/* Show logo when trailer is playing, otherwise show title */}
+                {showLogo && logoPath ? (
+                  <div 
+                    className={` ${
+                      showTextElements 
+                        ? 'w-[25vw]  h-auto' 
+                        : 'w-[18vw] h-auto'
+                    }`}
+                    style={{
+                      transformOrigin: 'left bottom',
+                      transform: showTextElements 
+                        ? 'scale(1) translate3d(0px, 0px, 0px)' 
+                        : 'scale(0.8) translate3d(0px, 0px, 0px)',
+                      transitionDuration: '1300ms',
+                      transitionDelay: '0ms'
+                    }}
+                  >
+                    <CustomImage
+                      src={`https://image.tmdb.org/t/p/original${logoPath}`}
+                      alt={`${randomShow?.title ?? randomShow?.name} logo`}
+                      className="w-full h-auto object-contain"
+                      width={showTextElements ? 500 : 200}
+                      height={showTextElements ? 250 : 100}
+                    />
+                  </div>
+                ) : (
+                  <h1 className="text-[3vw] font-bold">
+                    {randomShow?.title ?? randomShow?.name}
+                  </h1>
+                )}
+                
+                {/* Show text elements when showTextElements is true */}
+                <div 
+                  className={`overflow-hidden ${
+                    showTextElements 
+                      ? 'max-h-96' 
+                      : 'max-h-0'
+                  }`}
+                  style={{
+                    transform: showTextElements 
+                      ? 'translate3d(0px, 0px, 0px)' 
+                      : 'translate3d(0px, 24px, 0px)',
+                    transitionDuration: '1300ms',
+                    transitionDelay: '0ms',
+                    opacity: showTextElements ? 1 : 0
+                  }}
+                >
+                  <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
+                    <p className="text-green-600">
+                      {Math.round(randomShow?.vote_average * 10) ?? '-'}% Match
+                    </p>
+                    <p>{randomShow?.release_date ?? '-'}</p>
+                  </div>
+                  <p className="hidden text-[1.2vw] sm:line-clamp-3">
+                    {randomShow?.overview ?? '-'}
                   </p>
-                  {/* <p className="text-neutral-300">{randomShow?.release_date ?? "-"}</p> */}
-                  <p>{randomShow?.release_date ?? '-'}</p>
                 </div>
-                {/* <p className="line-clamp-4 text-sm text-neutral-300 md:text-base"> */}
-                <p className="hidden text-[1.2vw] sm:line-clamp-3">
-                  {randomShow?.overview ?? '-'}
-                </p>
                 <div className="mt-[1.5vw] flex items-center space-x-2">
                   <Link prefetch={false} href={handleHref()}>
                     <Button

@@ -18,6 +18,8 @@ import {
   ChevronDown,
   Star,
   HelpCircle,
+  RotateCcw,
+  Menu,
 } from 'lucide-react';
 import { Logo, LogoLong } from './logo';
 
@@ -40,6 +42,7 @@ export const Icons = {
   thumbsUp: ThumbsUp,
   star: Star,
   helpCircle: HelpCircle,
+  replay: RotateCcw,
   // logo: (props: IconProps) => (
   //   <svg
   //     xmlns="http://www.w3.org/2000/svg"
@@ -249,4 +252,5 @@ export const Icons = {
   close: X,
   instagram: Instagram,
   youtube: Youtube,
+  menu: Menu,
 };
