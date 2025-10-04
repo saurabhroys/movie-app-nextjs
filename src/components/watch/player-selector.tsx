@@ -129,16 +129,15 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
       //   quality: 'HD'
       // }
     ];
-
+    
     if (mediaType === 'movie') {
       baseOptions.push(
         {
-          id: 'vidsrc-cc-v3',
-          name: 'VidCloud',
-          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}?autoPlay=true`),
-          description: 'Native streaming quality',
-          language: 'Original',
-          ad: false,
+          id: 'vidfast',
+          name: 'VidFast',
+          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}?autoPlay=true`),
+          description: 'Possible Hindi Dubbed Available',
+          language: 'Hindi Option',
           icon: Icons.play,
           quality: 'HD'
         },
@@ -148,6 +147,16 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           url: buildUrl(`https://embed.vidsrc.pk/${mediaType}/${mediaId}`),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi',
+          ad: false,
+          icon: Icons.play,
+          quality: 'HD'
+        },
+        {
+          id: 'vidsrc-cc-v3',
+          name: 'VidCloud',
+          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}?autoPlay=true`),
+          description: 'Native streaming quality',
+          language: 'Original',
           ad: false,
           icon: Icons.play,
           quality: 'HD'
@@ -183,15 +192,6 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           quality: 'HD'
         },
         {
-          id: 'vidfast',
-          name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}?autoPlay=true`),
-          description: 'Possible Hindi Dubbed Available',
-          language: 'Hindi Option',
-          icon: Icons.play,
-          quality: 'HD'
-        },
-        {
           id: 'videasy',
           name: 'VidEasy',
           url: buildUrl(`https://player.videasy.net/${mediaType}/${mediaId}`),
@@ -211,16 +211,15 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
         }
     );
     }
-
+    
     if (mediaType === 'tv') {
       baseOptions.push(
         {
-          id: 'vidsrc-cc-v3',
-          name: 'VidCloud',
-          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
-          description: 'Native streaming quality',
-          language: 'Original',
-          ad: false,
+          id: 'vidfast',
+          name: 'VidFast',
+          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          description: 'Possible Hindi Dubbed Available',
+          language: 'Hindi Option',
           icon: Icons.play,
           quality: 'HD'
         },
@@ -230,6 +229,16 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           url: buildUrl(`https://embed.vidsrc.pk/${mediaType}/${mediaId}/${season || 1}-${episode || 1}`),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi',
+          ad: false,
+          icon: Icons.play,
+          quality: 'HD'
+        },
+        {
+          id: 'vidsrc-cc-v3',
+          name: 'VidCloud',
+          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          description: 'Native streaming quality',
+          language: 'Original',
           ad: false,
           icon: Icons.play,
           quality: 'HD'
@@ -251,15 +260,6 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
-          icon: Icons.play,
-          quality: 'HD'
-        },
-        {
-          id: 'vidfast',
-          name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
-          description: 'Possible Hindi Dubbed Available',
-          language: 'Hindi Option',
           icon: Icons.play,
           quality: 'HD'
         },
@@ -308,21 +308,21 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           quality: 'HD'
         },
         {
-          id: 'vidfast',
-          name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/tv/${mediaId}/${season || 1}/${episode || 1}?nextButton=true&autoNext=true&autoPlay=true`),
-          description: 'Possible Hindi Dubbed Available',
-          language: 'Hindi Option',
-          icon: Icons.play,
-          quality: 'HD'
-        },
-        {
           id: 'vidsrc',
           name: 'VidSrc.pk',
           url: buildUrl(`https://embed.vidsrc.pk/tv/${mediaId}/${season || 1}-${episode || 1}`),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi',
           ad: false,
+          icon: Icons.play,
+          quality: 'HD'
+        },
+        {
+          id: 'vidfast',
+          name: 'VidFast',
+          url: buildUrl(`https://vidfast.pro/tv/${mediaId}/${season || 1}/${episode || 1}?nextButton=true&autoNext=true&autoPlay=true`),
+          description: 'Possible Hindi Dubbed Available',
+          language: 'Hindi Option',
           icon: Icons.play,
           quality: 'HD'
         },
@@ -516,7 +516,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
                         </span>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs bg-zinc-900 border-0">
+                    <TooltipContent side="top" className="max-w-xs bg-neutral-900 border-0">
                       <div className="text-center text-neutral-50">
                         <p className="font-medium">{option.name}</p>
                         <p className="text-sm text-neutral-300 mt-1">{option.description}</p>

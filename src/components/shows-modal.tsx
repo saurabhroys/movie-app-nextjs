@@ -182,8 +182,16 @@ const ShowModal = () => {
       open={modalStore.open}
       onOpenChange={handleCloseModal}
       aria-label="Modal containing show's details">
-      <DialogContent className="w-full overflow-hidden rounded-md bg-zinc-900 p-0 text-left align-middle shadow-xl sm:max-w-3xl lg:max-w-4xl">
-        <div className="relative aspect-video">
+      <DialogContent
+        className="w-full overflow-hidden rounded-md bg-neutral-900 p-0 text-left align-middle sm:max-w-3xl lg:max-w-4xl border-none"
+      >
+        <div className="relative aspect-video"
+        // style={{
+        //   background: 'linear-gradient(0deg, #181818, transparent 100%)',
+        //   opacity: 1,
+        //   paddingBottom: 'calc(var(--spacing) * 1)'
+        // }}
+        >
           <CustomImage
             fill
             priority
@@ -215,14 +223,14 @@ const ShowModal = () => {
             />
           )}
 
-          <div className='absolute bottom-[-5px] z-10 w-full h-full mask-t-from-9% mask-t-to-50% bg-zinc-900'></div>
+          <div className='absolute bottom-[-5px] z-10 w-full h-full mask-t-from-9% mask-t-to-50% bg-neutral-900'></div>
           
           <div className="absolute bottom-6 z-20 flex w-full items-center justify-between gap-2 px-10">
             <div className="flex items-center gap-2.5">
               <Link href={handleHref()}>
                 <Button
                   aria-label={`${isPlaying ? 'Pause' : 'Play'} show`}
-                  className="group h-auto rounded py-1.5 bg-neutral-50 text-black hover:bg-neutral-300">
+                  className="group h-auto rounded-[9px] py-1.5 bg-neutral-50 text-black hover:bg-neutral-300">
                   <>
                     <Icons.play
                       className="mr-1.5 h-6 w-6 fill-current"
@@ -233,17 +241,17 @@ const ShowModal = () => {
                 </Button>
               </Link>
             </div>
-            <Button
+            <button
               aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
-              variant="ghost"
-              className="h-auto rounded-full hover:bg-neutral-300 hover:text-black ring-neutral-100 text-neutral-300"
+              // variant="ghost"
+              className="rounded-full p-1 ring-2 bg-transparent backdrop-blur-md hover:text-white ring-neutral-100/40 hover:ring-white text-neutral-300/40 transition duration-500 hover:cursor-pointer"
               onClick={handleChangeMute}>
               {isMuted ? (
-                <Icons.volumeMute className="h-6 w-6" aria-hidden="true" />
+                <Icons.volumeMute className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Icons.volume className="h-6 w-6" aria-hidden="true" />
+                <Icons.volume className="h-5 w-5" aria-hidden="true" />
               )}
-            </Button>
+            </button>
           </div>
 
         </div>
