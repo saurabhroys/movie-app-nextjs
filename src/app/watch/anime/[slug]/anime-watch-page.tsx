@@ -26,19 +26,19 @@ const AnimeWatchPage = ({ tvShow, seasons, tvId, mediaId, recommendedShows }: An
   return (
     <div className="">
       {/* Player Selector with Multiple Options */}
-      <div className="grid grid-cols-17 w-full gap-3">
-        <div className="col-span-12 ml-2">
+      <div className="flex flex-col md:grid grid-cols-17 w-full gap-3">
+        <div className="w-full md:col-span-12 md:ml-2">
           <PlayerSelector 
             mediaId={mediaId} 
             mediaType="anime" 
             playerClass="rounded-xl border border-neutral-700 p-[1px]"
-            selectorClass="h-[40rem]"
+            selectorClass="h-[20rem] md:h-[40rem]"
             season={selectedSeason}
             episode={selectedEpisode}
           />
         </div>
 
-        <div className="col-span-5 h-[40rem] rounded-xl border border-neutral-700 p-1 mr-2 pt-2">
+        <div className="w-full md:col-span-5 h-[35rem] md:h-[40rem] rounded-xl border border-neutral-700 p-1 md:mr-2 pt-2 mt-3 md:mt-0">
           {/* Seasons and Episodes Selector */}
           <div className="flex flex-col h-full">
             <SeasonsEpisodesSelector 
