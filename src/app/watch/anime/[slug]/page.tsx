@@ -44,7 +44,7 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen w-screen bg-black pt-5">
       <ModalCloser />
       {tvShow && seasons.length > 0 ? (
         <AnimeWatchPage 

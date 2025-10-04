@@ -427,7 +427,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
 
   if (!playerOptions.length) {
     return (
-      <div className="bg-black/90 backdrop-blur-sm border-t border-neutral-800">
+      <div className=" backdrop-blur-sm">
         <div className="p-4">
           <h3 className="text-lg font-semibold text-white mb-4">Choose Server</h3>
           <p className="text-neutral-400">No players available for this content.</p>
@@ -438,7 +438,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
 
   return (
     <TooltipProvider>
-      <div className="bg-black/90 backdrop-blur-sm border-t border-neutral-800">
+      <div className="backdrop-blur-sm">
         
         <div className={`relative ${selectorClass}`}>
           {isLoading && (

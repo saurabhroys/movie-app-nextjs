@@ -24,7 +24,7 @@ export default function NotFound() {
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="text-center text-neutral-400">
+      <div className="text-center text-neutral-300">
         <span className="text-4xl mb-4 block">
           <Icons.logo className="h-6 w-6" aria-hidden="true" />
         </span>

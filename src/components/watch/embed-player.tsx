@@ -44,7 +44,7 @@ function EmbedPlayer(props: EmbedPlayerProps ) {
   };
 
   return (
-    <div className={``}
+    <div className={`rounded-xl`}
       style={{
         width: '100%',
         height: '100%',
