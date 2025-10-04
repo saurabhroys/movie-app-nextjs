@@ -42,6 +42,7 @@ export function MainNav({ items }: MainNavProps) {
   // search store
   const searchStore = useSearchStore();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   
   // Get showHelp function from keyboard shortcuts hook
   const { showHelp } = useKeyboardShortcuts();
@@ -113,6 +114,10 @@ export function MainNav({ items }: MainNavProps) {
     if (!value) searchStore.reset();
   };
 
+  const handleMobileMenuOpenChange = (open: boolean) => {
+    setIsMobileMenuOpen(open);
+  };
+
   const isMovieWatchPage = path.startsWith('/movie')
 
   return (
@@ -154,7 +159,7 @@ export function MainNav({ items }: MainNavProps) {
           </nav>
         ) : null}
         <div className="block md:hidden">
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={handleMobileMenuOpenChange}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -162,6 +167,11 @@ export function MainNav({ items }: MainNavProps) {
                 // className="h-auto px-2 py-1.5 text-base hover:bg-neutral-800 focus:ring-0 dark:hover:bg-neutral-800 lg:hidden"
               >
                 <Icons.logo className="h-6 w-6" />
+                {isMobileMenuOpen ? (
+                  <Icons.close className="h-6 w-6" />
+                ) : (
+                  <Icons.menu className="h-6 w-6" />
+                )}
                 <span className="text-base font-bold">Menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -224,7 +234,7 @@ export function MainNav({ items }: MainNavProps) {
           variant="ghost"
           size="icon"
           onClick={showHelp}
-          className="hover:bg-transparent"
+          className="hidden md:flex hover:bg-transparent"
           aria-label="Show keyboard shortcuts help"
           title="Show keyboard shortcuts (?)"
         >
