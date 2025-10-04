@@ -24,9 +24,9 @@ const AnimeWatchPage = ({ tvShow, seasons, tvId, mediaId, recommendedShows }: An
   };
 
   return (
-    <div className="min-h-screen w-screen bg-black">
+    <div className="">
       {/* Player Selector with Multiple Options */}
-      <div className="grid grid-cols-17 w-full gap-3 mt-5">
+      <div className="grid grid-cols-17 w-full gap-3">
         <div className="col-span-12 ml-2">
           <PlayerSelector 
             mediaId={mediaId} 

@@ -26,14 +26,14 @@ const TvWatchPage = ({ tvShow, seasons, tvId, mediaId, recommendedShows }: TvWat
   // console.log("tvShow-",tvShow,"seasons-", seasons,"tvId-", tvId,"mediaId-", mediaId,)
 
   return (
-    <div className="min-h-screen w-screen bg-black">
+    <div className="">
       {/* Player Selector with Multiple Options */}
-      <div className="grid grid-cols-17 w-full gap-3 mt-5">
+      <div className=" md:grid grid-cols-17 w-full gap-3">
         <div className="col-span-12 ml-2">
           <PlayerSelector 
             mediaId={mediaId} 
             mediaType="tv" 
-            playerClass="rounded-xl border border-neutral-700 p-[1px]"
+            playerClass="border border-neutral-700 rounded-xl p-[1px]"
             selectorClass="h-[40rem]"
             season={selectedSeason}
             episode={selectedEpisode}
