@@ -23,11 +23,48 @@ export default async function Home() {
       visible: true,
     },
     {
+      title: 'Disney+ TV Shows',
+      req: { requestType: RequestType.DISNEY_PLUS_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'Amazon Prime TV Shows',
+      req: { requestType: RequestType.AMAZON_PRIME_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'HBO TV Shows',
+      req: { requestType: RequestType.HBO_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
       title: 'Popular TV Shows',
+      req: { requestType: RequestType.TOP_RATED, mediaType: MediaType.TV, genre: Genre.TV_MOVIE, },
+      visible: true,
+    },
+    {
+      title: 'Indian Movies',
+      req: { requestType: RequestType.INDIAN_MOVIES, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Netflix',
+      req: { requestType: RequestType.INDIAN_TV_NETFLIX, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Amazon Prime Video',
       req: {
-        requestType: RequestType.TOP_RATED,
+        requestType: RequestType.INDIAN_TV_AMAZON_PRIME,
         mediaType: MediaType.TV,
-        genre: Genre.TV_MOVIE,
+      },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Disney+ Hotstar',
+      req: {
+        requestType: RequestType.INDIAN_TV_DISNEY_HOTSTAR,
+        mediaType: MediaType.TV,
       },
       visible: true,
     },

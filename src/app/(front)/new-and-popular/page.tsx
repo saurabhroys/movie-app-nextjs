@@ -1,6 +1,7 @@
 import Hero from '@/components/hero';
 import ShowsContainer from '@/components/shows-container';
 import { siteConfig } from '@/configs/site';
+import { Genre } from '@/enums/genre';
 import { RequestType, type ShowRequest } from '@/enums/request-type';
 import { getRandomShow } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
@@ -34,6 +35,53 @@ export default async function NewAndPopularPage() {
     {
       title: 'Top Rated Movies',
       req: { requestType: RequestType.TOP_RATED, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
+      title: 'Disney+ TV Shows',
+      req: { requestType: RequestType.DISNEY_PLUS_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'Amazon Prime TV Shows',
+      req: { requestType: RequestType.AMAZON_PRIME_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'HBO TV Shows',
+      req: { requestType: RequestType.HBO_TV, mediaType: MediaType.TV },
+      visible: true,
+    },
+    {
+      title: 'Indian Movies',
+      req: {
+        requestType: RequestType.INDIAN_MOVIES,
+        mediaType: MediaType.MOVIE,
+      },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Netflix',
+      req: {
+        requestType: RequestType.INDIAN_TV_NETFLIX,
+        mediaType: MediaType.TV,
+      },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Amazon Prime Video',
+      req: {
+        requestType: RequestType.INDIAN_TV_AMAZON_PRIME,
+        mediaType: MediaType.TV,
+      },
+      visible: true,
+    },
+    {
+      title: 'Indian TV Shows - Disney+ Hotstar',
+      req: {
+        requestType: RequestType.INDIAN_TV_DISNEY_HOTSTAR,
+        mediaType: MediaType.TV,
+      },
       visible: true,
     },
   ];
