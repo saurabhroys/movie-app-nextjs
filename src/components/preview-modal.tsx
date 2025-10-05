@@ -43,6 +43,67 @@ const PreviewModal = () => {
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const [logoPath, setLogoPath] = React.useState<string | null>(null);
+  const [contentRating, setContentRating] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchContentRating = async () => {
+      if (!p.show?.id) return;
+      try {
+        const isTv = p.show.media_type === MediaType.TV;
+        if (isTv) {
+          const { data }: any = await MovieService.getContentRating('tv', p.show.id);
+          const results: any[] = data?.results ?? [];
+          const prefOrder = ['RU','UA', 'LV', 'TW'];
+          let rating: string | null = null;
+          for (const cc of prefOrder) {
+            const match = results.find((r: any) => r?.iso_3166_1 === cc);
+            const candidate = match?.rating ?? match?.certification ?? '';
+            if (candidate && String(candidate).trim().length > 0) {
+              rating = String(candidate).trim();
+              break;
+            }
+          }
+          if (!rating) {
+            const firstNonEmpty = results.find((r: any) => (r?.rating ?? r?.certification ?? '').toString().trim().length > 0);
+            rating = firstNonEmpty ? String(firstNonEmpty.rating ?? firstNonEmpty.certification).trim() : null;
+          }
+          setContentRating(rating);
+          return;
+        }
+    
+        // Movies use release_dates endpoint
+        const { data }: any = await MovieService.getMovieReleaseDates(p.show.id);
+        const countries: any[] = data?.results ?? [];
+        const prefOrder = ['RU','UA', 'LV', 'TW'];
+        const getFirstNonEmpty = (c: any): string | null => {
+          const arr = (c?.release_dates ?? [])
+            .filter((rd: any) => rd && typeof rd.certification === 'string')
+            .map((rd: any) => ({ cert: rd.certification?.trim?.() ?? '', date: rd.release_date }))
+            .filter((x: any) => x.cert.length > 0)
+            .sort((a: any, b: any) => (new Date(b.date).getTime()) - (new Date(a.date).getTime()));
+          return arr.length ? arr[0].cert : null;
+        };
+        let cert: string | null = null;
+        for (const cc of prefOrder) {
+          const country = countries.find((c: any) => c?.iso_3166_1 === cc);
+          cert = getFirstNonEmpty(country);
+          if (cert) break;
+        }
+        if (!cert) {
+          // fallback to first country with a non-empty certification
+          for (const c of countries) {
+            cert = getFirstNonEmpty(c);
+            if (cert) break;
+          }
+        }
+        setContentRating(cert);
+      } catch (error) {
+        console.error('Failed to fetch content rating:', error);
+        setContentRating(null);
+      }
+    };
+    fetchContentRating();
+    }, [p.show?.id, p.show?.media_type]);
 
 	React.useEffect(() => {
 		let isActive = true;
@@ -348,6 +409,7 @@ const PreviewModal = () => {
                   </Button>
                   {getRuntime() && <span className="text-white text-xs font-medium">{getRuntime()}</span>}
                   <span className="border text-white font-bold text-[8px] px-1 py-0.5 rounded">{getQuality()}</span>
+                  <span className="border text-white font-bold text-[8px] px-1 py-0.5 rounded">{contentRating ?? ''}</span>
                 </div>
 
                 <Button className="h-7 w-7 rounded-full bg-black/50 border border-white/30 text-white hover:bg-white/20 transition-all duration-200 hover:scale-105 p-0" 

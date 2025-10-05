@@ -18,6 +18,11 @@ export default async function MoviePage() {
       visible: true,
     },
     {
+      title: 'Popular',
+      req: { requestType: RequestType.POPULAR, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
       title: 'Netflix Movies',
       req: { requestType: RequestType.NETFLIX, mediaType: MediaType.MOVIE },
       visible: true,
@@ -35,11 +40,6 @@ export default async function MoviePage() {
     {
       title: 'HBO Movies',
       req: { requestType: RequestType.HBO, mediaType: MediaType.MOVIE },
-      visible: true,
-    },
-    {
-      title: 'Popular',
-      req: { requestType: RequestType.POPULAR, mediaType: MediaType.MOVIE },
       visible: true,
     },
     {
