@@ -112,8 +112,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
 		? show.number_of_seasons ? `${show.number_of_seasons} Seasons` : null
 		: show?.runtime ? `${show.runtime} min` : null;
 
-	const getAgeRating = () => show?.adult ? '18+' : (show?.vote_average || 0) >= 7 ? '16+' : (show?.vote_average || 0) >= 5 ? '13+' : 'PG';
-
 	const getQuality = () => (show?.vote_average || 0) >= 8 ? 'HD' : 'SD';
 
 	const getGenres = () => genres.slice(0, 3).map(g => g.name).join(' • ');
@@ -168,21 +166,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
           style={{
             objectFit: 'cover',
           }}
-        //   onClick={() => {
-        //     const name = getNameFromShow(show);
-        //     const path: string =
-        //       show.media_type === MediaType.TV ? 'tv-shows' : 'movies';
-        //     window.history.pushState(
-        //       null,
-        //       '',
-        //       `${path}/${getSlug(show.id, name)}`,
-        //     );
-        //     useModalStore.setState({
-        //       show: show,
-        //       open: true,
-        //       play: true,
-        //     });
-        //   }}
           onError={imageOnErrorHandler}
         />
 		{logoPath && (

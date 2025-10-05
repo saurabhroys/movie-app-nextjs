@@ -97,6 +97,19 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<ImagesResponse>(`/${mediaType}/${mediaId}/images`);
   }
 
+  static async getContentRating(
+    mediaType: 'movie' | 'tv',
+    mediaId: number,
+  ): Promise<AxiosResponse<ImagesResponse>> {
+    return this.axios(baseUrl).get<ImagesResponse>(`/${mediaType}/${mediaId}/content_ratings`);
+  }
+
+  static async getMovieReleaseDates(
+    movieId: number,
+  ): Promise<AxiosResponse<any>> {
+    return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
+  }
+
   static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
     const params: Record<string, string> = {
       language: language,
