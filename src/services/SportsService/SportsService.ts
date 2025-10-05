@@ -1,4 +1,4 @@
-import { getNameFromShow, getSlug } from '@/lib/utils';
+import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
 import type {
   CategorizedShows,
   ISeason,
@@ -186,9 +186,12 @@ class MovieService extends BaseService {
       }`,
     );
 
-    data.results.sort((a, b) => {
-      return b.popularity - a.popularity;
-    });
+    // Filter out results without images and sort by popularity
+    data.results = data.results
+      .filter(hasValidImage)
+      .sort((a, b) => {
+        return b.popularity - a.popularity;
+      });
     return data;
   });
 

@@ -25,6 +25,7 @@ import { useSearchStore } from '@/stores/search';
 // import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
 import { DebouncedInput } from '@/components/debounced-input';
 import MovieService from '@/services/MovieService';
+import SearchService from '@/services/SearchService';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { ServerRecommendationSwitch } from '@/components/server-recommendation-switch';
 
@@ -71,12 +72,14 @@ export function MainNav({ items }: MainNavProps) {
       setTimeout(() => {
         handleDefaultSearchInp();
       }, 20);
-      MovieService.searchMovies(search)
-        .then((response: SearchResult) => {
-          void searchStore.setShows(response.results);
+      SearchService.searchMovies(search)
+        .then(({ results }) => {
+          void searchStore.setShows(results);
         })
         .catch((e) => {
-          console.error(e);
+          if (e.name !== 'AbortError') {
+            console.error(e);
+          }
         })
         .finally(() => searchStore.setLoading(false));
     }

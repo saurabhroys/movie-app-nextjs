@@ -1,5 +1,6 @@
 import { type Genre } from '@/enums/genre';
 import { type TmdbPagingResponse } from '@/enums/request-type';
+import { hasValidImage } from '@/lib/utils';
 import tmdbClient from '@/lib/apiClient';
 import { type MediaType } from '@/types';
 
@@ -41,9 +42,13 @@ export async function searchMovies(query: string, page: number) {
     )}&language=en-US&page=${page}&include_adult=true`,
   );
   
-  // Filter out results without proper media_type and sort by popularity
+  // Filter out results without proper media_type, without images, and sort by popularity
   data.results = data.results
-    .filter((item) => item.media_type && (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person'))
+    .filter((item) => 
+      item.media_type && 
+      (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person') &&
+      hasValidImage(item)
+    )
     .sort((a, b) => {
       return b.popularity - a.popularity;
     });

@@ -1,4 +1,4 @@
-import { getNameFromShow, getSlug } from '@/lib/utils';
+import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
 import type {
   CategorizedShows,
   ISeason,
@@ -237,9 +237,13 @@ class MovieService extends BaseService {
       }&include_adult=true`,
     );
 
-    // Filter out results without proper media_type and sort by popularity
+    // Filter out results without proper media_type, without images, and sort by popularity
     data.results = data.results
-      .filter((item) => item.media_type && (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person'))
+      .filter((item) => 
+        item.media_type && 
+        (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person') &&
+        hasValidImage(item)
+      )
       .sort((a, b) => {
         return b.popularity - a.popularity;
       });

@@ -207,3 +207,17 @@ export function getRandomShow(allShows: CategorizedShows[]): Show | null {
   const randomNumber = Math.floor(Math.random() * allShowsFlat.length);
   return allShowsFlat[randomNumber];
 }
+
+/**
+ * Check if a show has valid images (backdrop or poster)
+ */
+export function hasValidImage(show: Show): boolean {
+  return !!(show.backdrop_path || show.poster_path);
+}
+
+/**
+ * Filter shows to only include those with valid images
+ */
+export function filterShowsWithImages(shows: Show[]): Show[] {
+  return shows.filter(hasValidImage);
+}
