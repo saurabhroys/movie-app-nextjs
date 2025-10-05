@@ -23,6 +23,21 @@ export default async function MoviePage() {
       visible: true,
     },
     {
+      title: 'Disney+ Movies',
+      req: { requestType: RequestType.DISNEY_PLUS, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
+      title: 'Amazon Prime Movies',
+      req: { requestType: RequestType.AMAZON_PRIME, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
+      title: 'HBO Movies',
+      req: { requestType: RequestType.HBO, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
       title: 'Popular',
       req: { requestType: RequestType.POPULAR, mediaType: MediaType.MOVIE },
       visible: true,
@@ -60,6 +75,14 @@ export default async function MoviePage() {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
         genre: Genre.THRILLER,
+      },
+      visible: true,
+    },
+    {
+      title: 'Indian Movies',
+      req: {
+        requestType: RequestType.INDIAN_MOVIES,
+        mediaType: MediaType.MOVIE,
       },
       visible: true,
     },

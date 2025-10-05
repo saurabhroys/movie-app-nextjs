@@ -194,16 +194,12 @@ export async function handleModal(slug: string): Promise<Show | null> {
 }
 
 export function getRandomShow(allShows: CategorizedShows[]): Show | null {
-  if (!allShows?.length) return null;
-  
-  // Flatten all shows from all categories
-  const allShowsFlat = allShows
-    .filter(category => category.shows?.length > 0)
-    .flatMap(category => category.shows);
-  
-  if (!allShowsFlat.length) return null;
-  
-  // Select a random show from all available shows
-  const randomNumber = Math.floor(Math.random() * allShowsFlat.length);
-  return allShowsFlat[randomNumber];
+  const randomNumber = allShows?.length
+    ? Math.floor(Math.random() * (allShows[0].shows?.length || 0))
+    : 0;
+  const randomShow: Show | null =
+    allShows?.length && allShows[0].shows?.length
+      ? allShows[0].shows[randomNumber]
+      : null;
+  return randomShow;
 }

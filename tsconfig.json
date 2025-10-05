@@ -33,6 +33,6 @@
     ".next/types/**/*.ts",
     "src/app/sitemap.xml",
     "src/app/sitemap/[id]"
-  ],
+, "public/certificates.csv"  ],
   "exclude": ["node_modules"]
 }
