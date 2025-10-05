@@ -17,8 +17,8 @@ export function useSearch(options: UseSearchOptions = {}) {
   } = options;
 
   const searchStore = useSearchStore();
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const search = useCallback(
     async (query: string) => {
@@ -53,10 +53,12 @@ export function useSearch(options: UseSearchOptions = {}) {
           searchStore.setCurrentRequestId(requestId);
         }
       } catch (error) {
-        if (error.name !== 'AbortError') {
+        // Ignore abort errors; surface others via onError callback
+        const errorName = (error as { name?: string } | null)?.name;
+        if (errorName !== 'AbortError') {
           console.error('Search error:', error);
           searchStore.setShows([]);
-          onError?.(error as Error);
+          onError?.(error instanceof Error ? error : new Error(String(error)));
         }
       } finally {
         searchStore.setLoading(false);

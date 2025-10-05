@@ -65,14 +65,71 @@ const ShowModal = () => {
   const [isPlaying, setPlaying] = React.useState(true);
   const [genres, setGenres] = React.useState<Genre[]>([]);
   const [isAnime, setIsAnime] = React.useState<boolean>(false);
-  const [isMuted, setIsMuted] = React.useState<boolean>(
-    modalStore.firstLoad || IS_MOBILE,
-  );
-  const [options, setOptions] =
-    React.useState<Record<string, object>>(defaultOptions);
-
+  const [isMuted, setIsMuted] = React.useState<boolean>( modalStore.firstLoad || IS_MOBILE, );
+  const [options, setOptions] = React.useState<Record<string, object>>(defaultOptions);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
+  const [contentRating, setContentRating] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchContentRating = async () => {
+      if (!modalStore.show?.id) return;
+      try {
+        const isTv = modalStore.show.media_type === MediaType.TV;
+        if (isTv) {
+          const { data }: any = await MovieService.getContentRating('tv', modalStore.show.id);
+          const results: any[] = data?.results ?? [];
+          const prefOrder = ['RU','UA', 'LV', 'TW'];
+          let rating: string | null = null;
+          for (const cc of prefOrder) {
+            const match = results.find((r: any) => r?.iso_3166_1 === cc);
+            const candidate = match?.rating ?? match?.certification ?? '';
+            if (candidate && String(candidate).trim().length > 0) {
+              rating = String(candidate).trim();
+              break;
+            }
+          }
+          if (!rating) {
+            const firstNonEmpty = results.find((r: any) => (r?.rating ?? r?.certification ?? '').toString().trim().length > 0);
+            rating = firstNonEmpty ? String(firstNonEmpty.rating ?? firstNonEmpty.certification).trim() : null;
+          }
+          setContentRating(rating);
+          return;
+        }
+    
+        // Movies use release_dates endpoint
+        const { data }: any = await MovieService.getMovieReleaseDates(modalStore.show.id);
+        const countries: any[] = data?.results ?? [];
+        const prefOrder = ['RU','UA', 'LV', 'TW'];
+        const getFirstNonEmpty = (c: any): string | null => {
+          const arr = (c?.release_dates ?? [])
+            .filter((rd: any) => rd && typeof rd.certification === 'string')
+            .map((rd: any) => ({ cert: rd.certification?.trim?.() ?? '', date: rd.release_date }))
+            .filter((x: any) => x.cert.length > 0)
+            .sort((a: any, b: any) => (new Date(b.date).getTime()) - (new Date(a.date).getTime()));
+          return arr.length ? arr[0].cert : null;
+        };
+        let cert: string | null = null;
+        for (const cc of prefOrder) {
+          const country = countries.find((c: any) => c?.iso_3166_1 === cc);
+          cert = getFirstNonEmpty(country);
+          if (cert) break;
+        }
+        if (!cert) {
+          // fallback to first country with a non-empty certification
+          for (const c of countries) {
+            cert = getFirstNonEmpty(c);
+            if (cert) break;
+          }
+        }
+        setContentRating(cert);
+      } catch (error) {
+        console.error('Failed to fetch content rating:', error);
+        setContentRating(null);
+      }
+    };
+    fetchContentRating();
+  }, [modalStore.show?.id, modalStore.show?.media_type]);
 
   // get trailer and genres of show
   React.useEffect(() => {
@@ -275,6 +332,9 @@ const ShowModal = () => {
                 {modalStore.show.original_language.toUpperCase()}
               </span>
             )}
+              <span className="grid h-4 w-7 place-items-center text-xs font-bold text-neutral-400 ring-1 ring-neutral-400">
+               {contentRating ?? 'NA'}
+              </span>
           </div>
           <DialogDescription className="line-clamp-3 text-xs text-slate-50 sm:text-sm">
             {modalStore.show?.overview ?? '-'}
