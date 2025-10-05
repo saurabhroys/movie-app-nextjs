@@ -1,5 +1,5 @@
 import SearchContainer from '@/components/search-container';
-import MovieService from '@/services/MovieService';
+import SearchService from '@/services/SearchService';
 import { redirect } from 'next/navigation';
 
 interface SearchProps {
@@ -16,6 +16,6 @@ export default async function SearchPage(props: SearchProps) {
     redirect('/home');
   }
 
-  const shows = await MovieService.searchMovies(searchParams.q);
-  return <SearchContainer query={searchParams.q} shows={shows.results} />;
+  const { results } = await SearchService.searchMovies(searchParams.q);
+  return <SearchContainer query={searchParams.q} shows={results} />;
 }
