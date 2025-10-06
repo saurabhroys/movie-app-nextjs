@@ -723,7 +723,7 @@ const ShowModal = () => {
                 <div className="px-10 pb-6">
                   <div className="flex gap-4 items-start justify-start">
                     <Icons.library/>
-                    <h3 className="text-xl font-semibold text-white mb-4">{movieCollection.name} Collection</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">{movieCollection.name}</h3>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {movieCollection.parts?.map((movie: any, index: number) => (
