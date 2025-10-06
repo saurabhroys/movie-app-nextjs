@@ -41,7 +41,7 @@ const RecommendedMovies = ({ shows, title = "Recommended for you", loading = fal
       <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
       {modalStore.open && <ShowModal />}
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-        {shows.slice(0, 8).map((show: Show) => (
+        {shows.slice(0, 30).map((show: Show) => (
           <ShowCard key={show.id} show={show} pathname={pathname} />
         ))}
       </div>
