@@ -231,6 +231,21 @@ export const Icons = {
       <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
     </svg>
   ),
+  library: (props: IconProps) => (
+    <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    width="24" 
+    height="24" 
+    data-icon="CollectionMedium" 
+    data-icon-id=":r18:" 
+    aria-hidden="true"
+    fill="none" 
+    role="img"
+    {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M2 3C0.895431 3 0 3.89543 0 5V19C0 20.1046 0.895431 21 2 21H22C23.1046 21 24 20.1046 24 19V5C24 3.89543 23.1046 3 22 3H2ZM2 5H22V19H2V5ZM5 7V17H7V7H5ZM9 17V7H11V17H9ZM13.0715 7.37139L17.0715 17.3714L18.9285 16.6286L14.9285 6.62861L13.0715 7.37139Z" fill="currentColor"></path>
+    </svg>
+  ),
   footprints: (props: IconProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
