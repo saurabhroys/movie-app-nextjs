@@ -110,6 +110,10 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
   }
 
+  static async getCredits(mediaType: string, id: number): Promise<AxiosResponse<any>> {
+    return this.axios(baseUrl).get<any>(`/${mediaType}/${id}/credits`);
+  }
+
   static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
     const params: Record<string, string> = {
       language: language,
@@ -288,6 +292,20 @@ class MovieService extends BaseService {
   static getSimilarTvShows = cache(async (tvId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/tv/${tvId}/similar?language=en-US&page=${page ?? 1}`,
+    );
+    return data;
+  });
+
+  static getMovieCollection = cache(async (collectionId: number) => {
+    const { data } = await this.axios(baseUrl).get<any>(
+      `/collection/${collectionId}?language=en-US`,
+    );
+    return data;
+  });
+
+  static getTvSeasons = cache(async (tvId: number) => {
+    const { data } = await this.axios(baseUrl).get<any>(
+      `/tv/${tvId}?language=en-US`,
     );
     return data;
   });
