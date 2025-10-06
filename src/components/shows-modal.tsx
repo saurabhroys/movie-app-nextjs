@@ -19,12 +19,15 @@ import {
   type Genre,
   type ShowWithGenreAndVideo,
   type VideoResult,
+  type Show,
 } from '@/types';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import * as React from 'react';
 import Youtube from 'react-youtube';
 import CustomImage from './custom-image';
+import { ShowCard } from './show-cards';
+import ShowsSkeleton from './shows-skeleton';
 
 type YouTubePlayer = {
   mute: () => void;
@@ -84,6 +87,13 @@ const ShowModal = () => {
   const [tvSeasons, setTvSeasons] = React.useState<any>(null);
   const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
   const [seasonEpisodes, setSeasonEpisodes] = React.useState<any[]>([]);
+  const [recommendedShows, setRecommendedShows] = React.useState<Show[]>([]);
+  const [loadingRecommended, setLoadingRecommended] = React.useState<boolean>(false);
+  const pathname = usePathname();
+  const [recommendedLogos, setRecommendedLogos] = React.useState<Record<number, string | null>>({});
+  const [recommendedDetails, setRecommendedDetails] = React.useState<Record<number, { runtime: number | null; number_of_seasons: number | null }>>({});
+  const [directors, setDirectors] = React.useState<string[]>([]);
+  const [writers, setWriters] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     const fetchContentRating = async () => {
@@ -220,10 +230,24 @@ const ShowModal = () => {
         setRuntime(details.runtime);
       }
       
-      // Fetch cast information
+      // Fetch cast and crew information
       const { data: credits } = await MovieService.getCredits(type, id);
       if (credits?.cast) {
-        setCast(credits.cast.slice(0, 3)); // Get first 3 cast members
+        setCast(credits.cast.slice(0, 10));
+      }
+      if (credits?.crew) {
+        const directorNames: string[] = credits.crew
+          .filter((c: any) => c?.job === 'Director')
+          .map((c: any) => String(c.name))
+          .filter(Boolean);
+        const writerNames: string[] = credits.crew
+          .filter((c: any) => ['Writer', 'Screenplay', 'Story', 'Teleplay'].includes(c?.job))
+          .map((c: any) => String(c.name))
+          .filter(Boolean);
+        const uniqueDirectors = Array.from(new Set<string>(directorNames));
+        const uniqueWriters = Array.from(new Set<string>(writerNames));
+        setDirectors(uniqueDirectors.slice(0, 3));
+        setWriters(uniqueWriters.slice(0, 3));
       }
 
       // Fetch movie collection if it's a movie
@@ -328,6 +352,106 @@ const ShowModal = () => {
     }
   };
 
+  // Fetch recommendations (fallback to similar) for More like this
+  React.useEffect(() => {
+    const fetchRecommendations = async () => {
+      const id: number | undefined = modalStore.show?.id;
+      if (!id) return;
+      setLoadingRecommended(true);
+      try {
+        const isTv = modalStore.show?.media_type === MediaType.TV;
+        const primary = isTv
+          ? await MovieService.getTvRecommendations(id)
+          : await MovieService.getMovieRecommendations(id);
+        let results: any[] = (primary as any)?.results ?? (primary as any)?.data?.results ?? [];
+        if (!results?.length) {
+          const fallback = isTv
+            ? await MovieService.getSimilarTvShows(id)
+            : await MovieService.getSimilarMovies(id);
+          results = (fallback as any)?.results ?? (fallback as any)?.data?.results ?? [];
+        }
+        const normalized: Show[] = (results || []).map((r: any) => ({
+          media_type: (r?.media_type as MediaType) ?? (modalStore.show?.media_type ?? MediaType.MOVIE),
+          adult: !!r?.adult,
+          backdrop_path: r?.backdrop_path ?? null,
+          budget: null,
+          homepage: null,
+          showId: String(r?.id ?? ''),
+          id: Number(r?.id ?? 0),
+          imdb_id: null,
+          original_language: r?.original_language ?? 'en',
+          original_title: r?.original_title ?? null,
+          overview: r?.overview ?? null,
+          popularity: Number(r?.popularity ?? 0),
+          poster_path: r?.poster_path ?? null,
+          number_of_seasons: r?.number_of_seasons ?? null,
+          number_of_episodes: r?.number_of_episodes ?? null,
+          release_date: r?.release_date ?? null,
+          first_air_date: r?.first_air_date ?? null,
+          last_air_date: r?.last_air_date ?? null,
+          revenue: null,
+          runtime: r?.runtime ?? null,
+          status: r?.status ?? null,
+          tagline: r?.tagline ?? null,
+          title: r?.title ?? null,
+          name: r?.name ?? null,
+          video: !!r?.video,
+          vote_average: Number(r?.vote_average ?? 0),
+          vote_count: Number(r?.vote_count ?? 0),
+          keywords: { id: 0, keywords: [], results: [] },
+          seasons: [],
+        }));
+        setRecommendedShows(normalized);
+
+        // Fetch logos for recommended shows in parallel (best-effort)
+        const logoEntries = await Promise.all(
+          normalized.slice(0, 24).map(async (s) => {
+            try {
+              const type = s.media_type === MediaType.TV ? 'tv' : 'movie';
+              const { data }: any = await MovieService.getImages(type, s.id);
+              const preferred = data?.logos?.find((l: any) => l?.iso_639_1 === 'en') ?? data?.logos?.[0];
+              return [s.id, preferred ? preferred.file_path : null] as const;
+            } catch {
+              return [s.id, null] as const;
+            }
+          })
+        );
+        setRecommendedLogos((prev) => ({
+          ...prev,
+          ...Object.fromEntries(logoEntries),
+        }));
+
+        // Fetch missing details (runtime for movies, seasons for TV) for cards
+        const detailsEntries = await Promise.all(
+          normalized.slice(0, 24).map(async (s) => {
+            try {
+              const type = s.media_type === MediaType.TV ? 'tv' : 'movie';
+              const details: any = await MovieService.findMovieByIdAndType(s.id, type, 'en-US');
+              return [
+                s.id,
+                {
+                  runtime: typeof details?.runtime === 'number' ? details.runtime : null,
+                  number_of_seasons: typeof details?.number_of_seasons === 'number' ? details.number_of_seasons : null,
+                },
+              ] as const;
+            } catch {
+              return [s.id, { runtime: null, number_of_seasons: null }] as const;
+            }
+          })
+        );
+        setRecommendedDetails((prev) => ({
+          ...prev,
+          ...Object.fromEntries(detailsEntries),
+        }));
+      } catch (err) {
+        setRecommendedShows([]);
+      } finally {
+        setLoadingRecommended(false);
+      }
+    };
+    fetchRecommendations();
+  }, [modalStore.show?.id, modalStore.show?.media_type]);
+
   const handleHref = (): string => {
     const type = isAnime
       ? 'anime'
@@ -364,6 +488,12 @@ const ShowModal = () => {
     if (!showId) return;
     modalStore.reset();
     router.push(`/watch/tv/${showId}?season=${seasonNumber}&episode=${episodeNumber}`);
+  };
+
+  const navigateToShow = (show: Show) => {
+    modalStore.reset();
+    const type = show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+    router.push(`/watch/${type}/${show.id}`);
   };
 
   const BodyScrollLock = () => {
@@ -518,6 +648,15 @@ const ShowModal = () => {
                     {runtime && (
                       <p className='text-slate-200 font-bold text-sm'>{Math.floor(runtime / 60)}h {runtime % 60}m</p>
                     )}
+                    {/* Seasons (TV only) */}
+                    {modalStore.show?.media_type === MediaType.TV && (
+                      (() => {
+                        const count = (tvSeasons?.seasons?.length ?? null) ?? (modalStore.show?.number_of_seasons ?? null);
+                        return typeof count === 'number' && count > 0 ? (
+                          <p className='text-slate-200 font-bold text-sm'>{count} {count === 1 ? 'Season' : 'Seasons'}</p>
+                        ) : null;
+                      })()
+                    )}
                   
                   {/* Quality Badge */}
                   <span className="place-items-center text-[10px] font-semibold rounded-[3px] px-1.5 py-0 text-neutral-300 border border-neutral-500">
@@ -664,6 +803,134 @@ const ShowModal = () => {
                   )}
                 </div>
             )}
+
+            {/* More like this */}
+            <div className="px-10 pb-8">
+              <h3 className="text-xl font-semibold text-white mb-4">More like this</h3>
+              {loadingRecommended ? (
+                <ShowsSkeleton classname="pl-0" />
+              ) : recommendedShows.length === 0 ? (
+                <p className="text-neutral-400 text-sm">No recommendations available at the moment.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {recommendedShows.slice(0, 12).map((show) => {
+                    const isTv = show.media_type === MediaType.TV;
+                    const detail = recommendedDetails[show.id];
+                    const seasons = isTv
+                      ? (detail?.number_of_seasons ?? show.number_of_seasons ?? null)
+                      : null;
+                    const runtimeMin = !isTv
+                      ? (detail?.runtime ?? (typeof show.runtime === 'number' ? (show.runtime as number) : null))
+                      : null;
+                    const durationLabel = isTv
+                      ? (seasons != null
+                          ? `${seasons} ${seasons === 1 ? 'Season' : 'Seasons'}`
+                          : undefined)
+                      : (runtimeMin != null
+                          ? `${Math.floor(runtimeMin / 60)}h ${runtimeMin % 60}m`
+                          : undefined);
+                    const year = show.release_date
+                      ? getYear(show.release_date)
+                      : show.first_air_date
+                        ? getYear(show.first_air_date)
+                        : undefined;
+                    return (
+                      <div key={show.id} className="group bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/60 hover:border-neutral-600 transition-colors">
+                        <div className="relative aspect-video cursor-pointer" onClick={() => navigateToShow(show)}>
+                          <img
+                            src={(show.backdrop_path ?? show.poster_path) ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path}` : '/images/grey-thumbnail.jpg'}
+                            alt={show.title ?? show.name ?? 'poster'}
+                            className="h-full w-full object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/grey-thumbnail.jpg'; }}
+                          />
+                          {/* Centered logo overlay */}
+                          {recommendedLogos[show.id] && (
+                            <div className="absolute inset-0 z-10 pointer-events-none flex justify-center items-center overflow-hidden px-2">
+                              <img
+                                src={`https://image.tmdb.org/t/p/w500${recommendedLogos[show.id]}`}
+                                alt={(show.title ?? show.name ?? 'logo') as string}
+                                className="max-h-10 sm:max-h-12 max-w-[85%] h-auto w-auto object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
+                          )}
+                          {/* Hover play icon */}
+                          <div className="absolute z-20 inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-black/70 ring-2 ring-white/60 flex items-center justify-center">
+                              <Icons.play className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                            </div>
+                          </div>
+                          {durationLabel && (
+                            <div className="absolute z-30 top-2 right-2 text-xs font-semibold text-white bg-black/70 rounded-full px-2 py-1">
+                              {durationLabel}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/70 via-black/0 to-black/0"></div>
+                        </div>
+                        <div className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="place-items-center text-[10px] font-bold px-1.5 py-0.5 text-neutral-200 border border-neutral-500">{(show.vote_average ?? 0) >= 8 ? '18+' : '16+'}</span>
+                              <span className="place-items-center text-[10px] font-semibold rounded-[3px] px-1.5 py-0 text-neutral-300 border border-neutral-500">HD</span>
+                              {year && (
+                                <span className="text-[10px] font-semibold text-neutral-300 border border-neutral-500 px-1.5 py-0 rounded-[3px]">{year}</span>
+                              )}
+                            </div>
+
+                          </div>
+                          <p className="mt-3 text-xs text-neutral-300 line-clamp-3">
+                            {show.overview ?? ''}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  
+                  
+                </div>
+              )}
+            </div>
+
+            {/* About Section */}
+            <div className="px-10 pb-8">
+              <h3 className="text-xl font-semibold text-white mb-3">About {modalStore.show?.title ?? modalStore.show?.name}</h3>
+              <div className="space-y-2 text-sm">
+                {directors.length > 0 && (
+                  <div className="text-neutral-300">
+                    <span className="text-neutral-400">Director: </span>
+                    <span className="text-neutral-200">{directors.join(', ')}</span>
+                  </div>
+                )}
+                {cast.length > 0 && (
+                  <div className="text-neutral-300">
+                    <span className="text-neutral-400">Cast: </span>
+                    <span className="text-neutral-200">{cast.map((a: any) => a.name).slice(0, 12).join(', ')}</span>
+                  </div>
+                )}
+                {writers.length > 0 && (
+                  <div className="text-neutral-300">
+                    <span className="text-neutral-400">Writer: </span>
+                    <span className="text-neutral-200">{writers.join(', ')}</span>
+                  </div>
+                )}
+                {genres.length > 0 && (
+                  <div className="text-neutral-300">
+                    <span className="text-neutral-400">Genres: </span>
+                    <span className="text-neutral-200">{genres.map((g) => g.name).join(', ')}</span>
+                  </div>
+                )}
+                <div className="text-neutral-300">
+                  <span className="text-neutral-400">This {modalStore.show?.media_type === MediaType.TV ? 'Show' : 'Movie'} Is: </span>
+                  <span className="text-neutral-200">{(keywords.slice(0, 4).map(k => k.name).join(', ') || '—')}</span>
+                </div>
+                <div className="text-neutral-300 flex items-center gap-2">
+                  <span className="text-neutral-400">Maturity Rating: </span>
+                  <span className="place-items-center text-[10px] font-bold px-1.5 py-0.5 text-neutral-200 border border-neutral-500">{contentRating ?? ((modalStore.show?.vote_average ?? 0) >= 8 ? '18+' : '16+')}</span>
+                  <span className="text-xs text-neutral-400">{(modalStore.show?.vote_average ?? 0) >= 8 ? 'Recommended for ages 18 and up' : ''}</span>
+                </div>
+              </div>
+            </div>
 
             <button className="absolute p-1 bg-black top-4 right-4 z-30 rounded-full opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none cursor-pointer text-slate-50"
               onClick={handleCloseModal}
