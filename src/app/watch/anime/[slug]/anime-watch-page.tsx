@@ -5,6 +5,7 @@ import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import SeasonsEpisodesSelector from '@/components/season';
 import { Show, ISeason } from '@/types';
+import { useSearchParams } from 'next/navigation';
 
 interface AnimeWatchPageProps {
   tvShow: Show;
@@ -15,8 +16,11 @@ interface AnimeWatchPageProps {
 }
 
 const AnimeWatchPage = ({ tvShow, seasons, tvId, mediaId, recommendedShows }: AnimeWatchPageProps) => {
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
-  const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
+  const searchParams = useSearchParams();
+  const initialSeason = Number(searchParams.get('season')) || 1;
+  const initialEpisode = Number(searchParams.get('episode')) || 1;
+  const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason);
+  const [selectedEpisode, setSelectedEpisode] = useState<number>(initialEpisode);
 
   const handleSeasonEpisodeChange = (season: number, episode: number) => {
     setSelectedSeason(season);

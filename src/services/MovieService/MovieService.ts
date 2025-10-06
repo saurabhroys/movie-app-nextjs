@@ -208,7 +208,7 @@ class MovieService extends BaseService {
     page?: number;
   }) {
     const url = this.urlBuilder(req);
-    console.log(`Making request to: ${url}`);
+    // console.log(`Making request to: ${url}`);
     return this.axios(baseUrl).get<TmdbPagingResponse>(url);
   }
 
