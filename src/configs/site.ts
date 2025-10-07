@@ -77,7 +77,7 @@ export const siteConfig = {
   mainNav: [
     {
       title: 'Home',
-      href: '/home',
+      href: '/',
       // icon: Icons.play,
     },
     {
