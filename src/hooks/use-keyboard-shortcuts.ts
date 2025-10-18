@@ -26,7 +26,7 @@ export function useKeyboardShortcuts() {
 
   // Navigation shortcuts
   const navigateToHome = useCallback(() => {
-    router.push('/home');
+    router.push('/');
   }, [router]);
 
   const navigateToMovies = useCallback(() => {

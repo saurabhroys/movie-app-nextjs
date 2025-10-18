@@ -283,7 +283,7 @@ const ShowModal = () => {
   const handleCloseModal = () => {
     modalStore.reset();
     if (!modalStore.show || modalStore.firstLoad) {
-      window.history.pushState(null, '', '/home');
+      window.history.pushState(null, '', '/');
     } else {
       window.history.back();
     }

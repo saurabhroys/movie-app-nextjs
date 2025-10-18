@@ -13,7 +13,7 @@ export const revalidate = 3600;
 export default async function SearchPage(props: SearchProps) {
   const searchParams = await props.searchParams;
   if (!searchParams?.q?.trim()?.length) {
-    redirect('/home');
+    redirect('/');
   }
 
   const { results } = await SearchService.searchMovies(searchParams.q);
