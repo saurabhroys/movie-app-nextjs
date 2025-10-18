@@ -223,7 +223,7 @@ export function MainNav({ items }: MainNavProps) {
           onChange={searchShowsByQuery}
           onChangeStatusOpen={handleChangeStatusOpen}
           className={cn(
-            // path === '/' || path === '/home' ? 'hidden' : 
+            // path === '/' || path === '/' ? 'hidden' : 
             'flex')}
         />
         {/* <Link
