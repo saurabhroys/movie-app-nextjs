@@ -34,7 +34,10 @@ export default async function MoviePage() {
     },
     {
       title: 'Amazon Prime Movies',
-      req: { requestType: RequestType.AMAZON_PRIME, mediaType: MediaType.MOVIE },
+      req: {
+        requestType: RequestType.AMAZON_PRIME,
+        mediaType: MediaType.MOVIE,
+      },
       visible: true,
     },
     {

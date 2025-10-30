@@ -1,10 +1,20 @@
 'use client';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { getIdFromSlug, getNameFromShow, getSlug, getMobileDetect } from '@/lib/utils';
+import {
+  getIdFromSlug,
+  getNameFromShow,
+  getSlug,
+  getMobileDetect,
+} from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { useSearchStore } from '@/stores/search';
-import { MediaType, type Show, type ShowWithGenreAndVideo, type VideoResult } from '@/types';
+import {
+  MediaType,
+  type Show,
+  type ShowWithGenreAndVideo,
+  type VideoResult,
+} from '@/types';
 import { type AxiosResponse } from 'axios';
 import Link from 'next/link';
 import React from 'react';
@@ -18,7 +28,8 @@ interface HeroProps {
   randomShow: Show | null;
 }
 
-const userAgent = typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
+const userAgent =
+  typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
 const { isMobile } = getMobileDetect(userAgent);
 
 const count = 1;
@@ -44,22 +55,24 @@ const Hero = ({ randomShow }: HeroProps) => {
   const modalStore = useModalStore();
   const previewModalStore = usePreviewModalStore();
 
-
-  const defaultOptions = React.useMemo(() => ({
-    playerVars: {
-      rel: 0,
-      mute: 0,
-      loop: 0,
-      autoplay: 1,
-      controls: 0,
-      showinfo: 0,
-      disablekb: 1,
-      enablejsapi: 1,
-      playsinline: 1,
-      cc_load_policy: 0,
-      modestbranding: 3,
-    },
-  }), []);
+  const defaultOptions = React.useMemo(
+    () => ({
+      playerVars: {
+        rel: 0,
+        mute: 0,
+        loop: 0,
+        autoplay: 1,
+        controls: 0,
+        showinfo: 0,
+        disablekb: 1,
+        enablejsapi: 1,
+        playsinline: 1,
+        cc_load_policy: 0,
+        modestbranding: 3,
+      },
+    }),
+    [],
+  );
 
   React.useEffect(() => {
     window.addEventListener('popstate', handlePopstateEvent, false);
@@ -97,9 +110,12 @@ const Hero = ({ randomShow }: HeroProps) => {
       try {
         const isTv = randomShow.media_type === MediaType.TV;
         if (isTv) {
-          const { data }: any = await MovieService.getContentRating('tv', randomShow.id);
+          const { data }: any = await MovieService.getContentRating(
+            'tv',
+            randomShow.id,
+          );
           const results: any[] = data?.results ?? [];
-          const prefOrder = ['RU','UA', 'LV', 'TW'];
+          const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           let rating: string | null = null;
           for (const cc of prefOrder) {
             const match = results.find((r: any) => r?.iso_3166_1 === cc);
@@ -110,23 +126,39 @@ const Hero = ({ randomShow }: HeroProps) => {
             }
           }
           if (!rating) {
-            const firstNonEmpty = results.find((r: any) => (r?.rating ?? r?.certification ?? '').toString().trim().length > 0);
-            rating = firstNonEmpty ? String(firstNonEmpty.rating ?? firstNonEmpty.certification).trim() : null;
+            const firstNonEmpty = results.find(
+              (r: any) =>
+                (r?.rating ?? r?.certification ?? '').toString().trim().length >
+                0,
+            );
+            rating = firstNonEmpty
+              ? String(
+                  firstNonEmpty.rating ?? firstNonEmpty.certification,
+                ).trim()
+              : null;
           }
           setContentRating(rating);
           return;
         }
 
         // Movies use release_dates endpoint
-        const { data }: any = await MovieService.getMovieReleaseDates(randomShow.id);
+        const { data }: any = await MovieService.getMovieReleaseDates(
+          randomShow.id,
+        );
         const countries: any[] = data?.results ?? [];
-        const prefOrder = ['RU','UA', 'LV', 'TW'];
+        const prefOrder = ['RU', 'UA', 'LV', 'TW'];
         const getFirstNonEmpty = (c: any): string | null => {
           const arr = (c?.release_dates ?? [])
             .filter((rd: any) => rd && typeof rd.certification === 'string')
-            .map((rd: any) => ({ cert: rd.certification?.trim?.() ?? '', date: rd.release_date }))
+            .map((rd: any) => ({
+              cert: rd.certification?.trim?.() ?? '',
+              date: rd.release_date,
+            }))
             .filter((x: any) => x.cert.length > 0)
-            .sort((a: any, b: any) => (new Date(b.date).getTime()) - (new Date(a.date).getTime()));
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime(),
+            );
           return arr.length ? arr[0].cert : null;
         };
         let cert: string | null = null;
@@ -182,7 +214,12 @@ const Hero = ({ randomShow }: HeroProps) => {
       return;
     }
     // Resume trailer when modal closes
-    if (videoRef?.internalPlayer && showTrailer && !trailerFinished && isPaused) {
+    if (
+      videoRef?.internalPlayer &&
+      showTrailer &&
+      !trailerFinished &&
+      isPaused
+    ) {
       videoRef.internalPlayer.playVideo();
       setIsPaused(false);
     }
@@ -190,26 +227,38 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const fetchTrailer = async () => {
     if (!randomShow?.id) return;
-    
+
     try {
       const type = randomShow.media_type === MediaType.TV ? 'tv' : 'movie';
-      
+
       // Try to fetch Hindi trailer first
-      let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(randomShow.id, type, 'hi-IN');
-      
+      let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(
+        randomShow.id,
+        type,
+        'hi-IN',
+      );
+
       if (data.videos?.results?.length) {
-        const trailerResult = data.videos.results.find((v: VideoResult) => v.type === 'Trailer');
+        const trailerResult = data.videos.results.find(
+          (v: VideoResult) => v.type === 'Trailer',
+        );
         if (trailerResult?.key) {
           setTrailer(trailerResult.key);
           return;
         }
       }
-      
+
       // Fallback to English trailer if no Hindi trailer found
-      data = await MovieService.findMovieByIdAndType(randomShow.id, type, 'en-US');
-      
+      data = await MovieService.findMovieByIdAndType(
+        randomShow.id,
+        type,
+        'en-US',
+      );
+
       if (data.videos?.results?.length) {
-        const trailerResult = data.videos.results.find((v: VideoResult) => v.type === 'Trailer');
+        const trailerResult = data.videos.results.find(
+          (v: VideoResult) => v.type === 'Trailer',
+        );
         if (trailerResult?.key) {
           setTrailer(trailerResult.key);
         }
@@ -221,11 +270,12 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const fetchLogo = async () => {
     if (!randomShow?.id) return;
-    
+
     try {
       const type = randomShow.media_type === MediaType.TV ? 'tv' : 'movie';
       const { data } = await MovieService.getImages(type, randomShow.id);
-      const preferred = data.logos?.find(l => l.iso_639_1 === 'en') ?? data.logos?.[0];
+      const preferred =
+        data.logos?.find((l) => l.iso_639_1 === 'en') ?? data.logos?.[0];
       setLogoPath(preferred ? preferred.file_path : null);
     } catch (error) {
       console.error('Failed to fetch logo:', error);
@@ -236,7 +286,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   const startCountdown = () => {
     setIsCountdownActive(true);
     setCountdown(count);
-    
+
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -257,7 +307,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       imageRef.current.style.opacity = '0';
     }
     setShowControls(true);
-    
+
     // Start 10-second timer to hide text elements
     textHideTimerRef.current = setTimeout(() => {
       setShowTextElements(false);
@@ -280,7 +330,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   };
 
   const handleChangeMute = () => {
-    setIsMuted(m => !m);
+    setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
     if (!videoRef) return;
     if (isMuted) videoRef.internalPlayer.unMute();
@@ -293,16 +343,16 @@ const Hero = ({ randomShow }: HeroProps) => {
     setShowControls(true);
     setIsPaused(false);
     setShowTextElements(true);
-    
+
     // Clear existing timers and start new ones
     if (textHideTimerRef.current) {
       clearTimeout(textHideTimerRef.current);
     }
-    
+
     textHideTimerRef.current = setTimeout(() => {
       setShowTextElements(false);
     }, 10000);
-    
+
     if (imageRef.current) {
       imageRef.current.style.opacity = '0';
     }
@@ -356,11 +406,11 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   return (
     <>
-      <section aria-label="Hero" className="w-full static">
+      <section aria-label="Hero" className="static w-full">
         {randomShow && (
           <>
             {/* player or poster */}
-            <div className="absolute inset-0 h-[100vw] w-full sm:h-[56.25vw] mask-t-from-60% mask-t-to-110% mask-b-from-50% mask-b-to-95% dark:mask-t-to-100% bg-neutral-50 dark:bg-neutral-950">
+            <div className="absolute inset-0 h-[100vw] w-full bg-neutral-50 mask-t-from-60% mask-t-to-110% mask-b-from-50% mask-b-to-95% sm:h-[56.25vw] dark:bg-neutral-950 dark:mask-t-to-100%">
               {/* Background Image - Base Layer */}
               <CustomImage
                 ref={imageRef}
@@ -372,7 +422,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
                 fill
                 priority
-                />
+              />
               {trailer && showTrailer && !trailerFinished && (
                 <Youtube
                   opts={defaultOptions}
@@ -382,91 +432,93 @@ const Hero = ({ randomShow }: HeroProps) => {
                   onReady={handleTrailerReady}
                   videoId={trailer}
                   id="hero-trailer"
-                  title={randomShow?.title ?? randomShow?.name ?? 'hero-trailer'}
+                  title={
+                    randomShow?.title ?? randomShow?.name ?? 'hero-trailer'
+                  }
                   className="absolute inset-0 z-0 h-full w-full"
                   style={{ width: '100%', height: '100%' }}
                   iframeClassName="absolute inset-0 w-full h-full z-10"
-                  />
-                )}
+                />
+              )}
               {/* shadows */}
-              <div className="from-neutral-900 absolute inset-0 right-[26.09%] bg-linear-to-r to-85% opacity-71"></div>
-              <div className="from-neutral-900/0 via-neutral-900/30 to-neutral-900 absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-30% via-50% to-80%"></div>
+              <div className="absolute inset-0 right-[26.09%] bg-linear-to-r from-neutral-900 to-85% opacity-71"></div>
+              <div className="absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-neutral-900/0 from-30% via-neutral-900/30 via-50% to-neutral-900 to-80%"></div>
               {/* shadows end */}
             </div>
             {/* player end */}
 
             {/* text details, Title and buttons */}
-            <div className="absolute z-10 bottom-[30%] left-0 right-0 pl-[4%] 2xl:pl-[60px] w-full">
+            <div className="absolute right-0 bottom-[30%] left-0 z-10 w-full pl-[4%] 2xl:pl-[60px]">
               <div className="">
                 {/* Show logo when trailer is playing, otherwise show title */}
-              <div className='w-[30.87vw] flex flex-col justify-end gap-4 space-y-2'>
-              {showLogo && logoPath ? (
-                  <div 
-                    className={` ${
-                      showTextElements 
-                        ? 'w-[30.87vw]  h-auto' 
-                        : 'w-[26.46vw] h-auto'
+                <div className="flex w-[30.87vw] flex-col justify-end gap-4 space-y-2">
+                  {showLogo && logoPath ? (
+                    <div
+                      className={` ${
+                        showTextElements
+                          ? 'h-auto w-[30.87vw]'
+                          : 'h-auto w-[26.46vw]'
+                      }`}
+                      style={{
+                        transformOrigin: 'left bottom',
+                        transform: showTextElements
+                          ? 'scale(1) translate3d(0px, 0px, 0px)'
+                          : 'scale(0.8) translate3d(0px, 0px, 0px)',
+                        transitionDuration: '1300ms',
+                        transitionDelay: '0ms',
+                      }}>
+                      <CustomImage
+                        src={`https://image.tmdb.org/t/p/original${logoPath}`}
+                        alt={`${randomShow?.title ?? randomShow?.name} logo`}
+                        className="h-auto w-full object-contain"
+                        width={showTextElements ? 500 : 200}
+                        height={showTextElements ? 250 : 100}
+                      />
+                    </div>
+                  ) : (
+                    <h1 className="text-[3vw] font-bold">
+                      {randomShow?.title ?? randomShow?.name}
+                    </h1>
+                  )}
+
+                  {/* Show text elements when showTextElements is true */}
+                  <div
+                    className={`overflow-hidden ${
+                      showTextElements ? 'max-h-96' : 'max-h-0'
                     }`}
                     style={{
-                      transformOrigin: 'left bottom',
-                      transform: showTextElements 
-                        ? 'scale(1) translate3d(0px, 0px, 0px)' 
-                        : 'scale(0.8) translate3d(0px, 0px, 0px)',
+                      transform: showTextElements
+                        ? 'translate3d(0px, 0px, 0px)'
+                        : 'translate3d(0px, 24px, 0px)',
                       transitionDuration: '1300ms',
-                      transitionDelay: '0ms'
-                    }}
-                  >
-                    <CustomImage
-                      src={`https://image.tmdb.org/t/p/original${logoPath}`}
-                      alt={`${randomShow?.title ?? randomShow?.name} logo`}
-                      className="w-full h-auto object-contain"
-                      width={showTextElements ? 500 : 200}
-                      height={showTextElements ? 250 : 100}
-                    />
-                  </div>
-                ) : (
-                  <h1 className="text-[3vw] font-bold">
-                    {randomShow?.title ?? randomShow?.name}
-                  </h1>
-                )}
-                
-                {/* Show text elements when showTextElements is true */}
-                <div 
-                  className={`overflow-hidden ${
-                    showTextElements 
-                      ? 'max-h-96' 
-                      : 'max-h-0'
-                  }`}
-                  style={{
-                    transform: showTextElements 
-                      ? 'translate3d(0px, 0px, 0px)' 
-                      : 'translate3d(0px, 24px, 0px)',
-                    transitionDuration: '1300ms',
-                    transitionDelay: '0ms',
-                    opacity: showTextElements ? 1 : 0
-                  }}
-                >
-                  <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
-                    <p className="text-green-600">
-                      {Math.round(randomShow?.vote_average * 10) ?? '-'}% Match
+                      transitionDelay: '0ms',
+                      opacity: showTextElements ? 1 : 0,
+                    }}>
+                    <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
+                      <p className="text-green-600">
+                        {Math.round(randomShow?.vote_average * 10) ?? '-'}%
+                        Match
+                      </p>
+                      <p>{randomShow?.release_date ?? '-'}</p>
+                    </div>
+                    <p className="hidden text-[1.2vw] sm:line-clamp-3">
+                      {randomShow?.overview ?? '-'}
                     </p>
-                    <p>{randomShow?.release_date ?? '-'}</p>
                   </div>
-                  <p className="hidden text-[1.2vw] sm:line-clamp-3">
-                    {randomShow?.overview ?? '-'}
-                  </p>
                 </div>
-              </div>
-                
+
                 {/* Combined controls with justify-between */}
-                <div className="mt-[1.5vw] flex items-center justify-between w-full">
+                <div className="mt-[1.5vw] flex w-full items-center justify-between">
                   {/* Left side - Play and More Info buttons */}
                   <div className="flex items-center space-x-2">
                     <Link prefetch={false} href={handleHref()}>
                       <Button
                         aria-label="Play video"
                         className="h-auto shrink-0 gap-2 rounded-xl">
-                        <Icons.play className="fill-current" aria-hidden="true" />
+                        <Icons.play
+                          className="fill-current"
+                          aria-hidden="true"
+                        />
                         Play
                       </Button>
                     </Link>
@@ -495,34 +547,37 @@ const Hero = ({ randomShow }: HeroProps) => {
                       More Info
                     </Button>
                   </div>
-                  
-                  {/* Right side - Mute/Replay button */}
-                 <div className="flex flex-row">
-                  {showControls && (
-                    <div className="flex items-center mr-5 gap-2 cursor-pointer">
-                      {!trailerFinished ? (
-                        <Button
-                          aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
-                          className="h-10 w-10 rounded-full bg-black/70 ring-2 ring-white/50 hover:ring-white text-white/50 hover:text-white hover:bg-white/20 transition-all duration-500 p-0"
-                          onClick={handleChangeMute}
-                        >
-                          {isMuted ? <Icons.volumeMute className="h-5 w-5" /> : <Icons.volume className="h-5 w-5" />}
-                        </Button>
-                      ) : (
-                        <Button
-                          aria-label="Replay trailer"
-                          className="h-10 w-10 rounded-full bg-black/70 ring-2 ring-white/50 hover:ring-white text-white/50 hover:text-white hover:bg-white/20 transition-all duration-500 p-0"
-                          onClick={handleReplayTrailer}
-                        >
-                          <Icons.replay className="h-5 w-5" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                  <div className="h-10 w-25 border-l-3 border-white bg-black/30 backdrop-blur-sm items-center text-lg flex p-3">{contentRating ?? 'NA'}</div>
-                 </div>
-                 {/* buttons end */}
 
+                  {/* Right side - Mute/Replay button */}
+                  <div className="flex flex-row">
+                    {showControls && (
+                      <div className="mr-5 flex cursor-pointer items-center gap-2">
+                        {!trailerFinished ? (
+                          <Button
+                            aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
+                            className="h-10 w-10 rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                            onClick={handleChangeMute}>
+                            {isMuted ? (
+                              <Icons.volumeMute className="h-5 w-5" />
+                            ) : (
+                              <Icons.volume className="h-5 w-5" />
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            aria-label="Replay trailer"
+                            className="h-10 w-10 rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                            onClick={handleReplayTrailer}>
+                            <Icons.replay className="h-5 w-5" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex h-10 w-25 items-center border-l-3 border-white bg-black/30 p-3 text-lg backdrop-blur-sm">
+                      {contentRating ?? 'NA'}
+                    </div>
+                  </div>
+                  {/* buttons end */}
                 </div>
               </div>
             </div>
@@ -531,25 +586,24 @@ const Hero = ({ randomShow }: HeroProps) => {
             {/* Timer */}
             {isCountdownActive && (
               <div
-              className="absolute flex items-center gap-2"
-              style={{
-                top: '75%',
-                right: '3vw',
-                zIndex: '999',
-              }}
-              >
-                <div className="flex items-center justify-center bg-black/50 backdrop-blur-md text-white py-2 px-3 rounded-xl z-50">
-                  <span className="text-lg font-bold z-50 text-white">Trailer - {countdown}</span>
+                className="absolute flex items-center gap-2"
+                style={{
+                  top: '75%',
+                  right: '3vw',
+                  zIndex: '999',
+                }}>
+                <div className="z-50 flex items-center justify-center rounded-xl bg-black/50 px-3 py-2 text-white backdrop-blur-md">
+                  <span className="z-50 text-lg font-bold text-white">
+                    Trailer - {countdown}
+                  </span>
                 </div>
               </div>
             )}
             {/* timer end */}
-            
           </>
         )}
-        
       </section>
-      
+
       <div className="relative inset-0 -z-10 mb-5 pb-[60%] sm:pb-[40%]"></div>
     </>
   );

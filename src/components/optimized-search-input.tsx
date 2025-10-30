@@ -34,21 +34,15 @@ export function OptimizedSearchInput({
 }: OptimizedSearchInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  
-  const { 
-    search, 
-    clearSearch, 
-    loading, 
-    shows,
-    query,
-    cancelCurrentRequest 
-  } = useSearch({ 
-    debounceTimeout, 
-    minQueryLength,
-    onError: (error) => {
-      console.error('Search error:', error);
-    }
-  });
+
+  const { search, clearSearch, loading, shows, query, cancelCurrentRequest } =
+    useSearch({
+      debounceTimeout,
+      minQueryLength,
+      onError: (error) => {
+        console.error('Search error:', error);
+      },
+    });
 
   // Close search input on clicking outside
   useOnClickOutside(inputRef, () => {
@@ -92,7 +86,7 @@ export function OptimizedSearchInput({
       search(value);
       await onChange(value);
     },
-    [search, onChange]
+    [search, onChange],
   );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,10 +109,10 @@ export function OptimizedSearchInput({
         type="text"
         placeholder="Search..."
         className={cn(
-          'h-auto rounded-xl py-1.5 pl-8 pr-8 text-sm transition-all duration-300 bg-neutral-800 text-white',
+          'h-auto rounded-xl bg-neutral-800 py-1.5 pr-8 pl-8 text-sm text-white transition-all duration-300',
           open
-            ? 'w-28 md:w-40 lg:w-60 border bg-neutral-800'
-            : 'w-0 md:w-40 lg:w-60 border-none md:border',
+            ? 'w-28 border bg-neutral-800 md:w-40 lg:w-60'
+            : 'w-0 border-none md:w-40 md:border lg:w-60',
           className,
         )}
         defaultValue={value}
@@ -126,7 +120,7 @@ export function OptimizedSearchInput({
         onChange={handleChange}
         {...props}
       />
-      
+
       {/* Search button */}
       <Button
         id="search-btn"
@@ -145,7 +139,7 @@ export function OptimizedSearchInput({
         }}>
         <Icons.search
           className={cn(
-            'transition-opacity text-white',
+            'text-white transition-opacity',
             open ? 'h-4 w-4' : 'h-5 w-5',
           )}
           aria-hidden="true"
@@ -159,28 +153,24 @@ export function OptimizedSearchInput({
           variant="ghost"
           className="absolute top-1/2 right-1 h-auto -translate-y-1/2 rounded-full p-1"
           onClick={handleClear}>
-          <X
-            className="h-4 w-4 text-white"
-            aria-hidden="true"
-          />
+          <X className="h-4 w-4 text-white" aria-hidden="true" />
         </Button>
       )}
 
       {/* Loading indicator */}
       {loading && (
         <div className="absolute top-1/2 right-1 h-auto -translate-y-1/2">
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
         </div>
       )}
-      
+
       {/* Keyboard shortcut indicator */}
       {!open && (
-        <div className="absolute top-[45%] right-2 -translate-y-1/2 pointer-events-none">
+        <div className="pointer-events-none absolute top-[45%] right-2 -translate-y-1/2">
           <kbd
             className={cn(
-              'hidden md:inline-flex items-center px-1.5 py-0.5 text-xs font-mono rounded border border-neutral-400 text-neutral-400 '
-            )}
-          >
+              'hidden items-center rounded border border-neutral-400 px-1.5 py-0.5 font-mono text-xs text-neutral-400 md:inline-flex',
+            )}>
             ⌘K
           </kbd>
         </div>
@@ -188,7 +178,7 @@ export function OptimizedSearchInput({
 
       {/* Search results count indicator */}
       {open && shows.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 text-xs text-neutral-400 text-center">
+        <div className="absolute top-full right-0 left-0 mt-1 text-center text-xs text-neutral-400">
           {shows.length} result{shows.length !== 1 ? 's' : ''} found
         </div>
       )}

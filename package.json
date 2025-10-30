@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --cache",
+    "lint": "next lint",
+    "lint:cache": "next lint --cache",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "prepare": "husky install"

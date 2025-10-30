@@ -55,7 +55,10 @@ function positionTooltip(el: HTMLElement, anchor: Element) {
   const y = Math.round(rect.top - tooltipRect.height - OFFSET_Y);
 
   // Keep within viewport horizontally
-  const maxX = Math.max(8, Math.min(x, window.innerWidth - tooltipRect.width - 8));
+  const maxX = Math.max(
+    8,
+    Math.min(x, window.innerWidth - tooltipRect.width - 8),
+  );
   const maxY = Math.max(8, y);
 
   el.style.transform = `translate(${maxX}px, ${maxY}px)`;
@@ -156,5 +159,3 @@ const AttributeTooltipManager = () => {
 };
 
 export default AttributeTooltipManager;
-
-

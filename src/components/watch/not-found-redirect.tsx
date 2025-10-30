@@ -23,9 +23,9 @@ export default function NotFound() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex h-screen items-center justify-center">
       <div className="text-center text-neutral-300">
-        <span className="text-4xl mb-4 block">
+        <span className="mb-4 block text-4xl">
           <Icons.logo className="h-6 w-6" aria-hidden="true" />
         </span>
         <span>Not Found possible Not Released Yet</span>
