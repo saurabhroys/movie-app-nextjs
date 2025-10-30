@@ -14,22 +14,28 @@ interface SeasonsEpisodesSelectorProps {
   selectedEpisode?: number;
 }
 
-const SeasonsEpisodesSelector = ({ 
-  tvShow, 
-  seasons, 
-  tvId, 
+const SeasonsEpisodesSelector = ({
+  tvShow,
+  seasons,
+  tvId,
   onSeasonEpisodeChange,
   selectedSeason: propSelectedSeason,
-  selectedEpisode: propSelectedEpisode
+  selectedEpisode: propSelectedEpisode,
 }: SeasonsEpisodesSelectorProps) => {
-  const [internalSelectedSeason, setInternalSelectedSeason] = useState<number>(1);
-  const [internalSelectedEpisode, setInternalSelectedEpisode] = useState<number>(1);
-  
+  const [internalSelectedSeason, setInternalSelectedSeason] =
+    useState<number>(1);
+  const [internalSelectedEpisode, setInternalSelectedEpisode] =
+    useState<number>(1);
+
   const selectedSeason = propSelectedSeason ?? internalSelectedSeason;
   const selectedEpisode = propSelectedEpisode ?? internalSelectedEpisode;
 
-  const currentSeason = seasons.find(season => season.season_number === selectedSeason);
-  const currentEpisode = currentSeason?.episodes?.find(episode => episode.episode_number === selectedEpisode);
+  const currentSeason = seasons.find(
+    (season) => season.season_number === selectedSeason,
+  );
+  const currentEpisode = currentSeason?.episodes?.find(
+    (episode) => episode.episode_number === selectedEpisode,
+  );
 
   const showName = tvShow.name || tvShow.title || tvShow.original_name || '-';
 
@@ -52,45 +58,43 @@ const SeasonsEpisodesSelector = ({
 
   return (
     <>
-      <div className="flex flex-col px-1 h-full overflow-hidden">
+      <div className="flex h-full flex-col overflow-hidden px-1">
         {/* Season Selector */}
         <div className="mb-0.5">
           <div className="flex flex-row justify-evenly gap-2">
             {seasons && (
-              <h4 className="text-xs md:text-sm font-medium text-neutral-300 mb-1 relative">Season 
-                  <span className="text-center place-content-center w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2 rounded-full text-[8px] md:text-[10px] text-black bg-neutral-50 mt-0.5 absolute">
-                    {seasons?.length || 0 }
-                  </span>
+              <h4 className="relative mb-1 text-xs font-medium text-neutral-300 md:text-sm">
+                Season
+                <span className="absolute mt-0.5 ml-1 h-3 w-3 place-content-center rounded-full bg-neutral-50 text-center text-[8px] text-black md:ml-2 md:h-4 md:w-4 md:text-[10px]">
+                  {seasons?.length || 0}
+                </span>
               </h4>
             )}
             {currentSeason && (
-              <h4 className="text-xs md:text-sm font-medium text-neutral-300 mb-2">
-                Episodes 
-                <span className="text-center place-content-center w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2 rounded-full text-[8px] md:text-[10px] text-black bg-neutral-50 mt-0.5 absolute">
+              <h4 className="mb-2 text-xs font-medium text-neutral-300 md:text-sm">
+                Episodes
+                <span className="absolute mt-0.5 ml-1 h-3 w-3 place-content-center rounded-full bg-neutral-50 text-center text-[8px] text-black md:ml-2 md:h-4 md:w-4 md:text-[10px]">
                   {currentSeason.episodes?.length || 0}
                 </span>
               </h4>
             )}
           </div>
-          <div className="flex flex-wrap gap-1 md:gap-1.5 mb-1">
+          <div className="mb-1 flex flex-wrap gap-1 md:gap-1.5">
             {seasons.map((season) => (
               <button
                 key={season.season_number}
                 // variant={selectedSeason === season.season_number ? "default" : "outline"}
                 // size="sm"
                 onClick={() => handleSeasonChange(season.season_number)}
-                className={`text-[10px] md:text-xs px-1.5 md:px-2 font-bold rounded-md cursor-pointer py-0.5 border ${
+                className={`cursor-pointer rounded-md border px-1.5 py-0.5 text-[10px] font-bold md:px-2 md:text-xs ${
                   selectedSeason === season.season_number
-                    ? 'bg-neutral-900 ring-1 ring-blue-500 hover:bg-neutral-800 text-white'
-                    : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-300'
-                }`}
-              >
-               S {season.season_number}
+                    ? 'bg-neutral-900 text-white ring-1 ring-blue-500 hover:bg-neutral-800'
+                    : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
+                }`}>
+                S {season.season_number}
               </button>
             ))}
           </div>
-
-
         </div>
 
         {/* Episode Selector */}
@@ -102,21 +106,20 @@ const SeasonsEpisodesSelector = ({
                 {currentSeason.episodes?.length || 0}
               </span>
             </h4> */}
-            <div className="h-full overflow-y-auto px-1 py-2 space-y-1">
+            <div className="h-full space-y-1 overflow-y-auto px-1 py-2">
               {currentSeason.episodes?.map((episode) => (
                 <button
                   key={episode.episode_number}
                   onClick={() => handleEpisodeChange(episode.episode_number)}
-                  className={`w-full cursor-pointer text-left p-1.5 md:p-2 rounded-lg transition-colors border ${
+                  className={`w-full cursor-pointer rounded-lg border p-1.5 text-left transition-colors md:p-2 ${
                     selectedEpisode === episode.episode_number
-                      ? 'bg-neutral-900 ring-2 ring-blue-500 text-white'
-                      : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-1 md:gap-1.5 relative">
+                      ? 'bg-neutral-900 text-white ring-2 ring-blue-500'
+                      : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
+                  }`}>
+                  <div className="relative flex items-center gap-1 md:gap-1.5">
                     {/* Episode image */}
                     {episode.still_path && (
-                      <div className="relative w-16 h-12 md:w-23 md:h-17 -m-1.5 md:-m-2 mr-0 md:mr-0 shrink-0 overflow-hidden rounded-l-md border border-neutral-800 bg-neutral-900">
+                      <div className="relative -m-1.5 mr-0 h-12 w-16 shrink-0 overflow-hidden rounded-l-md border border-neutral-800 bg-neutral-900 md:-m-2 md:mr-0 md:h-17 md:w-23">
                         <img
                           src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
                           alt={episode.name}
@@ -125,21 +128,21 @@ const SeasonsEpisodesSelector = ({
                         />
                       </div>
                     )}
-                    <span className="text-[8px] md:text-[10px] font-medium absolute -top-1.5 md:-top-2 -left-1.5 md:-left-2 bg-neutral-950 rounded-full text-center place-content-center h-3 w-3 md:h-4 md:w-4 text-white border">
+                    <span className="absolute -top-1.5 -left-1.5 h-3 w-3 place-content-center rounded-full border bg-neutral-950 text-center text-[8px] font-medium text-white md:-top-2 md:-left-2 md:h-4 md:w-4 md:text-[10px]">
                       {episode.episode_number}
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] md:text-xs font-medium truncate">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[10px] font-medium md:text-xs">
                         {episode.name}
                       </p>
                       {episode.overview && (
-                        <p className="text-[9px] md:text-xs text-neutral-400 line-clamp-1 md:line-clamp-2 mt-0.5 md:mt-1">
+                        <p className="mt-0.5 line-clamp-1 text-[9px] text-neutral-400 md:mt-1 md:line-clamp-2 md:text-xs">
                           {episode.overview}
                         </p>
                       )}
                     </div>
                     {episode.runtime && (
-                      <span className="text-[9px] md:text-xs text-neutral-400">
+                      <span className="text-[9px] text-neutral-400 md:text-xs">
                         {episode.runtime}m
                       </span>
                     )}
@@ -149,41 +152,41 @@ const SeasonsEpisodesSelector = ({
             </div>
           </div>
         )}
-
       </div>
       <div className="">
-         {/* Current Selection Info */}
-         {currentEpisode && (
-            <div className="p-1 mt-1 bg-neutral-950 border rounded-lg">
-              <div className="flex items-center gap-1 md:gap-2 mb-1">
-                <Icons.play className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
-                <span className="text-[10px] md:text-sm font-medium text-white truncate">
-                  {showName} — {currentEpisode.name}
-                </span>
-              </div>
-              <h5 className="text-[10px] md:text-sm font-medium text-white mb-1">
-                {/* Episode: {currentEpisode.name} */} Season: {selectedSeason} —  Episode: {selectedEpisode}
-              </h5>
-              {currentEpisode.overview && (
-                <p className="text-[9px] md:text-xs text-neutral-400 line-clamp-2 md:line-clamp-3">
-                  {currentEpisode.overview}
-                </p>
-              )}
-              <div className="flex items-center gap-2 md:gap-4 mt-1 md:mt-2 text-[9px] md:text-xs text-neutral-400">
-                {currentEpisode.air_date && (
-                  <span>
-                    {new Date(currentEpisode.air_date).toLocaleDateString()}
-                  </span>
-                )}
-                {currentEpisode.vote_average > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Icons.star className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                    {currentEpisode.vote_average.toFixed(1)}
-                  </span>
-                )}
-              </div>
+        {/* Current Selection Info */}
+        {currentEpisode && (
+          <div className="mt-1 rounded-lg border bg-neutral-950 p-1">
+            <div className="mb-1 flex items-center gap-1 md:gap-2">
+              <Icons.play className="h-3 w-3 text-blue-500 md:h-4 md:w-4" />
+              <span className="truncate text-[10px] font-medium text-white md:text-sm">
+                {showName} — {currentEpisode.name}
+              </span>
             </div>
-          )}
+            <h5 className="mb-1 text-[10px] font-medium text-white md:text-sm">
+              {/* Episode: {currentEpisode.name} */} Season: {selectedSeason} —
+              Episode: {selectedEpisode}
+            </h5>
+            {currentEpisode.overview && (
+              <p className="line-clamp-2 text-[9px] text-neutral-400 md:line-clamp-3 md:text-xs">
+                {currentEpisode.overview}
+              </p>
+            )}
+            <div className="mt-1 flex items-center gap-2 text-[9px] text-neutral-400 md:mt-2 md:gap-4 md:text-xs">
+              {currentEpisode.air_date && (
+                <span>
+                  {new Date(currentEpisode.air_date).toLocaleDateString()}
+                </span>
+              )}
+              {currentEpisode.vote_average > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icons.star className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                  {currentEpisode.vote_average.toFixed(1)}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

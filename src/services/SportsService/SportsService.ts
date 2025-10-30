@@ -73,16 +73,18 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<ISeason>(`/tv/${id}/season/${season}`);
   }
 
-  static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
-    const params: Record<string, string> = {
-      language: language,
-      append_to_response: 'videos,keywords',
-    };
-    const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
-      baseUrl,
-    ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { params });
-    return Promise.resolve(response.data);
-  });
+  static findMovieByIdAndType = cache(
+    async (id: number, type: string, language: string = 'en-US') => {
+      const params: Record<string, string> = {
+        language: language,
+        append_to_response: 'videos,keywords',
+      };
+      const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
+        baseUrl,
+      ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { params });
+      return Promise.resolve(response.data);
+    },
+  );
 
   static urlBuilder(req: TmdbRequest) {
     switch (req.requestType) {
@@ -187,20 +189,20 @@ class MovieService extends BaseService {
     );
 
     // Filter out results without images and sort by popularity
-    data.results = data.results
-      .filter(hasValidImage)
-      .sort((a, b) => {
-        return b.popularity - a.popularity;
-      });
+    data.results = data.results.filter(hasValidImage).sort((a, b) => {
+      return b.popularity - a.popularity;
+    });
     return data;
   });
 
-  static getMovieRecommendations = cache(async (mediaId: number, page?: number) => {
-    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
-    );
-    return data;
-  });
+  static getMovieRecommendations = cache(
+    async (mediaId: number, page?: number) => {
+      const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+        `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
+      );
+      return data;
+    },
+  );
 
   static getTvRecommendations = cache(async (tvId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(

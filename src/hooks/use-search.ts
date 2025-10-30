@@ -10,11 +10,7 @@ interface UseSearchOptions {
 }
 
 export function useSearch(options: UseSearchOptions = {}) {
-  const {
-    debounceTimeout = 500,
-    minQueryLength = 2,
-    onError,
-  } = options;
+  const { debounceTimeout = 500, minQueryLength = 2, onError } = options;
 
   const searchStore = useSearchStore();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,9 +42,12 @@ export function useSearch(options: UseSearchOptions = {}) {
 
       try {
         const { results, requestId } = await SearchService.searchMovies(query);
-        
+
         // Only update if this is still the current request
-        if (requestId === searchStore.currentRequestId || !searchStore.currentRequestId) {
+        if (
+          requestId === searchStore.currentRequestId ||
+          !searchStore.currentRequestId
+        ) {
           searchStore.setShows(results);
           searchStore.setCurrentRequestId(requestId);
         }
@@ -64,7 +63,7 @@ export function useSearch(options: UseSearchOptions = {}) {
         searchStore.setLoading(false);
       }
     },
-    [searchStore, minQueryLength, onError]
+    [searchStore, minQueryLength, onError],
   );
 
   const debouncedSearch = useCallback(
@@ -79,7 +78,7 @@ export function useSearch(options: UseSearchOptions = {}) {
         void search(query);
       }, debounceTimeout);
     },
-    [search, debounceTimeout]
+    [search, debounceTimeout],
   );
 
   const clearSearch = useCallback(() => {

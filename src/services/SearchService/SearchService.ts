@@ -42,16 +42,16 @@ class SearchService {
   private static getCachedResults(query: string): Show[] | null {
     const cacheKey = query.toLowerCase().trim();
     const cached = this.cache[cacheKey];
-    
+
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.data;
     }
-    
+
     // Remove expired cache entry
     if (cached) {
       delete this.cache[cacheKey];
     }
-    
+
     return null;
   }
 
@@ -92,7 +92,7 @@ class SearchService {
    */
   static async searchMovies(
     query: string,
-    requestId?: string
+    requestId?: string,
   ): Promise<{ results: Show[]; requestId: string }> {
     // Validate query
     if (!this.isValidQuery(query)) {
@@ -113,7 +113,7 @@ class SearchService {
       (req) => {
         // This is a simplified check - in a real implementation, you'd want to track the query
         return !req.abortController.signal.aborted;
-      }
+      },
     );
 
     if (existingRequest) {
@@ -123,7 +123,7 @@ class SearchService {
 
     // Create new abort controller for this request
     const abortController = new AbortController();
-    
+
     // Create the request promise
     const requestPromise = (async () => {
       try {
@@ -132,28 +132,28 @@ class SearchService {
           console.error('SearchService: MovieService not available');
           return { results: [] };
         }
-        
+
         const response = await MovieService.searchMovies(trimmedQuery);
-        
+
         // Remove from pending requests when completed
         this.pendingRequests.delete(newRequestId);
-        
+
         // Validate response structure
         if (!response || typeof response !== 'object') {
           console.warn('SearchService: Invalid response structure:', response);
           return { results: [] };
         }
-        
+
         return response;
       } catch (error) {
         // Remove from pending requests when failed
         this.pendingRequests.delete(newRequestId);
-        
+
         // Don't throw if request was aborted
         if (error instanceof Error && error.name === 'AbortError') {
           throw error;
         }
-        
+
         console.error('Search request failed:', error);
         throw error;
       }
@@ -168,27 +168,30 @@ class SearchService {
 
     try {
       const response = await requestPromise;
-      
+
       // Handle case where response might be undefined or not have results
       if (!response) {
         console.warn('SearchService: Empty response received');
         return { results: [], requestId: newRequestId };
       }
-      
+
       // Ensure response has results property
       if (!response.results || !Array.isArray(response.results)) {
-        console.warn('SearchService: Response missing results array:', response);
+        console.warn(
+          'SearchService: Response missing results array:',
+          response,
+        );
         return { results: [], requestId: newRequestId };
       }
-      
+
       const results = response.results;
-      
+
       // Filter out shows without valid images
       const showsWithImages = filterShowsWithImages(results);
-      
+
       // Cache the filtered results
       this.setCachedResults(trimmedQuery, showsWithImages);
-      
+
       return { results: showsWithImages, requestId: newRequestId };
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
