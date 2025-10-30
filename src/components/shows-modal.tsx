@@ -26,7 +26,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import * as React from 'react';
 import Youtube from 'react-youtube';
 import CustomImage from './custom-image';
-import { ShowCard } from './show-cards';
+import { ShowCard } from './shows-cards';
 import ShowsSkeleton from './shows-skeleton';
 
 type YouTubePlayer = {
@@ -311,7 +311,9 @@ const ShowModal = () => {
   };
 
   const onReady = (event: YouTubeEvent) => {
-    event.target.playVideo();
+    try {
+      event?.target?.playVideo?.();
+    } catch {}
   };
 
   const handleChangeMute = () => {
@@ -554,7 +556,7 @@ const ShowModal = () => {
                 {/* Show logo with transition states */}
                 {logoPath && (
                   <div 
-                    className={`absolute z-30 flex items-center p-6 transition-all duration-[1500ms] ease-in-out ${
+                    className={`absolute z-30 flex items-center p-6 transition-all duration-[1500] ease-in-out ${
                       logoTransition === 'initial' || logoTransition === 'trailer-ended'
                         ? 'inset-0 justify-center'
                         : 'bottom-25 left-0 justify-start'
@@ -563,7 +565,7 @@ const ShowModal = () => {
                     <CustomImage
                       src={`https://image.tmdb.org/t/p/original${logoPath}`}
                       alt={`${modalStore.show?.title ?? modalStore.show?.name} logo`}
-                      className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500ms] ease-in-out ${
+                      className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500] ease-in-out ${
                         logoTransition === 'initial' || logoTransition === 'trailer-ended'
                           ? 'max-w-[60%] h-auto'
                           : 'max-w-[40%] h-auto'
@@ -728,7 +730,7 @@ const ShowModal = () => {
                   <div className="grid grid-cols-2 gap-4">
                     {movieCollection.parts?.map((movie: any, index: number) => (
                       <div key={movie.id} className="group flex gap-3 bg-neutral-800 rounded-lg p-3 cursor-pointer hover:bg-neutral-700/60 transition" onClick={() => navigateToMovie(movie.id)}>
-                        <div className="w-16 h-24 flex-shrink-0 relative">
+                        <div className="w-16 h-24 shrink-0 relative">
                           <CustomImage
                             src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
                             alt={movie.title}
@@ -775,7 +777,7 @@ const ShowModal = () => {
                     <div className="space-y-3">
                       {seasonEpisodes.map((episode: any, index: number) => (
                         <div key={episode.id} className="group flex gap-4 bg-neutral-800 rounded-lg p-4 cursor-pointer hover:bg-neutral-700/60 transition" onClick={() => navigateToEpisode(selectedSeason, episode.episode_number)}>
-                          <div className="w-32 h-20 flex-shrink-0 relative">
+                          <div className="w-32 h-20 shrink-0 relative">
                             <CustomImage
                               src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
                               alt={episode.name}
@@ -865,7 +867,7 @@ const ShowModal = () => {
                               {durationLabel}
                             </div>
                           )}
-                          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/70 via-black/0 to-black/0"></div>
+                          <div className="absolute inset-0 z-10 bg-linear-to-t from-black/70 via-black/0 to-black/0"></div>
                         </div>
                         <div className="p-3">
                           <div className="flex items-center justify-between">
