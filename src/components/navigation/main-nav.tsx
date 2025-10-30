@@ -44,7 +44,7 @@ export function MainNav({ items }: MainNavProps) {
   const searchStore = useSearchStore();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  
+
   // Get showHelp function from keyboard shortcuts hook
   const { showHelp } = useKeyboardShortcuts();
 
@@ -121,13 +121,13 @@ export function MainNav({ items }: MainNavProps) {
     setIsMobileMenuOpen(open);
   };
 
-  const isMovieWatchPage = path.startsWith('/movie')
+  const isMovieWatchPage = path.startsWith('/movie');
 
   return (
     <nav
       className={cn(
         'from-secondary/70 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
-        isScrolled ? 'bg-neutral-950 shadow-md text-white' : 'bg-transparent',
+        isScrolled ? 'bg-neutral-950 text-white shadow-md' : 'bg-transparent',
       )}>
       <div className="flex items-center gap-6 md:gap-10">
         <Link
@@ -152,7 +152,9 @@ export function MainNav({ items }: MainNavProps) {
                       'flex items-center text-sm font-medium transition',
                       path === item.href && 'text-foreground font-bold',
                       item.disabled && 'cursor-not-allowed opacity-80',
-                      isScrolled ? 'text-white' : 'text-neutral-950 dark:text-white',
+                      isScrolled
+                        ? 'text-white'
+                        : 'text-neutral-950 dark:text-white',
                     )}
                     onClick={() => handleChangeStatusOpen(false)}>
                     {item.title}
@@ -187,8 +189,7 @@ export function MainNav({ items }: MainNavProps) {
                 <Link
                   href="/"
                   className="flex items-center justify-center"
-                  onClick={() => handleChangeStatusOpen(false)}>
-                </Link>
+                  onClick={() => handleChangeStatusOpen(false)}></Link>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {items?.map((item, index) => (
@@ -223,8 +224,9 @@ export function MainNav({ items }: MainNavProps) {
           onChange={searchShowsByQuery}
           onChangeStatusOpen={handleChangeStatusOpen}
           className={cn(
-            // path === '/' || path === '/' ? 'hidden' : 
-            'flex')}
+            // path === '/' || path === '/' ? 'hidden' :
+            'flex',
+          )}
         />
         {/* <Link
           rel="noreferrer"
@@ -237,14 +239,17 @@ export function MainNav({ items }: MainNavProps) {
           variant="ghost"
           size="icon"
           onClick={showHelp}
-          className="hidden md:flex hover:bg-transparent"
+          className="hidden hover:bg-transparent md:flex"
           aria-label="Show keyboard shortcuts help"
-          title="Show keyboard shortcuts (?)"
-        >
+          title="Show keyboard shortcuts (?)">
           <Icons.helpCircle className="h-5 w-5" />
         </Button>
         {/* <ThemeToggle /> */}
-        <ServerRecommendationSwitch switchClass='flex item--center gap-2 place-content-center text-sm' text="" tooltipText="enable or disable scroll down suggestion"/>
+        <ServerRecommendationSwitch
+          switchClass="flex item--center gap-2 place-content-center text-sm"
+          text=""
+          tooltipText="enable or disable scroll down suggestion"
+        />
       </div>
     </nav>
   );

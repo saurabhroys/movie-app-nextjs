@@ -32,7 +32,8 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? 'https://localhost:3000',
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_APP_URL ?? 'https://localhost:3000',
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_TMDB_TOKEN: process.env.NEXT_PUBLIC_TMDB_TOKEN ?? '',
     NEXT_PUBLIC_GOOGLE_ANALYTICS_ID:
@@ -45,7 +46,8 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_INSTAGRAM ?? 'https://instagram.com',
     NEXT_PUBLIC_YOUTUBE:
       process.env.NEXT_PUBLIC_YOUTUBE ?? 'https://youtube.com',
-    NEXT_PUBLIC_IMAGE_DOMAIN: process.env.NEXT_PUBLIC_IMAGE_DOMAIN ?? 'image.tmdb.org',
+    NEXT_PUBLIC_IMAGE_DOMAIN:
+      process.env.NEXT_PUBLIC_IMAGE_DOMAIN ?? 'image.tmdb.org',
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

@@ -44,12 +44,12 @@ const SiteFooter = () => {
           @ 2023-{new Date().getFullYear()} {siteConfig.author}.
         </p>
       </div> */}
-      <div className="container flex flex-col items-center justify-center md:h-10 md:flex-row md:py-0 gap-4">
-      {/* copyright text */}
-      <div className="flex h-20 items-center gap-2 px-8">
+      <div className="container flex flex-col items-center justify-center gap-4 md:h-10 md:flex-row md:py-0">
+        {/* copyright text */}
+        <div className="flex h-20 items-center gap-2 px-8">
           <Icons.logo_long className="hidden h-6 w-auto md:block" />
-          <p className="text-center text-xs place-content-center leading-loose sm:text-sm md:text-left">
-            Made with ❤️ and dedication by{" Saurabh "}
+          <p className="place-content-center text-center text-xs leading-loose sm:text-sm md:text-left">
+            Made with ❤️ and dedication by{' Saurabh '}
             {/* <a
               href={siteConfig.links.twitter}
               target="_blank"
@@ -58,13 +58,12 @@ const SiteFooter = () => {
             >
               {siteConfig.author}
             </a> */}
-            . Inspired by{" "}
+            . Inspired by{' '}
             <a
               href={siteConfig.links.github}
               target="_blank"
               rel="noreferrer"
-              className="font-medium underline underline-offset-4"
-            >
+              className="font-medium underline underline-offset-4">
               Netflix
             </a>
             .

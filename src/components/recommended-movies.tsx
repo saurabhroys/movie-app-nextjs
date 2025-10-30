@@ -14,14 +14,18 @@ interface RecommendedMoviesProps {
   loading?: boolean;
 }
 
-const RecommendedMovies = ({ shows, title = "Recommended for you", loading = false }: RecommendedMoviesProps) => {
+const RecommendedMovies = ({
+  shows,
+  title = 'Recommended for you',
+  loading = false,
+}: RecommendedMoviesProps) => {
   const pathname = usePathname();
   const modalStore = useModalStore();
 
   if (loading) {
     return (
       <div className="p-4">
-        <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
+        <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
         <ShowsSkeleton classname="pl-0" />
       </div>
     );
@@ -30,17 +34,19 @@ const RecommendedMovies = ({ shows, title = "Recommended for you", loading = fal
   if (!shows?.length) {
     return (
       <div className="p-4">
-        <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
-        <p className="text-neutral-400 text-sm">No recommendations available at the moment.</p>
+        <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
+        <p className="text-sm text-neutral-400">
+          No recommendations available at the moment.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
+      <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
       {modalStore.open && <ShowModal />}
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="xs:grid-cols-2 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {shows.slice(0, 30).map((show: Show) => (
           <ShowCard key={show.id} show={show} pathname={pathname} />
         ))}

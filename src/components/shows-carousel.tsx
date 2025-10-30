@@ -5,7 +5,7 @@ import * as React from 'react';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { cn  } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { ShowCard } from './shows-cards';
 
@@ -96,15 +96,17 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
     <section aria-label="Carousel of shows" className="relative my-[3vw] p-0">
       {shows.length !== 0 && (
         <div className="space-y-1 sm:space-y-2.5">
-          <h2 className="text-foreground/80 hover:text-foreground m-0 pb-2 px-[4%] text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
+          <h2 className="text-foreground/80 hover:text-foreground m-0 px-[4%] pb-2 text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
             {title ?? '-'}
           </h2>
-          <div className="relative w-full items-center justify-center overflow-disable" data-carousel>
+          <div
+            className="overflow-disable relative w-full items-center justify-center"
+            data-carousel>
             <Button
               aria-label="Scroll to left"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/90 hover:text-foreground absolute top-0 left-0 z-10 mr-2 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 text-foreground md:block 2xl:w-[60px]',
+                'hover:bg-secondary/90 hover:text-foreground text-foreground absolute top-0 left-0 z-10 mr-2 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 md:block 2xl:w-[60px]',
                 isScrollable && canScrollLeft ? 'md:block' : 'md:hidden',
               )}
               onClick={() => scrollToDirection('left')}>
@@ -122,7 +124,7 @@ const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
               aria-label="Scroll to right"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/70 hover:text-foreground absolute top-0 right-0 z-10 m-0 ml-2 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 text-foreground md:block 2xl:w-[60px]',
+                'hover:bg-secondary/70 hover:text-foreground text-foreground absolute top-0 right-0 z-10 m-0 ml-2 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 md:block 2xl:w-[60px]',
                 isScrollable && canScrollRight ? 'md:block' : 'md:hidden',
               )}
               onClick={() => scrollToDirection('right')}>

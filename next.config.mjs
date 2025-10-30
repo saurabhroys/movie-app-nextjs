@@ -11,7 +11,7 @@ const config = {
 
   /**
    * i18n configuration is unsupported in App Router.
-   * 
+   *
    * @see https://github.com/vercel/next.js/issues/41980
    * @see https://nextjs.org/docs/app/building-your-application/routing/internationalization
    */

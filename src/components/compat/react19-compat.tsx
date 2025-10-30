@@ -3,11 +3,9 @@ import { DropdownMenuTrigger as RadixDropdownMenuTrigger } from '@radix-ui/react
 import { Slot as RadixSlot } from '@radix-ui/react-slot';
 
 // Fix for React 19 "ref is now a regular prop" warning with Radix UI's DropdownMenuTrigger
-export const DropdownMenuTrigger: React.FC<React.ComponentPropsWithRef<typeof RadixDropdownMenuTrigger>> = ({
-  children,
-  asChild,
-  ...props
-}) => {
+export const DropdownMenuTrigger: React.FC<
+  React.ComponentPropsWithRef<typeof RadixDropdownMenuTrigger>
+> = ({ children, asChild, ...props }) => {
   // In React 19, ref is now a regular prop, not accessed via element.ref
   // This wrapper component helps avoid the warning
   return (
@@ -23,4 +21,4 @@ export const Slot: React.FC<React.ComponentPropsWithRef<typeof RadixSlot>> = ({
   ...props
 }) => {
   return <RadixSlot {...props}>{children}</RadixSlot>;
-}; 
+};

@@ -7,11 +7,13 @@ import NotFound from '@/components/watch/not-found-redirect';
 
 export const revalidate = 3600;
 
-export default async function Page(props: { params: Promise<{ slug: string }> }) {
+export default async function Page(props: {
+  params: Promise<{ slug: string }>;
+}) {
   const params = await props.params;
   const id = params.slug.split('-').pop();
   const animeId = id ? parseInt(id) : 0;
-  
+
   // Fetch anime (tv) show details, seasons and recommendations
   let tvShow: Show | null = null;
   let recommendedShows: Show[] = [];
@@ -25,7 +27,10 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
 
       if (tvShowResponse.status === 'fulfilled') {
         tvShow = tvShowResponse.value.data;
-        recommendedShows = recommendations.status === 'fulfilled' ? recommendations.value.results || [] : [];
+        recommendedShows =
+          recommendations.status === 'fulfilled'
+            ? recommendations.value.results || []
+            : [];
 
         if (tvShow.number_of_seasons) {
           const seasonPromises = [] as Promise<any>[];
@@ -47,7 +52,7 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
     <div className="min-h-screen w-screen bg-black pt-5">
       <ModalCloser />
       {tvShow && seasons.length > 0 ? (
-        <AnimeWatchPage 
+        <AnimeWatchPage
           tvShow={tvShow}
           seasons={seasons}
           tvId={animeId}
@@ -55,7 +60,7 @@ export default async function Page(props: { params: Promise<{ slug: string }> })
           recommendedShows={recommendedShows}
         />
       ) : (
-        <NotFound/>
+        <NotFound />
       )}
     </div>
   );

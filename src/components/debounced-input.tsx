@@ -73,7 +73,7 @@ export function DebouncedInput({
       search(value);
       await onChange(value);
     },
-    [search, onChange]
+    [search, onChange],
   );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,10 +88,10 @@ export function DebouncedInput({
         type="text"
         placeholder="Search..."
         className={cn(
-          'h-auto rounded-xl py-1.5 pl-8 text-sm transition-all duration-300 bg-neutral-800 text-white',
+          'h-auto rounded-xl bg-neutral-800 py-1.5 pl-8 text-sm text-white transition-all duration-300',
           open
-            ? 'w-28 md:w-40 lg:w-60 border bg-neutral-800'
-            : 'w-0 md:w-40 lg:w-60 border-none md:border',
+            ? 'w-28 border bg-neutral-800 md:w-40 lg:w-60'
+            : 'w-0 border-none md:w-40 md:border lg:w-60',
           className,
         )}
         defaultValue={value}
@@ -116,21 +116,20 @@ export function DebouncedInput({
         }}>
         <Icons.search
           className={cn(
-            'transition-opacity text-white',
+            'text-white transition-opacity',
             open ? 'h-4 w-4' : 'h-5 w-5',
           )}
           aria-hidden="true"
         />
       </Button>
-      
+
       {/* Keyboard shortcut indicator */}
       {!open && (
-        <div className="absolute top-[45%] right-2 -translate-y-1/2 pointer-events-none">
+        <div className="pointer-events-none absolute top-[45%] right-2 -translate-y-1/2">
           <kbd
             className={cn(
-              'hidden md:inline-flex items-center px-1.5 py-0.5 text-xs font-mono rounded border border-neutral-400 text-neutral-400 '
-            )}
-          >
+              'hidden items-center rounded border border-neutral-400 px-1.5 py-0.5 font-mono text-xs text-neutral-400 md:inline-flex',
+            )}>
             ⌘K
           </kbd>
         </div>

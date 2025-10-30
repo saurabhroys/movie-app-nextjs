@@ -41,18 +41,21 @@ export async function searchMovies(query: string, page: number) {
       query,
     )}&language=en-US&page=${page}&include_adult=false`,
   );
-  
+
   // Filter out results without proper media_type, without images, and sort by popularity
   data.results = data.results
-    .filter((item) => 
-      item.media_type && 
-      (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person') &&
-      hasValidImage(item)
+    .filter(
+      (item) =>
+        item.media_type &&
+        ((item.media_type as string) === 'movie' ||
+          (item.media_type as string) === 'tv' ||
+          (item.media_type as string) === 'person') &&
+        hasValidImage(item),
     )
     .sort((a, b) => {
       return b.popularity - a.popularity;
     });
-  
+
   return data;
 }
 

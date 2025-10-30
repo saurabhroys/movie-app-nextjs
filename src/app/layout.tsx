@@ -111,28 +111,28 @@ export default function RootLayout({
         defaultTheme="dark"
         forcedTheme="dark"
         enableSystem={false}
-        themes={["dark"]}
+        themes={['dark']}
         disableTransitionOnChange>
-        <body suppressHydrationWarning
+        <body
+          suppressHydrationWarning
           className={cn(
-            'bg-white dark:bg-[#141414] min-h-screen overflow-x-hidden overflow-y-auto font-sans antialiased',
+            'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]',
             fontSans.variable,
             fontHeading.variable,
           )}>
-
-            <SiteHeader/>
-            <GlobalShortcuts />
-            {/* <TrpcProvider> */}
-            {children}
-            <PreviewModal />
-            <SiteFooter/>
-            <TailwindIndicator />
-            <Analytics />
-            <SpeedInsights />
-            <AttributeTooltipManager />
-            {/* </TrpcProvider> */}
+          <SiteHeader />
+          <GlobalShortcuts />
+          {/* <TrpcProvider> */}
+          {children}
+          <PreviewModal />
+          <SiteFooter />
+          <TailwindIndicator />
+          <Analytics />
+          <SpeedInsights />
+          <AttributeTooltipManager />
+          {/* </TrpcProvider> */}
         </body>
-     </ThemeProvider>
+      </ThemeProvider>
     </html>
   );
 }

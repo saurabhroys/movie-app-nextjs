@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from '@/components/ui/tooltip';
 import { Button } from '../ui/button';
 
 interface PlayerOption {
@@ -32,7 +32,14 @@ interface PlayerSelectorProps {
   episode?: number;
 }
 
-const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season, episode }: PlayerSelectorProps) => {
+const PlayerSelector = ({
+  mediaId,
+  mediaType,
+  playerClass,
+  selectorClass,
+  season,
+  episode,
+}: PlayerSelectorProps) => {
   const [activePlayer, setActivePlayer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +56,7 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
 
   const getPlayerOptions = (): PlayerOption[] => {
     if (!mediaId) return [];
-    
+
     const baseOptions: PlayerOption[] = [
       // {
       //   id: 'vidsrc-cc-v3',
@@ -129,17 +136,19 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
       //   quality: 'HD'
       // }
     ];
-    
+
     if (mediaType === 'movie') {
       baseOptions.push(
         {
           id: 'vidfast',
           name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidfast.pro/${mediaType}/${mediaId}?autoPlay=true`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc',
@@ -149,17 +158,19 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           language: 'Hindi',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v3',
           name: 'VidCloud',
-          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}?autoPlay=true`,
+          ),
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-to',
@@ -169,27 +180,31 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v2',
           name: 'VidPlay',
-          url: buildUrl(`https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}?autoPlay=true`,
+          ),
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'autoembed',
           name: 'AutoEmbed',
-          url: buildUrl(`https://player.autoembed.cc/embed/${mediaType}/${mediaId}?server=2`),
+          url: buildUrl(
+            `https://player.autoembed.cc/embed/${mediaType}/${mediaId}?server=2`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           ad: true,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'videasy',
@@ -198,163 +213,193 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
           description: 'hindi option and anime available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'multiembed',
           name: 'Multi',
-          url: buildUrl(`https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`),
+          url: buildUrl(
+            `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1`,
+          ),
           description: 'hindi option and anime available',
           language: 'Original',
           icon: Icons.play,
-          quality: 'HD'
-        }
-    );
+          quality: 'HD',
+        },
+      );
     }
-    
+
     if (mediaType === 'tv') {
       baseOptions.push(
         {
           id: 'vidfast',
           name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidfast.pro/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc',
           name: 'VidSrc.pk',
-          url: buildUrl(`https://embed.vidsrc.pk/${mediaType}/${mediaId}/${season || 1}-${episode || 1}`),
+          url: buildUrl(
+            `https://embed.vidsrc.pk/${mediaType}/${mediaId}/${season || 1}-${episode || 1}`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v3',
           name: 'VidCloud',
-          url: buildUrl(`https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v3/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`,
+          ),
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-to',
           name: 'VidSrc.to',
-          url: buildUrl(`https://vidsrc.to/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}`),
+          url: buildUrl(
+            `https://vidsrc.to/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}`,
+          ),
           description: 'Alternative streaming source',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v2',
           name: 'VidPlay',
-          url: buildUrl(`https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`,
+          ),
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'videasy',
           name: 'VidEasy',
-          url: buildUrl(`https://player.videasy.net/${mediaType}/${mediaId}/${season || 1}/${episode || 1}`),
+          url: buildUrl(
+            `https://player.videasy.net/${mediaType}/${mediaId}/${season || 1}/${episode || 1}`,
+          ),
           description: 'hindi option and anime available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'multiembed',
           name: 'Multi',
-          url: buildUrl(`https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${season || 1}&e=${episode || 1}`),
+          url: buildUrl(
+            `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${season || 1}&e=${episode || 1}`,
+          ),
           description: 'hindi option and anime available',
           language: 'Original',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'autoembed',
           name: 'AutoEmbed',
-          url: buildUrl(`https://player.autoembed.cc/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?server=2`),
+          url: buildUrl(
+            `https://player.autoembed.cc/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?server=2`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           ad: true,
           icon: Icons.play,
-          quality: 'HD'
-        }
+          quality: 'HD',
+        },
       );
     }
 
     // console.log("animepage =", "mediaType-", mediaType, "mediaId-", mediaId, "episode-", episode )
-    
+
     if (mediaType === 'anime') {
       baseOptions.push(
         {
           id: 'multiembed',
           name: 'Multi',
-          url: buildUrl(`https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${season || 1}&e=${episode || 1}`),
+          url: buildUrl(
+            `https://multiembed.mov/directstream.php?video_id=${mediaId}&tmdb=1&s=${season || 1}&e=${episode || 1}`,
+          ),
           description: 'hindi option and anime available',
           language: 'Original',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc',
           name: 'VidSrc.pk',
-          url: buildUrl(`https://embed.vidsrc.pk/tv/${mediaId}/${season || 1}-${episode || 1}`),
+          url: buildUrl(
+            `https://embed.vidsrc.pk/tv/${mediaId}/${season || 1}-${episode || 1}`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidfast',
           name: 'VidFast',
-          url: buildUrl(`https://vidfast.pro/tv/${mediaId}/${season || 1}/${episode || 1}?nextButton=true&autoNext=true&autoPlay=true`),
+          url: buildUrl(
+            `https://vidfast.pro/tv/${mediaId}/${season || 1}/${episode || 1}?nextButton=true&autoNext=true&autoPlay=true`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v2',
           name: 'VidSrc.cc-v2 (Anime)',
-          url: buildUrl(`https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}/${episode || 1}sub?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v2/embed/${mediaType}/${mediaId}/${episode || 1}sub?autoPlay=true`,
+          ),
           description: 'Native streaming quality',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'videasy',
           name: 'VidEasy (Anime)',
-          url: buildUrl(`https://player.videasy.net/${mediaType}/${mediaId}/${episode || 1}?dub=true|false`),
+          url: buildUrl(
+            `https://player.videasy.net/${mediaType}/${mediaId}/${episode || 1}?dub=true|false`,
+          ),
           description: 'hindi option and anime available',
           language: 'Hindi Option',
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'autoembed',
           name: 'AutoEmbed (Anime)',
-          url: buildUrl(`https://player.autoembed.cc/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?server=2`),
+          url: buildUrl(
+            `https://player.autoembed.cc/embed/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?server=2`,
+          ),
           description: 'Possible Hindi Dubbed Available',
           language: 'Hindi Option',
           ad: true,
           icon: Icons.play,
-          quality: 'HD'
-        }
+          quality: 'HD',
+        },
       );
 
       // TV fallbacks for anime (some providers resolve better via TV endpoints)
@@ -362,53 +407,63 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
         {
           id: 'vidsrc-cc-v3-tv',
           name: 'VidCloud (TV Fallback)',
-          url: buildUrl(`https://vidsrc.cc/v3/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v3/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`,
+          ),
           description: 'Fallback via TV endpoint',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-cc-v2-tv',
           name: 'VidPlay (TV Fallback)',
-          url: buildUrl(`https://vidsrc.cc/v2/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`),
+          url: buildUrl(
+            `https://vidsrc.cc/v2/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoPlay=true`,
+          ),
           description: 'Fallback via TV endpoint',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'autoembed-tv',
           name: 'AutoEmbed (TV Fallback)',
-          url: buildUrl(`https://player.autoembed.cc/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=2`),
+          url: buildUrl(
+            `https://player.autoembed.cc/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=2`,
+          ),
           description: 'Fallback via TV endpoint',
           language: 'Original',
           ad: true,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'videasy-tv',
           name: 'VidEasy (TV Fallback)',
-          url: buildUrl(`https://player.videasy.net/tv/${mediaId}/${season || 1}/${episode || 1}`),
+          url: buildUrl(
+            `https://player.videasy.net/tv/${mediaId}/${season || 1}/${episode || 1}`,
+          ),
           description: 'Fallback via TV endpoint',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
+          quality: 'HD',
         },
         {
           id: 'vidsrc-to-tv',
           name: 'VidSrc.to (TV Fallback)',
-          url: buildUrl(`https://vidsrc.to/embed/tv/${mediaId}/${season || 1}/${episode || 1}`),
+          url: buildUrl(
+            `https://vidsrc.to/embed/tv/${mediaId}/${season || 1}/${episode || 1}`,
+          ),
           description: 'Fallback via TV endpoint',
           language: 'Original',
           ad: false,
           icon: Icons.play,
-          quality: 'HD'
-        }
+          quality: 'HD',
+        },
       );
     }
 
@@ -427,10 +482,14 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
 
   if (!playerOptions.length) {
     return (
-      <div className=" backdrop-blur-sm">
+      <div className="backdrop-blur-sm">
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-white mb-4">Choose Server</h3>
-          <p className="text-neutral-400">No players available for this content.</p>
+          <h3 className="mb-4 text-lg font-semibold text-white">
+            Choose Server
+          </h3>
+          <p className="text-neutral-400">
+            No players available for this content.
+          </p>
         </div>
       </div>
     );
@@ -439,96 +498,105 @@ const PlayerSelector = ({ mediaId, mediaType, playerClass, selectorClass, season
   return (
     <TooltipProvider>
       <div className="backdrop-blur-sm">
-        
         <div className={`relative ${selectorClass}`}>
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
               <div className="text-white">Loading player...</div>
             </div>
           )}
-          <EmbedPlayer 
+          <EmbedPlayer
             key={`${activePlayer}-${playerOptions[activePlayer]?.id}`}
-            url={playerOptions[activePlayer]?.url || ''} 
+            url={playerOptions[activePlayer]?.url || ''}
             mediaId={mediaType === 'anime' ? mediaId : undefined}
             mediaType={mediaType === 'anime' ? MediaType.ANIME : undefined}
             playerClass={playerClass}
           />
         </div>
-        
-        <div className="pt-2 px-4 w-full">
+
+        <div className="w-full px-4 pt-2">
           {playerOptions[activePlayer]?.description && (
-            <p className="text-neutral-400 text-sm mb-4 text-center">
+            <p className="mb-4 text-center text-sm text-neutral-400">
               {playerOptions[activePlayer].description}
             </p>
           )}
         </div>
 
-        <div className="px-4 flex flex-col w-screen justify-center items-center">
-          <h3 className="text-lg font-semibold text-white mb-4 text-center">Choose Server</h3>
-            <div className="flex flex-wrap gap-4 mb-4 justify-center">
-              {playerOptions.map((option, index) => {
-                const IconComponent = option.icon || Icons.play;
-                return (
-                  <Tooltip key={option.id}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={() => handlePlayerChange(index)}
-                        disabled={isLoading}
-                        className={`group relative px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 flex items-center gap-2 min-w-[120px] ${
-                          activePlayer === index
-                            ? 'bg-neutral-900 text-white shadow-lg shadow-blue-500 ring-2 ring-blue-500 hover:bg-neutral-900'
-                            : 'bg-neutral-900/80 text-neutral-300 hover:bg-neutral-800 border'
-                        }`}
-                      >
-                        <IconComponent className="w-4 h-4" />
-                        <span>{option.name}</span>
-                        {option.quality && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            option.quality === '4K' 
-                              ? 'bg-purple-600 text-white' 
+        <div className="flex w-screen flex-col items-center justify-center px-4">
+          <h3 className="mb-4 text-center text-lg font-semibold text-white">
+            Choose Server
+          </h3>
+          <div className="mb-4 flex flex-wrap justify-center gap-4">
+            {playerOptions.map((option, index) => {
+              const IconComponent = option.icon || Icons.play;
+              return (
+                <Tooltip key={option.id}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => handlePlayerChange(index)}
+                      disabled={isLoading}
+                      className={`group relative flex min-w-[120px] items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 disabled:opacity-50 ${
+                        activePlayer === index
+                          ? 'bg-neutral-900 text-white shadow-lg ring-2 shadow-blue-500 ring-blue-500 hover:bg-neutral-900'
+                          : 'border bg-neutral-900/80 text-neutral-300 hover:bg-neutral-800'
+                      }`}>
+                      <IconComponent className="h-4 w-4" />
+                      <span>{option.name}</span>
+                      {option.quality && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${
+                            option.quality === '4K'
+                              ? 'bg-purple-600 text-white'
                               : option.quality === 'HD'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-neutral-950 text-neutral-200'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-neutral-950 text-neutral-200'
                           }`}>
-                            {option.quality}
-                          </span>
-                        )}
+                          {option.quality}
+                        </span>
+                      )}
 
-                          <span className="absolute -top-3 left-3">
-                            {option.language && (
-                              <span className={`text-xs px-2 py-[1px] rounded-md border border-neutral-800 backdrop-blur-md ${
-                                option.language === 'Hindi' 
-                                  ? 'bg-white/90 text-black' 
-                                  : option.language === 'Hindi Option'
+                      <span className="absolute -top-3 left-3">
+                        {option.language && (
+                          <span
+                            className={`rounded-md border border-neutral-800 px-2 py-[1px] text-xs backdrop-blur-md ${
+                              option.language === 'Hindi'
+                                ? 'bg-white/90 text-black'
+                                : option.language === 'Hindi Option'
                                   ? 'bg-neutral-300/80 text-black'
                                   : 'bg-neutral-950/90 text-neutral-200'
-                                 }`}>
-                               {option.language}
-                               </span>
-                             )}
-                        </span>
-                          <span className="absolute -top-3 -right-1">
-                            {option.ad && (
-                              <span className={`text-[9px] px-2 py-[2px] rounded-md bg-red-600 border border-neutral-800 backdrop-blur-md`}>
-                                Ad 10s
-                               </span>
-                             )}
-                        </span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs bg-neutral-900 border-0">
-                      <div className="text-center text-neutral-50">
-                        <p className="font-medium">{option.name}</p>
-                        <p className="text-sm text-neutral-300 mt-1">{option.description}</p>
-                        {option.quality && (
-                          <p className="text-xs text-neutral-400 mt-1">Quality: {option.quality}</p>
+                            }`}>
+                            {option.language}
+                          </span>
                         )}
-                      </div>
-                    </TooltipContent>
-                 </Tooltip>
-                );
-              })}
-            </div>
+                      </span>
+                      <span className="absolute -top-3 -right-1">
+                        {option.ad && (
+                          <span
+                            className={`rounded-md border border-neutral-800 bg-red-600 px-2 py-[2px] text-[9px] backdrop-blur-md`}>
+                            Ad 10s
+                          </span>
+                        )}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs border-0 bg-neutral-900">
+                    <div className="text-center text-neutral-50">
+                      <p className="font-medium">{option.name}</p>
+                      <p className="mt-1 text-sm text-neutral-300">
+                        {option.description}
+                      </p>
+                      {option.quality && (
+                        <p className="mt-1 text-xs text-neutral-400">
+                          Quality: {option.quality}
+                        </p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
         </div>
       </div>
     </TooltipProvider>

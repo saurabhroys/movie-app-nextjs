@@ -6,7 +6,7 @@ import MainNav from '@/components/navigation/main-nav';
 import { usePathname } from 'next/navigation';
 import { useSearchStore } from '@/stores/search';
 
-const SiteHeader = ( ) => {
+const SiteHeader = () => {
   // Initialize keyboard shortcuts
   // useKeyboardShortcuts();
 
@@ -20,11 +20,12 @@ const SiteHeader = ( ) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const hideHeader = isScrolled && path.startsWith('/watch') && !searchStore.isOpen;
+  const hideHeader =
+    isScrolled && path.startsWith('/watch') && !searchStore.isOpen;
 
   return (
     // <header className="sticky top-0 z-50 border-b bg-background">
-    <header className={`sticky top-0 z-50 ${hideHeader ? 'hidden' : ''}` }>
+    <header className={`sticky top-0 z-50 ${hideHeader ? 'hidden' : ''}`}>
       <MainNav items={siteConfig.mainNav} />
       {/* <MobileNav items={siteConfig.mainNav} className="md:hidden" /> */}
     </header>

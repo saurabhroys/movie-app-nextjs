@@ -26,7 +26,8 @@ export const useSearchStore = create<SearchState>()((set) => ({
   loading: false,
   setLoading: (value: boolean) => set(() => ({ loading: value })),
   currentRequestId: null,
-  setCurrentRequestId: (id: string | null) => set(() => ({ currentRequestId: id })),
+  setCurrentRequestId: (id: string | null) =>
+    set(() => ({ currentRequestId: id })),
   reset: () =>
     set(() => {
       clearSearch();

@@ -12,7 +12,7 @@ interface EmbedPlayerProps {
   episode?: number;
 }
 
-function EmbedPlayer(props: EmbedPlayerProps ) {
+function EmbedPlayer(props: EmbedPlayerProps) {
   const router = useRouter();
 
   React.useEffect(() => {
@@ -44,7 +44,8 @@ function EmbedPlayer(props: EmbedPlayerProps ) {
   };
 
   return (
-    <div className={`rounded-xl`}
+    <div
+      className={`rounded-xl`}
       style={{
         width: '100%',
         height: '100%',

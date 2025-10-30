@@ -29,7 +29,10 @@ export default async function Home() {
     },
     {
       title: 'Amazon Prime TV Shows',
-      req: { requestType: RequestType.AMAZON_PRIME_TV, mediaType: MediaType.TV },
+      req: {
+        requestType: RequestType.AMAZON_PRIME_TV,
+        mediaType: MediaType.TV,
+      },
       visible: true,
     },
     {
@@ -39,17 +42,27 @@ export default async function Home() {
     },
     {
       title: 'Popular TV Shows',
-      req: { requestType: RequestType.TOP_RATED, mediaType: MediaType.TV, genre: Genre.TV_MOVIE, },
+      req: {
+        requestType: RequestType.TOP_RATED,
+        mediaType: MediaType.TV,
+        genre: Genre.TV_MOVIE,
+      },
       visible: true,
     },
     {
       title: 'Indian Movies',
-      req: { requestType: RequestType.INDIAN_MOVIES, mediaType: MediaType.MOVIE },
+      req: {
+        requestType: RequestType.INDIAN_MOVIES,
+        mediaType: MediaType.MOVIE,
+      },
       visible: true,
     },
     {
       title: 'Indian TV Shows - Netflix',
-      req: { requestType: RequestType.INDIAN_TV_NETFLIX, mediaType: MediaType.TV },
+      req: {
+        requestType: RequestType.INDIAN_TV_NETFLIX,
+        mediaType: MediaType.TV,
+      },
       visible: true,
     },
     {

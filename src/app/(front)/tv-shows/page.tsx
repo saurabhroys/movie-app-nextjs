@@ -29,7 +29,10 @@ export default async function TvShowPage() {
     },
     {
       title: 'Amazon Prime TV Shows',
-      req: { requestType: RequestType.AMAZON_PRIME_TV, mediaType: MediaType.TV },
+      req: {
+        requestType: RequestType.AMAZON_PRIME_TV,
+        mediaType: MediaType.TV,
+      },
       visible: true,
     },
     {

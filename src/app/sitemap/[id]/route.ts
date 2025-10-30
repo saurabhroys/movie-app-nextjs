@@ -2,7 +2,10 @@ import { env } from '@/env.mjs';
 import { buildMovieUrl } from '@/lib/utils';
 import { getTrendingAll } from '@/services/MovieService/tmdbService';
 
-export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   if (!(await ctx.params).id) return new Response('Not found', { status: 404 });
   const id = parseInt((await ctx.params).id.replace('.xml', ''));
   let urls: string[] = [];

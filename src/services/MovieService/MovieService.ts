@@ -94,14 +94,18 @@ class MovieService extends BaseService {
     mediaType: 'movie' | 'tv' | 'anime',
     mediaId: number,
   ): Promise<AxiosResponse<ImagesResponse>> {
-    return this.axios(baseUrl).get<ImagesResponse>(`/${mediaType}/${mediaId}/images`);
+    return this.axios(baseUrl).get<ImagesResponse>(
+      `/${mediaType}/${mediaId}/images`,
+    );
   }
 
   static async getContentRating(
     mediaType: 'movie' | 'tv',
     mediaId: number,
   ): Promise<AxiosResponse<ImagesResponse>> {
-    return this.axios(baseUrl).get<ImagesResponse>(`/${mediaType}/${mediaId}/content_ratings`);
+    return this.axios(baseUrl).get<ImagesResponse>(
+      `/${mediaType}/${mediaId}/content_ratings`,
+    );
   }
 
   static async getMovieReleaseDates(
@@ -110,20 +114,25 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
   }
 
-  static async getCredits(mediaType: string, id: number): Promise<AxiosResponse<any>> {
+  static async getCredits(
+    mediaType: string,
+    id: number,
+  ): Promise<AxiosResponse<any>> {
     return this.axios(baseUrl).get<any>(`/${mediaType}/${id}/credits`);
   }
 
-  static findMovieByIdAndType = cache(async (id: number, type: string, language: string = 'en-US') => {
-    const params: Record<string, string> = {
-      language: language,
-      append_to_response: 'videos,keywords',
-    };
-    const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
-      baseUrl,
-    ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { params });
-    return Promise.resolve(response.data);
-  });
+  static findMovieByIdAndType = cache(
+    async (id: number, type: string, language: string = 'en-US') => {
+      const params: Record<string, string> = {
+        language: language,
+        append_to_response: 'videos,keywords',
+      };
+      const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
+        baseUrl,
+      ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { params });
+      return Promise.resolve(response.data);
+    },
+  );
 
   static urlBuilder(req: TmdbRequest) {
     switch (req.requestType) {
@@ -137,27 +146,27 @@ class MovieService extends BaseService {
         return `/discover/${req.mediaType}?with_keywords=210024%2C&with_networks=213&language=en-US`;
 
       case RequestType.TRENDING:
-        return `/trending/${ req.mediaType }/day?language=en-US&with_original_language=en&page=${req.page ?? 1}`;
+        return `/trending/${req.mediaType}/day?language=en-US&with_original_language=en&page=${req.page ?? 1}`;
       case RequestType.TOP_RATED:
-        return `/${req.mediaType}/top_rated?page=${ req.page ?? 1 }&with_original_language=en&language=en-US`;
+        return `/${req.mediaType}/top_rated?page=${req.page ?? 1}&with_original_language=en&language=en-US`;
       case RequestType.NETFLIX:
-         return `/discover/${ req.mediaType }?with_networks=213&with_original_language=en&language=en-US&page=${ req.page ?? 1 }`;
+        return `/discover/${req.mediaType}?with_networks=213&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
       case RequestType.DISNEY_PLUS:
-         return `/discover/${ req.mediaType }?with_networks=2739&with_original_language=en&language=en-US&page=${ req.page ?? 1 }`;
+        return `/discover/${req.mediaType}?with_networks=2739&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
       case RequestType.AMAZON_PRIME:
-         return `/discover/${ req.mediaType }?with_networks=1024&with_original_language=en&language=en-US&page=${ req.page ?? 1 }`;
+        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
       case RequestType.HBO:
         return `/discover/${req.mediaType}?with_networks=49&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
       case RequestType.POPULAR:
-        return `/${ req.mediaType }/popular?language=en-US&with_original_language=en&page=${ req.page ?? 1 }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/${req.mediaType}/popular?language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.GENRE:
-        return `/discover/${req.mediaType}?with_genres=${ req.genre }&language=en-US&with_original_language=en&page=${ req.page ?? 1 }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.ANIME_GENRE:
-        return `/discover/${req.mediaType}?with_genres=${ req.genre }&with_keywords=210024%2C&language=en-US&with_original_language=en&page=${ req.page ?? 1 }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&with_keywords=210024%2C&language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.KOREAN:
-        return `/discover/${req.mediaType}?with_genres=${ req.genre }&with_original_language=ko&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&with_original_language=ko&language=en-US&page=${req.page ?? 1}`;
       case RequestType.INDIAN:
-        return `/discover/${req.mediaType}?with_genres=${ req.genre }&with_original_language=hi&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&with_original_language=hi&language=en-US&page=${req.page ?? 1}`;
       case RequestType.TAMIL:
         return `/discover/${req.mediaType}?with_original_language=ta&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc&vote_count.gte=5&with_runtime.gte=60`;
       case RequestType.TELUGU:
@@ -213,11 +222,17 @@ class MovieService extends BaseService {
   }
 
   static async executeRequestWithRetry(
-    req: { requestType: RequestType; mediaType: MediaType; page?: number; genre?: number },
+    req: {
+      requestType: RequestType;
+      mediaType: MediaType;
+      page?: number;
+      genre?: number;
+    },
     maxAttempts: number = 3,
     initialBackoffMs: number = 300,
   ) {
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
     const isRetryable = (error: unknown): boolean => {
       // Network/transient errors we want to retry
       if (!error || typeof error !== 'object') return false;
@@ -230,7 +245,8 @@ class MovieService extends BaseService {
         code === 'ETIMEDOUT' ||
         code === 'ENOTFOUND' ||
         code === 'EAI_AGAIN' ||
-        (typeof status === 'number' && (status === 429 || (status >= 500 && status < 600)))
+        (typeof status === 'number' &&
+          (status === 429 || (status >= 500 && status < 600)))
       );
     };
 
@@ -263,7 +279,10 @@ class MovieService extends BaseService {
         const reqIndex = start + i;
         const res = responses[i];
         if (this.isRejected(res)) {
-          console.error(`Failed to fetch shows ${requests[reqIndex].title}:`, res.reason);
+          console.error(
+            `Failed to fetch shows ${requests[reqIndex].title}:`,
+            res.reason,
+          );
           console.error(`Request details:`, requests[reqIndex].req);
           shows.push({
             title: requests[reqIndex].title,
@@ -272,8 +291,9 @@ class MovieService extends BaseService {
           });
         } else if (this.isFulfilled(res)) {
           if (
-            requestTypesNeedUpdateMediaType.indexOf(requests[reqIndex].req.requestType) >
-            -1
+            requestTypesNeedUpdateMediaType.indexOf(
+              requests[reqIndex].req.requestType,
+            ) > -1
           ) {
             res.value.data.results.forEach(
               (f) => (f.media_type = requests[reqIndex].req.mediaType),
@@ -301,24 +321,29 @@ class MovieService extends BaseService {
 
     // Filter out results without proper media_type, without images, and sort by popularity
     data.results = data.results
-      .filter((item) => 
-        item.media_type && 
-        (item.media_type as string === 'movie' || item.media_type as string === 'tv' || item.media_type as string === 'person') &&
-        hasValidImage(item)
+      .filter(
+        (item) =>
+          item.media_type &&
+          ((item.media_type as string) === 'movie' ||
+            (item.media_type as string) === 'tv' ||
+            (item.media_type as string) === 'person') &&
+          hasValidImage(item),
       )
       .sort((a, b) => {
         return b.popularity - a.popularity;
       });
-    
+
     return data;
   });
 
-  static getMovieRecommendations = cache(async (mediaId: number, page?: number) => {
-    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
-    );
-    return data;
-  });
+  static getMovieRecommendations = cache(
+    async (mediaId: number, page?: number) => {
+      const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
+        `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
+      );
+      return data;
+    },
+  );
 
   static getTvRecommendations = cache(async (tvId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
