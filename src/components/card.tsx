@@ -160,7 +160,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
 											if (i) i.classList.remove('opacity-0'); 
 										}}
 										ref={youtubeRef}
-										onReady={e => e.target.playVideo()}
+										onReady={e => { try { e?.target?.playVideo?.(); } catch {} }}
 										videoId={trailer}
 										id="video-trailer"
 										title={show?.title ?? show?.name ?? 'video-trailer'}
@@ -169,7 +169,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
 										iframeClassName="relative pointer-events-none w-full h-full z-[-10] opacity-0"
 									/>
 								)}
-								<div className="absolute -bottom-1 inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></div>
+								<div className="absolute -bottom-1 inset-0 bg-linear-to-t from-black via-black/20 to-transparent z-10"></div>
 								<div className="absolute bottom-2 z-20 flex w-full items-center justify-between gap-2 px-2">
 									<div className="flex items-center gap-2">
 										<Button 

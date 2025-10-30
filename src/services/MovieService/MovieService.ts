@@ -212,36 +212,81 @@ class MovieService extends BaseService {
     return this.axios(baseUrl).get<TmdbPagingResponse>(url);
   }
 
+  static async executeRequestWithRetry(
+    req: { requestType: RequestType; mediaType: MediaType; page?: number; genre?: number },
+    maxAttempts: number = 3,
+    initialBackoffMs: number = 300,
+  ) {
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const isRetryable = (error: unknown): boolean => {
+      // Network/transient errors we want to retry
+      if (!error || typeof error !== 'object') return false;
+      const anyErr = error as any;
+      const code: string | undefined = anyErr?.code;
+      const status: number | undefined = anyErr?.response?.status;
+      return (
+        code === 'ECONNRESET' ||
+        code === 'ECONNABORTED' ||
+        code === 'ETIMEDOUT' ||
+        code === 'ENOTFOUND' ||
+        code === 'EAI_AGAIN' ||
+        (typeof status === 'number' && (status === 429 || (status >= 500 && status < 600)))
+      );
+    };
+
+    let attempt = 0;
+    let backoff = initialBackoffMs;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        return await this.executeRequest(req);
+      } catch (error) {
+        attempt += 1;
+        if (attempt >= maxAttempts || !isRetryable(error)) {
+          throw error;
+        }
+        await sleep(backoff);
+        backoff = Math.min(backoff * 2, 3000);
+      }
+    }
+  }
+
   static getShows = cache(async (requests: ShowRequest[]) => {
     const shows: CategorizedShows[] = [];
-    const promises = requests.map((m) => this.executeRequest(m.req));
-    const responses = await Promise.allSettled(promises);
-    for (let i = 0; i < requests.length; i++) {
-      const res = responses[i];
-      if (this.isRejected(res)) {
-        console.error(`Failed to fetch shows ${requests[i].title}:`, res.reason);
-        console.error(`Request details:`, requests[i].req);
-        shows.push({
-          title: requests[i].title,
-          shows: [],
-          visible: requests[i].visible,
-        });
-      } else if (this.isFulfilled(res)) {
-        if (
-          requestTypesNeedUpdateMediaType.indexOf(requests[i].req.requestType) >
-          -1
-        ) {
-          res.value.data.results.forEach(
-            (f) => (f.media_type = requests[i].req.mediaType),
-          );
+    // Limit concurrency to reduce risk of socket resets and rate limiting
+    const concurrency = 4;
+    for (let start = 0; start < requests.length; start += concurrency) {
+      const slice = requests.slice(start, start + concurrency);
+      const promises = slice.map((m) => this.executeRequestWithRetry(m.req));
+      const responses = await Promise.allSettled(promises);
+      for (let i = 0; i < slice.length; i++) {
+        const reqIndex = start + i;
+        const res = responses[i];
+        if (this.isRejected(res)) {
+          console.error(`Failed to fetch shows ${requests[reqIndex].title}:`, res.reason);
+          console.error(`Request details:`, requests[reqIndex].req);
+          shows.push({
+            title: requests[reqIndex].title,
+            shows: [],
+            visible: requests[reqIndex].visible,
+          });
+        } else if (this.isFulfilled(res)) {
+          if (
+            requestTypesNeedUpdateMediaType.indexOf(requests[reqIndex].req.requestType) >
+            -1
+          ) {
+            res.value.data.results.forEach(
+              (f) => (f.media_type = requests[reqIndex].req.mediaType),
+            );
+          }
+          shows.push({
+            title: requests[reqIndex].title,
+            shows: res.value.data.results,
+            visible: requests[reqIndex].visible,
+          });
+        } else {
+          throw new Error('unexpected response');
         }
-        shows.push({
-          title: requests[i].title,
-          shows: res.value.data.results,
-          visible: requests[i].visible,
-        });
-      } else {
-        throw new Error('unexpected response');
       }
     }
     return shows;

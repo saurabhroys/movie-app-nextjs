@@ -3,7 +3,7 @@
 import { useModalStore } from '@/stores/modal';
 import type { Show } from '@/types';
 import ShowModal from './shows-modal';
-import { ShowCard } from './show-cards';
+import { ShowCard } from './shows-cards';
 import { usePathname } from 'next/navigation';
 import { useSearchStore } from '@/stores/search';
 import ShowsSkeleton from './shows-skeleton';
