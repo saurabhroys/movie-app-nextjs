@@ -315,14 +315,16 @@ const PreviewModal = () => {
   };
 
   const handleTrailerReady = (e: any) => {
-    e.target.playVideo();
+    try {
+      e?.target?.playVideo?.();
+    } catch {}
   };
 
   // console.log(detailedShow);
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] pointer-events-none"
+      className="fixed inset-0 z-50 pointer-events-none"
       aria-label="Preview overlay"
       onMouseEnter={() => p.setIsActive(true)}
       onMouseLeave={() => {
@@ -381,7 +383,7 @@ const PreviewModal = () => {
                   </div>
                 )}
 
-              <Link href={handleHref()} className="absolute inset-0 z-10 bg-gradient-to-t from-neutral-900 via-neutral-900/20 to-transparent">
+              <Link href={handleHref()} className="absolute inset-0 z-10 bg-linear-to-t from-neutral-900 via-neutral-900/20 to-transparent">
               </Link>
               
               <div className="absolute pointer-events-auto bottom-2 flex w-full items-center justify-between gap-2 px-2">

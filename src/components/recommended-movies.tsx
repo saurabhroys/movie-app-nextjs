@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Show } from '@/types';
-import { ShowCard } from './show-cards';
+import { ShowCard } from './shows-cards';
 import { usePathname } from 'next/navigation';
 import { useModalStore } from '@/stores/modal';
 import ShowModal from './shows-modal';

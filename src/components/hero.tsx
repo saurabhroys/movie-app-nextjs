@@ -274,7 +274,9 @@ const Hero = ({ randomShow }: HeroProps) => {
   };
 
   const handleTrailerReady = (e: any) => {
-    e.target.playVideo();
+    try {
+      e?.target?.playVideo?.();
+    } catch {}
   };
 
   const handleChangeMute = () => {
@@ -366,7 +368,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                   randomShow?.backdrop_path ?? randomShow?.poster_path ?? ''
                 }`}
                 alt={randomShow?.title ?? 'poster'}
-                className="-z-0 h-auto w-full object-cover transition-opacity duration-500"
+                className="z-0 h-auto w-full object-cover transition-opacity duration-500"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
                 fill
                 priority
@@ -388,7 +390,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                 )}
               {/* shadows */}
               <div className="from-neutral-900 absolute inset-0 right-[26.09%] bg-linear-to-r to-85% opacity-71"></div>
-              <div className="from-neutral-900/0 via-neutral-900/30 to-neutral-900 absolute right-0 bottom-[-1px] left-0 h-[14.7vw] bg-linear-to-b from-30% via-50% to-80%"></div>
+              <div className="from-neutral-900/0 via-neutral-900/30 to-neutral-900 absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-30% via-50% to-80%"></div>
               {/* shadows end */}
             </div>
             {/* player end */}

@@ -7,7 +7,7 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { cn  } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
-import { ShowCard } from './show-cards';
+import { ShowCard } from './shows-cards';
 
 interface ShowsCarouselProps {
   title: string;
