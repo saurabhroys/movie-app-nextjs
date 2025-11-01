@@ -448,7 +448,7 @@ const Hero = ({ randomShow }: HeroProps) => {
              </div>
 
             {/* text details, Title and buttons */}
-            <div className="absolute right-0 bottom-[35%] md:bottom-[30%] left-0 z-50 w-full pl-[4%] pb-4 sm:pb-0 2xl:pl-[60px]">
+            <div className="absolute right-0 bottom-[35%] md:bottom-[30%] left-0 z-10 w-full pl-[4%] pb-4 sm:pb-0 2xl:pl-[60px]">
               <div className="">
                 {/* Show logo when trailer is playing, otherwise show title */}
                 <div className="flex w-[30.87vw] flex-col justify-end gap-4 space-y-2">
