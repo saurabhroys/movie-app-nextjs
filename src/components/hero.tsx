@@ -410,9 +410,10 @@ const Hero = ({ randomShow }: HeroProps) => {
         {randomShow && (
           <>
             {/* player or poster */}
-            <div className="absolute inset-0 h-[100vw] w-full bg-neutral-50 mask-t-from-60% mask-t-to-110% mask-b-from-50% mask-b-to-95% sm:h-[56.25vw] dark:bg-neutral-950 dark:mask-t-to-100%">
+            <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full">
               {/* Background Image - Base Layer */}
-              <CustomImage
+             <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full mask-t-from-60% mask-t-to-100% mask-b-from-50% mask-b-to-95% bg-neutral-950">
+             <CustomImage
                 ref={imageRef}
                 src={`https://image.tmdb.org/t/p/original${
                   randomShow?.backdrop_path ?? randomShow?.poster_path ?? ''
@@ -444,11 +445,10 @@ const Hero = ({ randomShow }: HeroProps) => {
               <div className="absolute inset-0 right-[26.09%] bg-linear-to-r from-neutral-900 to-85% opacity-71"></div>
               <div className="absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-neutral-900/0 from-30% via-neutral-900/30 via-50% to-neutral-900 to-80%"></div>
               {/* shadows end */}
-            </div>
-            {/* player end */}
+             </div>
 
             {/* text details, Title and buttons */}
-            <div className="absolute right-0 bottom-[30%] left-0 z-10 w-full pl-[4%] 2xl:pl-[60px]">
+            <div className="absolute right-0 bottom-[35%] md:bottom-[30%] left-0 z-50 w-full pl-[4%] pb-4 sm:pb-0 2xl:pl-[60px]">
               <div className="">
                 {/* Show logo when trailer is playing, otherwise show title */}
                 <div className="flex w-[30.87vw] flex-col justify-end gap-4 space-y-2">
@@ -476,7 +476,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                       />
                     </div>
                   ) : (
-                    <h1 className="text-[3vw] font-bold">
+                    <h1 className="text-xl font-bold sm:text-2xl md:text-3xl lg:text-4xl xl:text-[3vw]">
                       {randomShow?.title ?? randomShow?.name}
                     </h1>
                   )}
@@ -510,13 +510,13 @@ const Hero = ({ randomShow }: HeroProps) => {
                 {/* Combined controls with justify-between */}
                 <div className="mt-[1.5vw] flex w-full items-center justify-between">
                   {/* Left side - Play and More Info buttons */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2 sm:space-x-2">
                     <Link prefetch={false} href={handleHref()}>
                       <Button
                         aria-label="Play video"
-                        className="h-auto shrink-0 gap-2 rounded-xl">
+                        className="h-7 shrink-0 gap-1.5 rounded-lg px-2 text-xs sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm">
                         <Icons.play
-                          className="fill-current"
+                          className="h-3 w-3 fill-current md:h-7 md:w-7"
                           aria-hidden="true"
                         />
                         Play
@@ -525,7 +525,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                     <Button
                       aria-label="Open show's details modal"
                       variant="outline"
-                      className="h-auto shrink-0 gap-2 rounded-xl bg-neutral-900/60 backdrop-blur-md"
+                      className="h-7 shrink-0 gap-1.5 rounded-lg bg-neutral-900/60 px-2 text-xs backdrop-blur-md sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
                       onClick={() => {
                         const name = getNameFromShow(randomShow);
                         const path: string =
@@ -543,37 +543,37 @@ const Hero = ({ randomShow }: HeroProps) => {
                           play: true,
                         });
                       }}>
-                      <Icons.info aria-hidden="true" />
+                      <Icons.info className="h-3 w-3 md:h-7 md:w-7" aria-hidden="true" />
                       More Info
                     </Button>
                   </div>
 
                   {/* Right side - Mute/Replay button */}
-                  <div className="flex flex-row">
+                  <div className="flex flex-row items-center gap-2">
                     {showControls && (
-                      <div className="mr-5 flex cursor-pointer items-center gap-2">
+                      <div className="flex cursor-pointer items-center sm:mr-5 sm:gap-2">
                         {!trailerFinished ? (
                           <Button
                             aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
-                            className="h-10 w-10 rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                            className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
                             onClick={handleChangeMute}>
                             {isMuted ? (
-                              <Icons.volumeMute className="h-5 w-5" />
+                              <Icons.volumeMute className="h-3.5 w-3.5 md:h-7 md:w-7" />
                             ) : (
-                              <Icons.volume className="h-5 w-5" />
+                              <Icons.volume className="h-3.5 w-3.5 md:h-7 md:w-7" />
                             )}
                           </Button>
                         ) : (
                           <Button
                             aria-label="Replay trailer"
-                            className="h-10 w-10 rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                            className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
                             onClick={handleReplayTrailer}>
-                            <Icons.replay className="h-5 w-5" />
+                            <Icons.replay className="h-3.5 w-3.5 md:h-7 md:w-7" />
                           </Button>
                         )}
                       </div>
                     )}
-                    <div className="flex h-10 w-25 items-center border-l-3 border-white bg-black/30 p-3 text-lg backdrop-blur-sm">
+                    <div className="flex h-7 w-16 md:h-10 md:w-25 items-center justify-start border-l-2 border-white bg-black/30 px-2 text-xs backdrop-blur-sm sm:h-10 sm:w-25 sm:border-l-3 sm:p-3 sm:text-lg">
                       {contentRating ?? 'NA'}
                     </div>
                   </div>
@@ -588,18 +588,24 @@ const Hero = ({ randomShow }: HeroProps) => {
               <div
                 className="absolute flex items-center gap-2"
                 style={{
-                  top: '75%',
+                  top: '50%',
                   right: '3vw',
                   zIndex: '999',
                 }}>
-                <div className="z-50 flex items-center justify-center rounded-xl bg-black/50 px-3 py-2 text-white backdrop-blur-md">
-                  <span className="z-50 text-lg font-bold text-white">
+                <div className="z-50 flex items-center justify-center rounded-lg bg-black/50 px-2 py-1.5 text-white backdrop-blur-md sm:rounded-xl sm:px-3 sm:py-2">
+                  <span className="z-50 text-sm font-bold text-white sm:text-lg">
                     Trailer - {countdown}
                   </span>
                 </div>
               </div>
             )}
             {/* timer end */}
+
+
+            </div>
+            {/* player end */}
+
+
           </>
         )}
       </section>
