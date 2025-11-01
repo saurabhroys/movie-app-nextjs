@@ -14,6 +14,6 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return handleMetadata(params.slug, 'movies', 'movie');
 }
 
-export default async function Home() {
-  return MoviePage();
+export default async function Page() {
+  return <MoviePage />;
 }

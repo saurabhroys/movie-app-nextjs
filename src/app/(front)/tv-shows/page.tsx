@@ -6,8 +6,14 @@ import { RequestType, type ShowRequest } from '@/enums/request-type';
 import { getRandomShow } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
+import { type Metadata } from 'next';
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: 'TV Shows',
+  description: `Browse and watch the latest TV shows on ${siteConfig.name}. Discover trending TV series, popular shows, and shows by genre and streaming platform.`,
+};
 
 export default async function TvShowPage() {
   const h1 = `${siteConfig.name} TV Shows`;
