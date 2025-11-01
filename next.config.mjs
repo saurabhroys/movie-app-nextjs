@@ -6,7 +6,7 @@ const { env } = await import('./src/env.mjs');
 
 /** @type {import("next").NextConfig} */
 const config = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   // devIndicators: false,
 
   /**
@@ -33,9 +33,6 @@ const config = {
   },
   typescript: {
     ignoreBuildErrors: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   serverExternalPackages: ['@trpc/server'],
 };
