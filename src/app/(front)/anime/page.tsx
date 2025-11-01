@@ -6,8 +6,14 @@ import { RequestType, type ShowRequest } from '@/enums/request-type';
 import { getRandomShow } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { type CategorizedShows, MediaType, type Show } from '@/types';
+import { type Metadata } from 'next';
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: 'Anime',
+  description: `Watch the latest anime TV shows and movies on ${siteConfig.name}. Discover trending anime, top-rated series, and anime by streaming platform.`,
+};
 
 export default async function AnimePage() {
   const h1 = `${siteConfig.name} Anime`;

@@ -14,6 +14,6 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return handleMetadata(params.slug, 'tv-shows', 'tv');
 }
 
-export default async function Home() {
-  return TvShowPage();
+export default async function Page() {
+  return <TvShowPage />;
 }
