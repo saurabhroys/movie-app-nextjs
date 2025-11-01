@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "next-devtools": {
+      "command": "/usr/local/bin/npx",
+      "args": ["-y", "next-devtools-mcp@latest"],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    }
+  }
+}
