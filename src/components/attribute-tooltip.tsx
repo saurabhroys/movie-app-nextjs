@@ -5,9 +5,17 @@ import * as React from 'react';
 const TOOLTIP_ID = '__attr_tooltip__';
 const OFFSET_Y = 8; // px above the element
 
-function ensureTooltipEl(): HTMLDivElement {
+function ensureTooltipEl(): HTMLDivElement | null {
+  if (typeof document === 'undefined') return null;
+  
   let el = document.getElementById(TOOLTIP_ID) as HTMLDivElement | null;
   if (!el) {
+    const docEl = document.documentElement;
+    const bodyEl = document.body;
+    
+    // Ensure we have a valid parent to append to
+    if (!docEl && !bodyEl) return null;
+    
     el = document.createElement('div');
     el.id = TOOLTIP_ID;
     el.style.position = 'fixed';
@@ -27,7 +35,10 @@ function ensureTooltipEl(): HTMLDivElement {
     el.style.boxShadow = '0 6px 24px rgba(0,0,0,0.35)';
     el.setAttribute('role', 'tooltip');
     // Append to the top-most root to avoid body-level clipping/stacking quirks
-    (document.documentElement || document.body).appendChild(el);
+    const parent = docEl || bodyEl;
+    if (parent) {
+      parent.appendChild(el);
+    }
   }
   return el;
 }
@@ -66,9 +77,20 @@ function positionTooltip(el: HTMLElement, anchor: Element) {
 
 const AttributeTooltipManager = () => {
   React.useEffect(() => {
+    // Ensure we're in the browser and document is available
+    if (typeof document === 'undefined' || !document.documentElement) {
+      return;
+    }
+    
     // Mark root as active to disable CSS tooltips
     document.documentElement.classList.add('attr-tooltip-active');
     const tooltipEl = ensureTooltipEl();
+    
+    // If tooltip element creation failed, exit early
+    if (!tooltipEl) {
+      return;
+    }
+    
     let currentAnchor: Element | null = null;
     let raf: number | null = null;
 
@@ -117,6 +139,10 @@ const AttributeTooltipManager = () => {
       if (!text) return;
       currentAnchor = target;
       const anchorEl = target;
+      
+      // Double-check element is still valid before modifying attributes
+      if (!anchorEl || !anchorEl.isConnected || !(anchorEl instanceof HTMLElement)) return;
+      
       // Suppress native title tooltips while our tooltip is visible
       const title = anchorEl.getAttribute('title');
       if (title) {
@@ -164,7 +190,9 @@ const AttributeTooltipManager = () => {
       document.removeEventListener('focusout', onPointerLeave, true);
       window.removeEventListener('scroll', onScrollOrResize, true);
       window.removeEventListener('resize', onScrollOrResize, true);
-      document.documentElement.classList.remove('attr-tooltip-active');
+      if (document.documentElement) {
+        document.documentElement.classList.remove('attr-tooltip-active');
+      }
     };
   }, []);
 
