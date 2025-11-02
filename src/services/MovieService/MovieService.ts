@@ -381,30 +381,161 @@ class MovieService extends BaseService {
   /**
    * Cached: Searches for movies and TV shows.
    * Deduplicates requests within the same render cycle.
+   * Now supports intelligent language/category filtering based on query analysis.
    */
-  static searchMovies = cache(async (query: string, page?: number) => {
-    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
-        page ?? 1
-      }&include_adult=true`,
-    );
+  static searchMovies = cache(
+    async (
+      query: string,
+      page?: number,
+      options?: {
+        languages?: string[];
+        mediaType?: 'movie' | 'tv';
+        year?: number;
+        isLatest?: boolean;
+      },
+    ) => {
+      // If specific languages are requested, use discover endpoint for better filtering
+      if (options?.languages && options.languages.length > 0) {
+        return this.searchByLanguage(query, {
+          languages: options.languages,
+          mediaType: options.mediaType,
+          year: options.year,
+          isLatest: options.isLatest,
+        }, page);
+      }
 
-    // Filter out results without proper media_type, without images, and sort by popularity
-    data.results = data.results
-      .filter(
+      // Build search URL
+      let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
+        page ?? 1
+      }&include_adult=false`;
+
+      // Add year filter if specified (TMDB search doesn't directly support this, but we'll filter results)
+      const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(searchUrl);
+
+      // Filter out results without proper media_type, without images
+      let filteredResults = data.results.filter(
         (item) =>
           item.media_type &&
           ((item.media_type as string) === 'movie' ||
             (item.media_type as string) === 'tv' ||
             (item.media_type as string) === 'person') &&
           hasValidImage(item),
-      )
-      .sort((a, b) => {
-        return b.popularity - a.popularity;
-      });
+      );
 
-    return data;
-  });
+      // Filter by language if specified
+      if (options?.languages && options.languages.length > 0) {
+        filteredResults = filteredResults.filter((item) =>
+          options.languages!.includes(item.original_language?.toLowerCase() || ''),
+        );
+      }
+
+      // Filter by media type if specified
+      if (options?.mediaType) {
+        filteredResults = filteredResults.filter(
+          (item) => item.media_type?.toLowerCase() === options.mediaType,
+        );
+      }
+
+      // Filter by year if specified
+      if (options?.year !== undefined) {
+        const targetYear = options.year;
+        filteredResults = filteredResults.filter((item) => {
+          const releaseDate = item.release_date || item.first_air_date;
+          if (!releaseDate) return false;
+          const releaseYear = parseInt(releaseDate.substring(0, 4), 10);
+          return releaseYear === targetYear || releaseYear === targetYear - 1;
+        });
+      }
+
+      // Sort by popularity
+      filteredResults.sort((a, b) => b.popularity - a.popularity);
+
+      return { ...data, results: filteredResults };
+    },
+  );
+
+  /**
+   * Search using discover endpoint for language-specific queries
+   * This provides better results for queries like "hindi movies", "south indian movies"
+   */
+  private static async searchByLanguage(
+    query: string,
+    options: {
+      languages: string[];
+      mediaType?: 'movie' | 'tv';
+      year?: number;
+      isLatest?: boolean;
+    },
+    page?: number,
+  ): Promise<TmdbPagingResponse> {
+    const mediaType = options.mediaType || 'movie';
+    const languages = options.languages.join('|'); // TMDB supports multiple languages with |
+
+    // Build discover URL
+    let discoverUrl = `/discover/${mediaType}?with_original_language=${languages}&language=en-US&page=${
+      page ?? 1
+    }&include_adult=false&sort_by=popularity.desc`;
+
+    // Add year filter if specified
+    if (options.year) {
+      discoverUrl += `&primary_release_year=${options.year}`;
+      if (mediaType === 'tv') {
+        discoverUrl += `&first_air_date_year=${options.year}`;
+      }
+    } else if (options.isLatest) {
+      // For "latest" queries, prioritize recent content
+      const currentYear = new Date().getFullYear();
+      discoverUrl += `&primary_release_date.gte=${currentYear - 1}-01-01`;
+      if (mediaType === 'tv') {
+        discoverUrl += `&first_air_date.gte=${currentYear - 1}-01-01`;
+      }
+    }
+
+    // Add minimum vote count to filter out low-quality content
+    discoverUrl += '&vote_count.gte=10';
+
+    const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(discoverUrl);
+
+    // Filter out results without images
+    const filteredResults = data.results.filter((item) => hasValidImage(item));
+
+    // If query has additional keywords (not just language/region), filter by relevance
+    const cleanQuery = query
+      .toLowerCase()
+      .replace(/hindi|bollywood|south indian|south|tamil|telugu|malayalam|kannada|movie|movies|film|films|latest|new|recent|show|series|tv|television/gi, '')
+      .trim();
+
+    // Only filter by additional keywords if there are meaningful search terms left
+    if (cleanQuery.length > 2) {
+      const queryWords = cleanQuery.split(/\s+/).filter((w) => w.length > 1);
+      
+      if (queryWords.length > 0) {
+        // Filter results that match the remaining query keywords
+        const relevantResults = filteredResults.filter((item) => {
+          const title = (
+            item.name ||
+            item.title ||
+            item.original_name ||
+            item.original_title ||
+            ''
+          ).toLowerCase();
+          const overview = (item.overview || '').toLowerCase();
+          const searchText = `${title} ${overview}`;
+
+          return queryWords.some((word) => searchText.includes(word));
+        });
+
+        // If we found relevant results, use those; otherwise use all filtered results
+        // This allows for queries like "new hindi movies" - if there's no additional search term,
+        // we return all recent Hindi movies
+        if (relevantResults.length > 0) {
+          return { ...data, results: relevantResults };
+        }
+      }
+    }
+
+    return { ...data, results: filteredResults };
+  }
 
   /**
    * Cached: Fetches movie recommendations.
