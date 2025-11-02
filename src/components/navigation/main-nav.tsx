@@ -88,18 +88,35 @@ export function MainNav({ items }: MainNavProps) {
   async function searchShowsByQuery(value: string) {
     if (!value?.trim()?.length) {
       if (path === '/search') {
-        router.push('/');
+        try {
+          router.push('/');
+        } catch (error) {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/';
+          }
+        }
       } else {
-        router.replace(path);
+        try {
+          router.replace(path);
+        } catch (error) {
+          // Router not ready, silently fail
+        }
       }
       return;
     }
 
     // Navigate to search page - let the search page handle data fetching
-    if (getSearchValue('q')?.trim()?.length) {
-      router.replace(`/search?q=${value}`);
-    } else {
-      router.push(`/search?q=${value}`);
+    try {
+      if (getSearchValue('q')?.trim()?.length) {
+        router.replace(`/search?q=${value}`);
+      } else {
+        router.push(`/search?q=${value}`);
+      }
+    } catch (error) {
+      // Router not ready, fallback to window.location
+      if (typeof window !== 'undefined') {
+        window.location.href = `/search?q=${value}`;
+      }
     }
   }
 

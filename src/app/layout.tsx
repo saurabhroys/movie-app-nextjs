@@ -1,4 +1,5 @@
 import { TailwindIndicator } from '@/components/tailwind-indicator';
+import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
 // import { TrpcProvider } from '@/client/trpc-provider';
@@ -12,7 +13,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 import SiteHeader from '@/components/main/site-header';
-import GlobalShortcuts from '@/components/global-shortcuts';
+import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
 import SiteFooter from '@/components/main/site-footer';
 import AttributeTooltipManager from '@/components/attribute-tooltip';
 import PreviewModal from '@/components/preview-modal';
@@ -82,21 +83,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+     <ThemeProvider>
       <head>
         {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
           <>
-            <Script
-              id="_next-ga-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){window.dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}', { cookie_flags: 'max-age=86400;secure;samesite=none' });`,
-              }}
-            />
             <Script
               id="_next-ga"
               strategy="afterInteractive"
@@ -105,13 +95,6 @@ export default function RootLayout({
           </>
         )}
       </head>
-      {/* <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        forcedTheme="dark"
-        enableSystem={false}
-        themes={['dark']}
-        disableTransitionOnChange> */}
         <body
           suppressHydrationWarning
           className={cn(
@@ -120,7 +103,7 @@ export default function RootLayout({
             fontHeading.variable,
           )}>
           <SiteHeader />
-          <GlobalShortcuts />
+          <GlobalShortcutsWrapper />
           {/* <TrpcProvider> */}
           {children}
           <PreviewModal />
@@ -131,7 +114,7 @@ export default function RootLayout({
           <AttributeTooltipManager />
           {/* </TrpcProvider> */}
         </body>
-      {/* </ThemeProvider> */}
+      </ThemeProvider>
     </html>
   );
 }
