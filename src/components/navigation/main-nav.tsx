@@ -182,16 +182,16 @@ export function MainNav({ items }: MainNavProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
-              sideOffset={20}
+              sideOffset={5}
               // className="w-52 overflow-y-auto overflow-x-hidden rounded-sm bg-neutral-800 text-slate-200 dark:bg-neutral-800 dark:text-slate-200"
-              className="w-52 overflow-x-hidden overflow-y-auto rounded-sm">
+              className="w-52 overflow-x-hidden overflow-y-auto rounded-xl">
               <DropdownMenuLabel>
                 <Link
                   href="/"
                   className="flex items-center justify-center"
                   onClick={() => handleChangeStatusOpen(false)}></Link>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              {/* <DropdownMenuSeparator /> */}
               {items?.map((item, index) => (
                 <DropdownMenuItem
                   key={index}

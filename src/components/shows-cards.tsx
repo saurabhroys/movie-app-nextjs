@@ -39,6 +39,15 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const openTimerRef = React.useRef<number | null>(null);
   const closeTimerRef = React.useRef<number | null>(null);
+  const IS_MOBILE = isMobile();
+  const [trailer, setTrailer] = React.useState('');
+  const [genres, setGenres] = React.useState<Genre[]>([]);
+  const [isAnime, setIsAnime] = React.useState(false);
+  const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
+  const [options, setOptions] = React.useState(defaultOptions);
+  const youtubeRef = React.useRef(null);
+  const imageRef = React.useRef<HTMLImageElement>(null);
+  const [logoPath, setLogoPath] = React.useState<string | null>(null);
   const imageOnErrorHandler = (
     event: React.SyntheticEvent<HTMLImageElement, Event>,
   ) => {
@@ -46,6 +55,9 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   };
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't show preview modal on mobile devices
+    if (IS_MOBILE) return;
+    
     setIsHovered(true);
     if (closeTimerRef.current) {
       window.clearTimeout(closeTimerRef.current);
@@ -68,6 +80,9 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   };
 
   const handleMouseLeave = () => {
+    // Don't handle mouse leave on mobile devices
+    if (IS_MOBILE) return;
+    
     setIsHovered(false);
     if (openTimerRef.current) {
       window.clearTimeout(openTimerRef.current);
@@ -83,16 +98,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
       }
     }, 160);
   };
-
-  const IS_MOBILE = isMobile();
-  const [trailer, setTrailer] = React.useState('');
-  const [genres, setGenres] = React.useState<Genre[]>([]);
-  const [isAnime, setIsAnime] = React.useState(false);
-  const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
-  const [options, setOptions] = React.useState(defaultOptions);
-  const youtubeRef = React.useRef(null);
-  const imageRef = React.useRef<HTMLImageElement>(null);
-  const [logoPath, setLogoPath] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let isActive = true;
@@ -162,13 +167,19 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     });
   };
 
+  const handleMobileCardClick = () => {
+    if (IS_MOBILE) {
+      handleMoreDetails();
+    }
+  };
   // console.log("show in card", show);
 
   return (
     <div
       className="group relative aspect-video"
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}>
+      onMouseLeave={handleMouseLeave}
+      onClick={handleMobileCardClick}>
       <a
         className="pointer-events-none"
         aria-hidden={false}
