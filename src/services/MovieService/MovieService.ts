@@ -19,6 +19,14 @@ import {
 import { Genre } from '@/enums/genre';
 import { cache } from 'react';
 
+/**
+ * Caching Strategy:
+ * - React's `cache()` is used for request-level memoization (deduplication within a single render)
+ * - All data-fetching methods are wrapped with `cache()` to prevent duplicate requests
+ * - Cache keys are deterministic based on function parameters (primitives only for stability)
+ * - This works in conjunction with Next.js ISR (revalidate) for persistent caching
+ */
+
 const requestTypesNeedUpdateMediaType = [
   RequestType.TOP_RATED,
   RequestType.NETFLIX,
@@ -64,63 +72,100 @@ class MovieService extends BaseService {
     return Promise.resolve<Show>(response[0]);
   }
 
+  /**
+   * Cached: Fetches movie details by ID.
+   * Deduplicates requests within the same render cycle.
+   */
   static findMovie = cache(async (id: number) => {
     return this.axios(baseUrl).get<Show>(
       `/movie/${id}?append_to_response=keywords`,
     );
   });
 
+  /**
+   * Cached: Fetches TV series details by ID.
+   * Deduplicates requests within the same render cycle.
+   */
   static findTvSeries = cache(async (id: number) => {
     return this.axios(baseUrl).get<Show>(
       `/tv/${id}?append_to_response=keywords`,
     );
   });
 
-  static async getKeywords(
-    id: number,
-    type: 'tv' | 'movie',
-  ): Promise<AxiosResponse<KeyWordResponse>> {
-    return this.axios(baseUrl).get<KeyWordResponse>(`/${type}/${id}/keywords`);
-  }
+  /**
+   * Cached: Fetches keywords for a movie or TV show.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getKeywords = cache(
+    async (id: number, type: 'tv' | 'movie'): Promise<AxiosResponse<KeyWordResponse>> => {
+      return this.axios(baseUrl).get<KeyWordResponse>(`/${type}/${id}/keywords`);
+    },
+  );
 
-  static async getSeasons(
-    id: number,
-    season: number,
-  ): Promise<AxiosResponse<ISeason>> {
-    return this.axios(baseUrl).get<ISeason>(`/tv/${id}/season/${season}`);
-  }
+  /**
+   * Cached: Fetches season details for a TV show.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getSeasons = cache(
+    async (id: number, season: number): Promise<AxiosResponse<ISeason>> => {
+      return this.axios(baseUrl).get<ISeason>(`/tv/${id}/season/${season}`);
+    },
+  );
 
-  static async getImages(
-    mediaType: 'movie' | 'tv' | 'anime',
-    mediaId: number,
-  ): Promise<AxiosResponse<ImagesResponse>> {
-    return this.axios(baseUrl).get<ImagesResponse>(
-      `/${mediaType}/${mediaId}/images`,
-    );
-  }
+  /**
+   * Cached: Fetches images for a movie, TV show, or anime.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getImages = cache(
+    async (
+      mediaType: 'movie' | 'tv' | 'anime',
+      mediaId: number,
+    ): Promise<AxiosResponse<ImagesResponse>> => {
+      return this.axios(baseUrl).get<ImagesResponse>(
+        `/${mediaType}/${mediaId}/images`,
+      );
+    },
+  );
 
-  static async getContentRating(
-    mediaType: 'movie' | 'tv',
-    mediaId: number,
-  ): Promise<AxiosResponse<ImagesResponse>> {
-    return this.axios(baseUrl).get<ImagesResponse>(
-      `/${mediaType}/${mediaId}/content_ratings`,
-    );
-  }
+  /**
+   * Cached: Fetches content rating for a movie or TV show.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getContentRating = cache(
+    async (
+      mediaType: 'movie' | 'tv',
+      mediaId: number,
+    ): Promise<AxiosResponse<ImagesResponse>> => {
+      return this.axios(baseUrl).get<ImagesResponse>(
+        `/${mediaType}/${mediaId}/content_ratings`,
+      );
+    },
+  );
 
-  static async getMovieReleaseDates(
-    movieId: number,
-  ): Promise<AxiosResponse<any>> {
-    return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
-  }
+  /**
+   * Cached: Fetches release dates for a movie.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getMovieReleaseDates = cache(
+    async (movieId: number): Promise<AxiosResponse<any>> => {
+      return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
+    },
+  );
 
-  static async getCredits(
-    mediaType: string,
-    id: number,
-  ): Promise<AxiosResponse<any>> {
-    return this.axios(baseUrl).get<any>(`/${mediaType}/${id}/credits`);
-  }
+  /**
+   * Cached: Fetches credits for a movie or TV show.
+   * Deduplicates requests within the same render cycle.
+   */
+  static getCredits = cache(
+    async (mediaType: string, id: number): Promise<AxiosResponse<any>> => {
+      return this.axios(baseUrl).get<any>(`/${mediaType}/${id}/credits`);
+    },
+  );
 
+  /**
+   * Cached: Fetches movie or TV show by ID and type with additional data.
+   * Deduplicates requests within the same render cycle.
+   */
   static findMovieByIdAndType = cache(
     async (id: number, type: string, language: string = 'en-US') => {
       const params: Record<string, string> = {
@@ -211,14 +256,30 @@ class MovieService extends BaseService {
     }
   }
 
+  /**
+   * Cached base request method for deduplication.
+   * Uses stable cache keys based on serialized request parameters.
+   */
+  private static executeRequestCached = cache(
+    (requestType: RequestType, mediaType: MediaType, page?: number, genre?: number) => {
+      const url = this.urlBuilder({ requestType, mediaType, page, genre });
+      return this.axios(baseUrl).get<TmdbPagingResponse>(url);
+    },
+  );
+
   static executeRequest(req: {
     requestType: RequestType;
     mediaType: MediaType;
     page?: number;
+    genre?: number;
   }) {
-    const url = this.urlBuilder(req);
-    // console.log(`Making request to: ${url}`);
-    return this.axios(baseUrl).get<TmdbPagingResponse>(url);
+    // Use cached version for deduplication during render
+    return this.executeRequestCached(
+      req.requestType,
+      req.mediaType,
+      req.page,
+      req.genre,
+    );
   }
 
   static async executeRequestWithRetry(
@@ -267,6 +328,11 @@ class MovieService extends BaseService {
     }
   }
 
+  /**
+   * Cached: Fetches multiple show categories in batches.
+   * Deduplicates requests within the same render cycle.
+   * Uses controlled concurrency to prevent rate limiting.
+   */
   static getShows = cache(async (requests: ShowRequest[]) => {
     const shows: CategorizedShows[] = [];
     // Limit concurrency to reduce risk of socket resets and rate limiting
@@ -312,6 +378,10 @@ class MovieService extends BaseService {
     return shows;
   });
 
+  /**
+   * Cached: Searches for movies and TV shows.
+   * Deduplicates requests within the same render cycle.
+   */
   static searchMovies = cache(async (query: string, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
@@ -336,6 +406,10 @@ class MovieService extends BaseService {
     return data;
   });
 
+  /**
+   * Cached: Fetches movie recommendations.
+   * Deduplicates requests within the same render cycle.
+   */
   static getMovieRecommendations = cache(
     async (mediaId: number, page?: number) => {
       const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
@@ -345,6 +419,10 @@ class MovieService extends BaseService {
     },
   );
 
+  /**
+   * Cached: Fetches TV show recommendations.
+   * Deduplicates requests within the same render cycle.
+   */
   static getTvRecommendations = cache(async (tvId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/tv/${tvId}/recommendations?language=en-US&page=${page ?? 1}`,
@@ -352,6 +430,10 @@ class MovieService extends BaseService {
     return data;
   });
 
+  /**
+   * Cached: Fetches similar movies.
+   * Deduplicates requests within the same render cycle.
+   */
   static getSimilarMovies = cache(async (mediaId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/movie/${mediaId}/similar?language=en-US&page=${page ?? 1}`,
@@ -359,6 +441,10 @@ class MovieService extends BaseService {
     return data;
   });
 
+  /**
+   * Cached: Fetches similar TV shows.
+   * Deduplicates requests within the same render cycle.
+   */
   static getSimilarTvShows = cache(async (tvId: number, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/tv/${tvId}/similar?language=en-US&page=${page ?? 1}`,
@@ -366,6 +452,10 @@ class MovieService extends BaseService {
     return data;
   });
 
+  /**
+   * Cached: Fetches movie collection details.
+   * Deduplicates requests within the same render cycle.
+   */
   static getMovieCollection = cache(async (collectionId: number) => {
     const { data } = await this.axios(baseUrl).get<any>(
       `/collection/${collectionId}?language=en-US`,
@@ -373,6 +463,10 @@ class MovieService extends BaseService {
     return data;
   });
 
+  /**
+   * Cached: Fetches TV show seasons information.
+   * Deduplicates requests within the same render cycle.
+   */
   static getTvSeasons = cache(async (tvId: number) => {
     const { data } = await this.axios(baseUrl).get<any>(
       `/tv/${tvId}?language=en-US`,
