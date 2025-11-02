@@ -422,7 +422,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                 className="z-0 h-auto w-full object-cover transition-opacity duration-500"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
                 fill
-                priority
+                preload
               />
               {trailer && showTrailer && !trailerFinished && (
                 <Youtube
@@ -438,7 +438,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                   }
                   className="absolute inset-0 z-0 h-full w-full"
                   style={{ width: '100%', height: '100%' }}
-                  iframeClassName="absolute inset-0 w-full h-full z-10"
+                  iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10"
                 />
               )}
               {/* shadows */}

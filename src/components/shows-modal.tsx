@@ -601,7 +601,7 @@ const ShowModal = () => {
               >
                 <CustomImage
                   fill
-                  priority
+                  preload
                   ref={imageRef}
                   alt={modalStore?.show?.title ?? 'poster'}
                   className="z-1 h-auto w-full object-cover"
@@ -634,11 +634,11 @@ const ShowModal = () => {
                 {/* Show logo with transition states */}
                 {logoPath && (
                   <div
-                    className={`absolute z-30 flex items-center p-6 transition-all duration-[1500] ease-in-out ${
+                    className={`absolute z-30 flex items-center p-3 md:p-6 transition-all duration-[1500] ease-in-out ${
                       logoTransition === 'initial' ||
                       logoTransition === 'trailer-ended'
                         ? 'inset-0 justify-center'
-                        : 'bottom-25 left-0 justify-start'
+                        : 'bottom-22 md:bottom-25 left-0 justify-start'
                     }`}>
                     <CustomImage
                       src={`https://image.tmdb.org/t/p/original${logoPath}`}
@@ -647,7 +647,7 @@ const ShowModal = () => {
                         logoTransition === 'initial' ||
                         logoTransition === 'trailer-ended'
                           ? 'h-auto max-w-[60%]'
-                          : 'h-auto max-w-[40%]'
+                          : 'h-auto max-w-[24%] md:max-w-[40%]'
                       }`}
                       width={
                         logoTransition === 'initial' ||
@@ -667,7 +667,7 @@ const ShowModal = () => {
 
                 <div className="absolute bottom-[-5px] z-10 h-full w-full bg-neutral-900 mask-t-from-9% mask-t-to-50%"></div>
 
-                <div className="absolute bottom-20 z-30 flex w-full items-center justify-between gap-2 px-10">
+                <div className="absolute bottom-14 md:bottom-20 z-30 flex w-full items-center justify-between gap-2 px-4 md:px-10">
                   <div className="flex items-center gap-2.5">
                     <Link href={handleHref()}>
                       <Button
@@ -713,8 +713,8 @@ const ShowModal = () => {
               </div>
 
               {/* Two Column Layout */}
-              <div className="relative z-40 -mt-10 flex w-full gap-4 px-10 pb-10">
-                <div className="w-3/4">
+              <div className="relative z-40 -mt-10 flex flex-wrap md:flex-nowrap w-full gap-4 px-4 md:px-10 pb-10">
+                <div className="w-full md:w-3/4">
                   {/* Title */}
                   {/* <DialogTitle className="text-lg leading-6 font-medium text-slate-50 sm:text-xl">
                   {modalStore.show?.title ?? modalStore.show?.name}
@@ -794,7 +794,7 @@ const ShowModal = () => {
                   </DialogDescription>
                 </div>
 
-                <div className="flex w-1/4 flex-col gap-3 text-sm text-neutral-400">
+                <div className="flex w-full md:w-1/4 flex-col gap-3 text-sm text-neutral-400">
                   {/* Left Column */}
                   <div className="">
                     <div>
@@ -822,7 +822,7 @@ const ShowModal = () => {
               {/* Movie Collection Section */}
               {movieCollection &&
                 modalStore.show?.media_type === MediaType.MOVIE && (
-                  <div className="px-10 pb-6">
+                  <div className="px-4 md:px-10 pb-6">
                     <div className="flex items-start justify-start gap-4">
                       <Icons.library />
                       <h3 className="mb-4 text-xl font-semibold text-white">
@@ -868,7 +868,7 @@ const ShowModal = () => {
 
               {/* TV Seasons Section */}
               {tvSeasons && modalStore.show?.media_type === MediaType.TV && (
-                <div className="px-10 pb-6">
+                <div className="px-4 md:px-10 pb-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-white">
                       Episodes
@@ -940,7 +940,7 @@ const ShowModal = () => {
               )}
 
               {/* More like this */}
-              <div className="px-10 pb-8">
+              <div className="px-4 md:px-10 pb-6">
                 <h3 className="mb-4 text-xl font-semibold text-white">
                   More like this
                 </h3>
@@ -1060,7 +1060,7 @@ const ShowModal = () => {
               </div>
 
               {/* About Section */}
-              <div className="px-10 pb-8">
+              <div className="px-4 md:px-10 pb-6">
                 <h3 className="mb-3 text-xl font-semibold text-white">
                   About {modalStore.show?.title ?? modalStore.show?.name}
                 </h3>
