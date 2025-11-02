@@ -423,7 +423,7 @@ const PreviewModal = () => {
           <div className="group relative aspect-video">
             <CustomImage
               fill
-              priority
+              preload
               ref={imageRef}
               alt={p?.show?.title ?? 'poster'}
               className="z-1 h-auto w-full object-cover"
