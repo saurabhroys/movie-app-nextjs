@@ -385,12 +385,18 @@ const PreviewModal = () => {
   };
 
   const handleTrailerEnd = (e: any) => {
-    e.target.seekTo(0);
+    try {
+      if (e?.target && typeof e.target.seekTo === 'function') {
+        e.target.seekTo(0);
+      }
+    } catch {}
   };
 
   const handleTrailerReady = (e: any) => {
     try {
-      e?.target?.playVideo?.();
+      if (e?.target && typeof e.target.playVideo === 'function') {
+        e.target.playVideo();
+      }
     } catch {}
   };
 

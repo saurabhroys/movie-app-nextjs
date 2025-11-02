@@ -325,7 +325,9 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const handleTrailerReady = (e: any) => {
     try {
-      e?.target?.playVideo?.();
+      if (e?.target && typeof e.target.playVideo === 'function') {
+        e.target.playVideo();
+      }
     } catch {}
   };
 

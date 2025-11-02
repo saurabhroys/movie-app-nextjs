@@ -88,7 +88,7 @@ export function MainNav({ items }: MainNavProps) {
   async function searchShowsByQuery(value: string) {
     if (!value?.trim()?.length) {
       if (path === '/search') {
-        router.push('/home');
+        router.push('/');
       } else {
         router.replace(path);
       }
