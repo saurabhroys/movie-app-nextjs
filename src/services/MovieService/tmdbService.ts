@@ -39,7 +39,7 @@ export async function searchMovies(query: string, page: number) {
   const { data } = await tmdbClient.get<TmdbPagingResponse>(
     `/search/multi?query=${encodeURIComponent(
       query,
-    )}&language=en-US&page=${page}&include_adult=true`,
+    )}&language=en-US&page=${page}&include_adult=false`,
   );
 
   // Filter out results without proper media_type, without images, and sort by popularity

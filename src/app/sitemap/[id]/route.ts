@@ -12,7 +12,7 @@ export async function GET(
   if (id === 0) {
     urls = [
       `${env.NEXT_PUBLIC_APP_URL}`,
-      `${env.NEXT_PUBLIC_APP_URL}/home`,
+      `${env.NEXT_PUBLIC_APP_URL}/`,
       `${env.NEXT_PUBLIC_APP_URL}/tv-shows`,
       `${env.NEXT_PUBLIC_APP_URL}/movies`,
       `${env.NEXT_PUBLIC_APP_URL}/new-and-popular`,

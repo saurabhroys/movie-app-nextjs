@@ -1,5 +1,4 @@
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
 // import { TrpcProvider } from '@/client/trpc-provider';
@@ -106,13 +105,13 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <ThemeProvider
+      {/* <ThemeProvider
         attribute="class"
         defaultTheme="dark"
         forcedTheme="dark"
         enableSystem={false}
         themes={['dark']}
-        disableTransitionOnChange>
+        disableTransitionOnChange> */}
         <body
           suppressHydrationWarning
           className={cn(
@@ -132,7 +131,7 @@ export default function RootLayout({
           <AttributeTooltipManager />
           {/* </TrpcProvider> */}
         </body>
-      </ThemeProvider>
+      {/* </ThemeProvider> */}
     </html>
   );
 }

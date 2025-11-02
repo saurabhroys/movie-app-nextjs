@@ -104,6 +104,7 @@ const ShowModal = () => {
   >({});
   const [directors, setDirectors] = React.useState<string[]>([]);
   const [writers, setWriters] = React.useState<string[]>([]);
+  const isClosingRef = React.useRef(false);
 
   React.useEffect(() => {
     const fetchContentRating = async () => {
@@ -197,7 +198,11 @@ const ShowModal = () => {
 
   React.useEffect(() => {
     setIsAnime(false);
-  }, [modalStore]);
+    // Reset closing flag when modal opens
+    if (modalStore.open) {
+      isClosingRef.current = false;
+    }
+  }, [modalStore.open]);
 
   // Fetch logo for the current show
   React.useEffect(() => {
@@ -327,14 +332,20 @@ const ShowModal = () => {
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = React.useCallback(() => {
+    if (isClosingRef.current || !modalStore.open) return; // Prevent double-closing
+    isClosingRef.current = true;
     modalStore.reset();
     if (!modalStore.show || modalStore.firstLoad) {
       window.history.pushState(null, '', '/');
     } else {
       window.history.back();
     }
-  };
+    // Reset the flag after a brief delay to allow for state updates
+    setTimeout(() => {
+      isClosingRef.current = false;
+    }, 100);
+  }, [modalStore]);
 
   const onEnd = (event: YouTubeEvent) => {
     setTrailerFinished(true);
@@ -359,7 +370,9 @@ const ShowModal = () => {
 
   const onReady = (event: YouTubeEvent) => {
     try {
-      event?.target?.playVideo?.();
+      if (event?.target && typeof event.target.playVideo === 'function') {
+        event.target.playVideo();
+      }
     } catch {}
   };
 
@@ -547,6 +560,7 @@ const ShowModal = () => {
     if (e.target instanceof Node && contentEl.contains(e.target)) {
       return;
     }
+    e.stopPropagation(); // Prevent Dialog's onOpenChange from firing
     handleCloseModal();
   };
 
@@ -580,7 +594,11 @@ const ShowModal = () => {
   return (
     <Dialog
       open={modalStore.open}
-      onOpenChange={handleCloseModal}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleCloseModal();
+        }
+      }}
       aria-label="Modal containing show's details">
       {modalStore.open && <BodyScrollLock />}
       <div
@@ -1134,7 +1152,10 @@ const ShowModal = () => {
 
               <button
                 className="absolute top-4 right-4 z-30 cursor-pointer rounded-full bg-black p-1 text-slate-50 opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none"
-                onClick={handleCloseModal}>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseModal();
+                }}>
                 <X className="h-6 w-6" />
                 <span className="sr-only">Close</span>
               </button>
