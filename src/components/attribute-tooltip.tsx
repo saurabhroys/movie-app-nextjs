@@ -77,14 +77,17 @@ const AttributeTooltipManager = () => {
       tooltipEl.textContent = '';
       // Restore native title and clean ARIA linkage
       if (currentAnchor) {
-        const anchorEl = currentAnchor as HTMLElement;
-        const savedTitle = anchorEl.getAttribute('data-original-title');
-        if (savedTitle) {
-          anchorEl.setAttribute('title', savedTitle);
-          anchorEl.removeAttribute('data-original-title');
-        }
-        if (anchorEl.getAttribute('aria-describedby') === TOOLTIP_ID) {
-          anchorEl.removeAttribute('aria-describedby');
+        // Check if element is still in the DOM
+        if (currentAnchor.isConnected && currentAnchor instanceof HTMLElement) {
+          const anchorEl = currentAnchor;
+          const savedTitle = anchorEl.getAttribute('data-original-title');
+          if (savedTitle) {
+            anchorEl.setAttribute('title', savedTitle);
+            anchorEl.removeAttribute('data-original-title');
+          }
+          if (anchorEl.getAttribute('aria-describedby') === TOOLTIP_ID) {
+            anchorEl.removeAttribute('aria-describedby');
+          }
         }
       }
       currentAnchor = null;
@@ -95,9 +98,12 @@ const AttributeTooltipManager = () => {
     };
 
     const update = () => {
-      if (currentAnchor) {
+      if (currentAnchor && currentAnchor.isConnected) {
         positionTooltip(tooltipEl, currentAnchor);
         raf = requestAnimationFrame(update);
+      } else {
+        // Element was removed from DOM, hide tooltip
+        hide();
       }
     };
 
@@ -105,10 +111,12 @@ const AttributeTooltipManager = () => {
       const rawTarget = e.target as Element | null;
       const target = findTooltipAnchor(rawTarget);
       if (!target) return;
+      // Ensure target is an HTMLElement and still connected to DOM
+      if (!(target instanceof HTMLElement) || !target.isConnected) return;
       const text = getAttrText(target);
       if (!text) return;
-      currentAnchor = target as Element;
-      const anchorEl = currentAnchor as HTMLElement;
+      currentAnchor = target;
+      const anchorEl = target;
       // Suppress native title tooltips while our tooltip is visible
       const title = anchorEl.getAttribute('title');
       if (title) {
@@ -119,22 +127,27 @@ const AttributeTooltipManager = () => {
       anchorEl.setAttribute('aria-describedby', TOOLTIP_ID);
       tooltipEl.textContent = text;
       // Pre-measure by placing text then positioning
-      positionTooltip(tooltipEl, target as Element);
+      positionTooltip(tooltipEl, target);
       if (!raf) raf = requestAnimationFrame(update);
     };
 
     const onPointerLeave = (e: Event) => {
-      if (!currentAnchor) return;
+      if (!currentAnchor || !currentAnchor.isConnected) {
+        hide();
+        return;
+      }
       const target = e.target as Element | null;
       const anchor = findTooltipAnchor(target);
       // If moving to an element still inside the current anchor, do nothing
       const related = (e as MouseEvent).relatedTarget as Node | null;
-      if (related && (currentAnchor as HTMLElement).contains(related)) return;
+      if (related && currentAnchor.contains(related)) return;
       if (anchor === currentAnchor) hide();
     };
 
     const onScrollOrResize = () => {
-      if (currentAnchor) positionTooltip(tooltipEl, currentAnchor);
+      if (currentAnchor && currentAnchor.isConnected) {
+        positionTooltip(tooltipEl, currentAnchor);
+      }
     };
 
     document.addEventListener('mouseover', onPointerEnter, true);

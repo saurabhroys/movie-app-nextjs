@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { useModalStore } from '@/stores/modal';
 import { useSearchStore } from '@/stores/search';
 
@@ -17,35 +18,85 @@ interface ShortcutConfig {
 }
 
 export function useKeyboardShortcuts() {
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { setTheme, theme } = useTheme();
   const modalStore = useModalStore();
   const searchStore = useSearchStore();
 
-  // Navigation shortcuts
+  // Ensure router is only used after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Navigation shortcuts - guard router usage
   const navigateToHome = useCallback(() => {
-    router.push('/');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/');
+    } catch (error) {
+      // Router not ready, fallback to window.location
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    }
+  }, [router, isMounted]);
 
   const navigateToMovies = useCallback(() => {
-    router.push('/movies');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/movies');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/movies';
+      }
+    }
+  }, [router, isMounted]);
 
   const navigateToTVShows = useCallback(() => {
-    router.push('/tv-shows');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/tv-shows');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/tv-shows';
+      }
+    }
+  }, [router, isMounted]);
 
   const navigateToAnime = useCallback(() => {
-    router.push('/anime');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/anime');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/anime';
+      }
+    }
+  }, [router, isMounted]);
 
   const navigateToNewAndPopular = useCallback(() => {
-    router.push('/new-and-popular');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/new-and-popular');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/new-and-popular';
+      }
+    }
+  }, [router, isMounted]);
 
   const navigateToSearch = useCallback(() => {
-    router.push('/search');
-  }, [router]);
+    if (!isMounted) return;
+    try {
+      router.push('/search');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/search';
+      }
+    }
+  }, [router, isMounted]);
 
   // Search shortcuts
   const openSearch = useCallback(() => {
@@ -65,6 +116,22 @@ export function useKeyboardShortcuts() {
     searchStore.setOpen(false);
     searchStore.reset();
   }, [searchStore]);
+
+  // Theme shortcuts
+  const toggleTheme = useCallback(() => {
+    const themes = ['light', 'dark', 'system'];
+    const currentIndex = themes.indexOf(theme || 'system');
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  }, [theme, setTheme]);
+
+  const setLightTheme = useCallback(() => {
+    setTheme('light');
+  }, [setTheme]);
+
+  const setDarkTheme = useCallback(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   // Modal shortcuts
   const closeModal = useCallback(() => {
@@ -137,14 +204,14 @@ export function useKeyboardShortcuts() {
                 <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">Space</kbd> Play/Pause</div>
               </div>
             </div>
-            // <div>
-            //   <h3 class="font-semibold mb-2">Theme</h3>
-            //   <div class="space-y-1 text-sm">
-            //     <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">T</kbd> Toggle Theme</div>
-            //     <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">L</kbd> Light Theme</div>
-            //     <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">D</kbd> Dark Theme</div>
-            //   </div>
-            // </div>
+            <div>
+              <h3 class="font-semibold mb-2">Theme</h3>
+              <div class="space-y-1 text-sm">
+                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">T</kbd> Toggle Theme</div>
+                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">L</kbd> Light Theme</div>
+                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">D</kbd> Dark Theme</div>
+              </div>
+            </div>
             <div>
               <h3 class="font-semibold mb-2">Carousel</h3>
               <div class="space-y-1 text-sm">
@@ -255,24 +322,24 @@ export function useKeyboardShortcuts() {
     },
 
     // Theme shortcuts
-    // {
-    //   key: 't',
-    //   description: 'Toggle Theme',
-    //   action: toggleTheme,
-    //   preventDefault: true,
-    // },
-    // {
-    //   key: 'l',
-    //   description: 'Light Theme',
-    //   action: setLightTheme,
-    //   preventDefault: true,
-    // },
-    // {
-    //   key: 'd',
-    //   description: 'Dark Theme',
-    //   action: setDarkTheme,
-    //   preventDefault: true,
-    // },
+    {
+      key: 't',
+      description: 'Toggle Theme',
+      action: toggleTheme,
+      preventDefault: true,
+    },
+    {
+      key: 'l',
+      description: 'Light Theme',
+      action: setLightTheme,
+      preventDefault: true,
+    },
+    {
+      key: 'd',
+      description: 'Dark Theme',
+      action: setDarkTheme,
+      preventDefault: true,
+    },
 
     // Modal shortcuts
     {
