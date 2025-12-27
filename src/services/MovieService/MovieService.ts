@@ -165,17 +165,65 @@ class MovieService extends BaseService {
   /**
    * Cached: Fetches movie or TV show by ID and type with additional data.
    * Deduplicates requests within the same render cycle.
+   * Includes retry logic for network errors and timeouts.
    */
   static findMovieByIdAndType = cache(
-    async (id: number, type: string, language: string = 'en-US') => {
-      const params: Record<string, string> = {
-        language: language,
-        append_to_response: 'videos,keywords',
+    async (
+      id: number,
+      type: string,
+      language: string = 'en-US',
+      maxAttempts: number = 3,
+    ) => {
+      const sleep = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms));
+      
+      const isRetryable = (error: unknown): boolean => {
+        // Network/transient errors we want to retry
+        if (!error || typeof error !== 'object') return false;
+        const anyErr = error as any;
+        const code: string | undefined = anyErr?.code;
+        const message: string | undefined = anyErr?.message?.toLowerCase();
+        const status: number | undefined = anyErr?.response?.status;
+        
+        return (
+          code === 'ECONNRESET' ||
+          code === 'ECONNABORTED' ||
+          code === 'ETIMEDOUT' ||
+          code === 'ENOTFOUND' ||
+          code === 'EAI_AGAIN' ||
+          message?.includes('timeout') ||
+          (typeof status === 'number' &&
+            (status === 429 || (status >= 500 && status < 600)))
+        );
       };
-      const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
-        baseUrl,
-      ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { params });
-      return Promise.resolve(response.data);
+
+      let attempt = 0;
+      let backoff = 300;
+      
+      while (true) {
+        try {
+          const params: Record<string, string> = {
+            language: language,
+            append_to_response: 'videos,keywords',
+          };
+          // Use a longer timeout for requests with append_to_response as they fetch more data
+          const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
+            baseUrl,
+          ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { 
+            params,
+            timeout: 20000, // 20 seconds for requests with additional data
+          });
+          return Promise.resolve(response.data);
+        } catch (error) {
+          attempt += 1;
+          if (attempt >= maxAttempts || !isRetryable(error)) {
+            throw error;
+          }
+          // Exponential backoff with jitter
+          await sleep(backoff + Math.random() * 200);
+          backoff = Math.min(backoff * 2, 3000);
+        }
+      }
     },
   );
 
@@ -407,18 +455,18 @@ class MovieService extends BaseService {
       // Build search URL
       let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
         page ?? 1
-      }&include_adult=false`;
+      }&include_adult=true`;
 
       // Add year filter if specified (TMDB search doesn't directly support this, but we'll filter results)
       const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(searchUrl);
 
       // Filter out results without proper media_type, without images
+      // Exclude 'person' results - we only want movies and TV shows
       let filteredResults = data.results.filter(
         (item) =>
           item.media_type &&
           ((item.media_type as string) === 'movie' ||
-            (item.media_type as string) === 'tv' ||
-            (item.media_type as string) === 'person') &&
+            (item.media_type as string) === 'tv') &&
           hasValidImage(item),
       );
 
@@ -474,7 +522,7 @@ class MovieService extends BaseService {
     // Build discover URL
     let discoverUrl = `/discover/${mediaType}?with_original_language=${languages}&language=en-US&page=${
       page ?? 1
-    }&include_adult=false&sort_by=popularity.desc`;
+    }&include_adult=true&sort_by=popularity.desc`;
 
     // Add year filter if specified
     if (options.year) {
