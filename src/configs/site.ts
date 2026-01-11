@@ -9,6 +9,7 @@ import { env } from '@/env.mjs';
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
+  revalidate: 1800, // 30 minutes for cached data refresh
   name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',

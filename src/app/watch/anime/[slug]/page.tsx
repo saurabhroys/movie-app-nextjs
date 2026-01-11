@@ -4,8 +4,9 @@ import MovieService from '@/services/MovieService';
 import { Show } from '@/types';
 import AnimeWatchPage from './anime-watch-page';
 import NotFound from '@/components/watch/not-found-redirect';
+import { siteConfig } from '@/configs/site';
 
-export const revalidate = 3600;
+export const revalidate = siteConfig.revalidate;
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;

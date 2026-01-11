@@ -1,4 +1,5 @@
 import SearchContainer from '@/components/search-container';
+import { siteConfig } from '@/configs/site';
 import SearchService from '@/services/SearchService';
 import { redirect } from 'next/navigation';
 
@@ -8,7 +9,7 @@ interface SearchProps {
   }>;
 }
 
-export const revalidate = 3600;
+export const revalidate = siteConfig.revalidate;
 
 export default async function SearchPage(props: SearchProps) {
   const searchParams = await props.searchParams;

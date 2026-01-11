@@ -229,7 +229,7 @@ class MovieService extends BaseService {
 
   static urlBuilder(req: TmdbRequest) {
     const currentDate = new Date().toISOString().split('T')[0];
-    const latestFilter = `&sort_by=primary_release_date.desc&primary_release_date.lte=${currentDate}&vote_count.gte=5`;
+    const latestFilter = `&sort_by=primary_release_date.desc&primary_release_date.lte=${currentDate}&vote_count.gte=5&with_runtime.gte=60`;
 
     switch (req.requestType) {
       case RequestType.ANIME_LATEST:
