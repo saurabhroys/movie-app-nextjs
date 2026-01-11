@@ -228,6 +228,9 @@ class MovieService extends BaseService {
   );
 
   static urlBuilder(req: TmdbRequest) {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const latestFilter = `&sort_by=primary_release_date.desc&primary_release_date.lte=${currentDate}&vote_count.gte=5`;
+
     switch (req.requestType) {
       case RequestType.ANIME_LATEST:
         return `/discover/${req.mediaType}?with_keywords=210024%2C&language=en-US&sort_by=primary_release_date.desc&release_date.lte=2024-11-10&with_runtime.gte=1`;
@@ -242,18 +245,20 @@ class MovieService extends BaseService {
         return `/trending/${req.mediaType}/day?language=en-US&with_original_language=en&page=${req.page ?? 1}`;
       case RequestType.TOP_RATED:
         return `/${req.mediaType}/top_rated?page=${req.page ?? 1}&with_original_language=en&language=en-US`;
+      case RequestType.NOW_PLAYING:
+        return `/${req.mediaType}/now_playing?page=${req.page ?? 1}&with_original_language=en&language=en-US`;
       case RequestType.NETFLIX:
-        return `/discover/${req.mediaType}?with_networks=213&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_networks=213&with_original_language=en&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : ''}`;
       case RequestType.DISNEY_PLUS:
-        return `/discover/${req.mediaType}?with_networks=2739&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_networks=2739&with_original_language=en&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : ''}`;
       case RequestType.AMAZON_PRIME:
-        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=en&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=en&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : ''}`;
       case RequestType.HBO:
-        return `/discover/${req.mediaType}?with_networks=49&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_networks=49&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=popularity.desc'}`;
       case RequestType.POPULAR:
         return `/${req.mediaType}/popular?language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.GENRE:
-        return `/discover/${req.mediaType}?with_genres=${req.genre}&language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}${req.isLatest ? latestFilter : ''}`;
       case RequestType.ANIME_GENRE:
         return `/discover/${req.mediaType}?with_genres=${req.genre}&with_keywords=210024%2C&language=en-US&with_original_language=en&page=${req.page ?? 1}&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.KOREAN:
@@ -287,7 +292,7 @@ class MovieService extends BaseService {
 
       // Indian Movies
       case RequestType.INDIAN_MOVIES:
-        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=popularity.desc'}`;
 
       // Indian TV Shows by platform
       case RequestType.INDIAN_TV_NETFLIX:

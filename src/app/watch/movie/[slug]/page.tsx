@@ -274,7 +274,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       {/* Alternative Players */}
 
       {/* Recommended Movies */}
-      <div className="relative z-10 bg-gradient-to-t from-black via-black/80 to-transparent">
+      <div className="relative z-10 bg-linear-to-t from-black via-black/80 to-transparent">
         <RecommendedMovies shows={recommendedMovies} title="More like this" />
       </div>
     </div>

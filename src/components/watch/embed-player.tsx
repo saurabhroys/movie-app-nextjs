@@ -52,7 +52,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         position: 'absolute',
         backgroundColor: '#000',
       }}>
-      <div className="group header-top absolute top-[5rem] right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14">
+      <div className="group header-top absolute top-20 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14">
         <div className="flex flex-1 items-center gap-x-5 md:gap-x-8">
           <svg
             className="h-10 w-10 shrink-0 cursor-pointer transition hover:scale-125"
