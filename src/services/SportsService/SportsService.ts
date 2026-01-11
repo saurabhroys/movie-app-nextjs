@@ -27,7 +27,7 @@ const requestTypesNeedUpdateMediaType = [
 ];
 const baseUrl = 'https://api.themoviedb.org/3';
 
-class MovieService extends BaseService {
+class SportsService extends BaseService {
   static async findCurrentMovie(id: number, pathname: string): Promise<Show> {
     const data = await Promise.allSettled([
       this.findMovie(id),
@@ -226,4 +226,4 @@ class MovieService extends BaseService {
   });
 }
 
-export default MovieService;
+export default SportsService;
