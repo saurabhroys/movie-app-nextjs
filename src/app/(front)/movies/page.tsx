@@ -29,13 +29,23 @@ export default async function MoviePage() {
       visible: true,
     },
     {
+      title: 'Top Rated Movies',
+      req: { requestType: RequestType.TOP_RATED, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
+      title: 'Latest Movies',
+      req: { requestType: RequestType.NOW_PLAYING, mediaType: MediaType.MOVIE },
+      visible: true,
+    },
+    {
       title: 'Netflix Movies',
-      req: { requestType: RequestType.NETFLIX, mediaType: MediaType.MOVIE },
+      req: { requestType: RequestType.NETFLIX, mediaType: MediaType.MOVIE, isLatest: true },
       visible: true,
     },
     {
       title: 'Disney+ Movies',
-      req: { requestType: RequestType.DISNEY_PLUS, mediaType: MediaType.MOVIE },
+      req: { requestType: RequestType.DISNEY_PLUS, mediaType: MediaType.MOVIE, isLatest: true },
       visible: true,
     },
     {
@@ -43,12 +53,13 @@ export default async function MoviePage() {
       req: {
         requestType: RequestType.AMAZON_PRIME,
         mediaType: MediaType.MOVIE,
+        isLatest: true,
       },
       visible: true,
     },
     {
       title: 'HBO Movies',
-      req: { requestType: RequestType.HBO, mediaType: MediaType.MOVIE },
+      req: { requestType: RequestType.HBO, mediaType: MediaType.MOVIE, isLatest: true },
       visible: true,
     },
     {
@@ -57,6 +68,7 @@ export default async function MoviePage() {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
         genre: Genre.COMEDY,
+        isLatest: true,
       },
       visible: true,
     },
@@ -66,6 +78,37 @@ export default async function MoviePage() {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
         genre: Genre.ACTION,
+        isLatest: true,
+      },
+      visible: true,
+    },
+    {
+      title: 'Animation Movies',
+      req: {
+        requestType: RequestType.GENRE,
+        mediaType: MediaType.MOVIE,
+        genre: Genre.ANIMATION,
+        isLatest: true,
+      },
+      visible: true,
+    },
+    {
+      title: 'Sci-Fi Movies',
+      req: {
+        requestType: RequestType.GENRE,
+        mediaType: MediaType.MOVIE,
+        genre: Genre.SCIENCE_FICTION,
+        isLatest: true,
+      },
+      visible: true,
+    },
+    {
+      title: 'Horror Movies',
+      req: {
+        requestType: RequestType.GENRE,
+        mediaType: MediaType.MOVIE,
+        genre: Genre.HORROR,
+        isLatest: true,
       },
       visible: true,
     },
@@ -75,6 +118,7 @@ export default async function MoviePage() {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
         genre: Genre.ROMANCE,
+        isLatest: true,
       },
       visible: true,
     },
@@ -84,6 +128,17 @@ export default async function MoviePage() {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
         genre: Genre.THRILLER,
+        isLatest: true,
+      },
+      visible: true,
+    },
+    {
+      title: 'Documentaries',
+      req: {
+        requestType: RequestType.GENRE,
+        mediaType: MediaType.MOVIE,
+        genre: Genre.DOCUMENTARY,
+        isLatest: true,
       },
       visible: true,
     },
@@ -92,6 +147,7 @@ export default async function MoviePage() {
       req: {
         requestType: RequestType.INDIAN_MOVIES,
         mediaType: MediaType.MOVIE,
+        isLatest: true,
       },
       visible: true,
     },
