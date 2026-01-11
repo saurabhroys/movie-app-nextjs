@@ -6,7 +6,7 @@ import AnimeWatchPage from './anime-watch-page';
 import NotFound from '@/components/watch/not-found-redirect';
 import { siteConfig } from '@/configs/site';
 
-export const revalidate = siteConfig.revalidate;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;

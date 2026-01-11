@@ -7,7 +7,7 @@ import MovieService from '@/services/MovieService';
 import { Genre } from '@/enums/genre';
 import { getRandomShow } from '@/lib/utils';
 
-export const revalidate = 3600;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export default async function Home() {
   const h1 = `${siteConfig.name} Home`;

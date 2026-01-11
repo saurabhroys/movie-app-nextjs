@@ -8,7 +8,7 @@ import MovieService from '@/services/MovieService';
 import { type CategorizedShows, MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-export const revalidate = siteConfig.revalidate;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export const metadata: Metadata = {
   title: 'Anime',

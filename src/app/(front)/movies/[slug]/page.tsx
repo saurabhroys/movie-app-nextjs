@@ -7,7 +7,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const revalidate = siteConfig.revalidate;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;

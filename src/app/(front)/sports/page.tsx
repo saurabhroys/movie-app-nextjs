@@ -7,7 +7,7 @@ import { getRandomShow } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
 
-export const revalidate = siteConfig.revalidate;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export default async function MoviePage() {
   const h1 = `${siteConfig.name} Movie`;
