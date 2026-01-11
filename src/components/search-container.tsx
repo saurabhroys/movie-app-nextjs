@@ -15,7 +15,7 @@ function SearchContainer({ shows, query }: SearchContainer) {
   const searchStore = useSearchStore();
 
   React.useEffect(() => {
-    searchStore.setOpen(true);
+    searchStore.setIsOpen(true);
     searchStore.setQuery(query);
     searchStore.setShows(shows);
     const timer1: NodeJS.Timeout = setTimeout(() => {
