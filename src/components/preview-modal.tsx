@@ -42,158 +42,40 @@ const PreviewModal = () => {
   const p = usePreviewModalStore();
   const modal = useModalStore();
   const IS_MOBILE = isMobile();
-  const [trailer, setTrailer] = React.useState('');
-  const [genres, setGenres] = React.useState<Genre[]>([]);
-  const [isAnime, setIsAnime] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
   const [options, setOptions] = React.useState(defaultOptions);
-  const [detailedShow, setDetailedShow] = React.useState<Show | null>(null);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
-  const [logoPath, setLogoPath] = React.useState<string | null>(null);
-  const [contentRating, setContentRating] = React.useState<string | null>(null);
+
+  const detailedShow = p.detailedShow;
+
+  const trailer = React.useMemo(() => {
+    if (!detailedShow?.videos?.results) return '';
+    return (
+      detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')
+        ?.key ?? ''
+    );
+  }, [detailedShow]);
+
+  const isAnime = React.useMemo(() => {
+    const keywords: KeyWord[] =
+      (detailedShow as any)?.keywords?.results ||
+      (detailedShow as any)?.keywords?.keywords;
+    return !!keywords?.find((k) => k.name === 'anime');
+  }, [detailedShow]);
 
   React.useEffect(() => {
-    const fetchContentRating = async () => {
-      if (!p.show?.id) return;
-      try {
-        const isTv = p.show.media_type === MediaType.TV;
-        if (isTv) {
-          const { data }: any = await MovieService.getContentRating(
-            'tv',
-            p.show.id,
-          );
-          const results: any[] = data?.results ?? [];
-          const prefOrder = ['RU', 'UA', 'LV', 'TW'];
-          let rating: string | null = null;
-          for (const cc of prefOrder) {
-            const match = results.find((r: any) => r?.iso_3166_1 === cc);
-            const candidate = match?.rating ?? match?.certification ?? '';
-            if (candidate && String(candidate).trim().length > 0) {
-              rating = String(candidate).trim();
-              break;
-            }
-          }
-          if (!rating) {
-            const firstNonEmpty = results.find(
-              (r: any) =>
-                (r?.rating ?? r?.certification ?? '').toString().trim().length >
-                0,
-            );
-            rating = firstNonEmpty
-              ? String(
-                  firstNonEmpty.rating ?? firstNonEmpty.certification,
-                ).trim()
-              : null;
-          }
-          setContentRating(rating);
-          return;
-        }
-
-        // Movies use release_dates endpoint
-        const { data }: any = await MovieService.getMovieReleaseDates(
-          p.show.id,
-        );
-        const countries: any[] = data?.results ?? [];
-        const prefOrder = ['RU', 'UA', 'LV', 'TW'];
-        const getFirstNonEmpty = (c: any): string | null => {
-          const arr = (c?.release_dates ?? [])
-            .filter((rd: any) => rd && typeof rd.certification === 'string')
-            .map((rd: any) => ({
-              cert: rd.certification?.trim?.() ?? '',
-              date: rd.release_date,
-            }))
-            .filter((x: any) => x.cert.length > 0)
-            .sort(
-              (a: any, b: any) =>
-                new Date(b.date).getTime() - new Date(a.date).getTime(),
-            );
-          return arr.length ? arr[0].cert : null;
-        };
-        let cert: string | null = null;
-        for (const cc of prefOrder) {
-          const country = countries.find((c: any) => c?.iso_3166_1 === cc);
-          cert = getFirstNonEmpty(country);
-          if (cert) break;
-        }
-        if (!cert) {
-          // fallback to first country with a non-empty certification
-          for (const c of countries) {
-            cert = getFirstNonEmpty(c);
-            if (cert) break;
-          }
-        }
-        setContentRating(cert);
-      } catch (error) {
-        console.error('Failed to fetch content rating:', error);
-        setContentRating(null);
-      }
-    };
-    fetchContentRating();
-  }, [p.show?.id, p.show?.media_type]);
-
-  React.useEffect(() => {
-    let isActive = true;
-    (async () => {
-      try {
-        if (!p.show?.id) return;
-        const apiMediaType =
-          p.show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
-        const { data } = await MovieService.getImages(apiMediaType, p.show.id);
-        const preferred =
-          data.logos?.find((l) => l.iso_639_1 === 'en') ?? data.logos?.[0];
-        if (isActive) setLogoPath(preferred ? preferred.file_path : null);
-      } catch {
-        if (isActive) setLogoPath(null);
-      }
-    })();
-    return () => {
-      isActive = false;
-    };
-  }, [p.show?.id, p.show?.media_type]);
-
-  React.useEffect(() => {
-    if (IS_MOBILE)
-      setOptions((s) => ({ ...s, playerVars: { ...s.playerVars, mute: 1 } }));
-    (async () => {
-      const id = p.show?.id,
-        type = p.show?.media_type === MediaType.TV ? 'tv' : 'movie';
-      if (!id || !type) return;
-      // Try Hindi trailer first, fallback to English
-      let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(
-        id,
-        type,
-        'hi-IN',
-      );
-      if (!data.videos?.results?.length) {
-        data = await MovieService.findMovieByIdAndType(id, type, 'en-US');
-      }
-      const keywords: KeyWord[] =
-        data?.keywords?.results || data?.keywords?.keywords;
-      if (keywords?.length)
-        setIsAnime(!!keywords.find((k) => k.name === 'anime'));
-      if (data?.genres) setGenres(data.genres);
-      if (data) setDetailedShow(data); // Store the detailed show data with runtime
-      if (data.videos?.results?.length) {
-        const result = data.videos.results.find(
-          (v: VideoResult) => v.type === 'Trailer',
-        );
-        if (result?.key) setTrailer(result.key);
-      }
-    })();
-  }, [p.show]);
-  React.useEffect(() => {
-    setIsAnime(false);
-  }, [p.show]);
+    if (p.isOpen && p.show) {
+      const type = p.show.media_type === MediaType.TV ? 'tv' : 'movie';
+      p.fetchPreviewData(p.show.id, type);
+    }
+  }, [p.isOpen, p.show?.id]);
 
   // Close preview when the main show modal opens
   React.useEffect(() => {
-    if (!modal.open) return;
-    p.setIsActive(false);
-    p.setIsOpen(false);
-    p.setAnchorRect(null);
-    p.setShow(null);
-  }, [modal.open]);
+    if (!modal.isOpen) return;
+    p.reset();
+  }, [modal.isOpen]);
 
   const handleCloseModal = () => {
     p.reset();
@@ -221,21 +103,21 @@ const PreviewModal = () => {
   };
 
   const getRuntime = () =>
-    p.show?.media_type === MediaType.TV
-      ? p.show.number_of_seasons
-        ? `${p.show.number_of_seasons} Seasons`
+    detailedShow?.media_type === MediaType.TV
+      ? detailedShow.number_of_seasons
+        ? `${detailedShow.number_of_seasons} Seasons`
         : null
-      : p.show?.runtime
-        ? `${p.show.runtime} min`
+      : detailedShow?.runtime
+        ? `${detailedShow.runtime} min`
         : null;
 
   const getQuality = () => ((p.show?.vote_average || 0) >= 8 ? 'HD' : 'SD');
 
   const getGenres = () =>
-    genres
-      .slice(0, 3)
+    detailedShow?.genres
+      ?.slice(0, 3)
       .map((g) => g.name)
-      .join(' • ');
+      .join(' • ') ?? '';
 
   // animate in/out on show change
   const [animKey, setAnimKey] = React.useState<string>('');
@@ -374,7 +256,7 @@ const PreviewModal = () => {
         '',
         `${path}/${getSlug(current.id, name)}`,
       );
-      useModalStore.setState({ show: current, open: true, play: true });
+      useModalStore.setState({ show: current, isOpen: true, play: true });
     });
   };
 
@@ -451,10 +333,10 @@ const PreviewModal = () => {
                 iframeClassName="w-full h-full z-10"
               />
             )}
-            {logoPath && (
+            {detailedShow?.logoPath && (
               <div className="pointer-events-none absolute bottom-2 left-2 z-20 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
                 <img
-                  src={`https://image.tmdb.org/t/p/w500${logoPath}`}
+                  src={`https://image.tmdb.org/t/p/w500${detailedShow.logoPath}`}
                   alt={p.show.title ?? p.show.name ?? 'logo'}
                   className="h-auto max-h-12 w-auto max-w-[80%] object-contain"
                 />
@@ -500,7 +382,7 @@ const PreviewModal = () => {
                     {getQuality()}
                   </span>
                   <span className="rounded border px-1 py-0.5 text-[8px] font-bold text-white">
-                    {contentRating ?? ''}
+                    {detailedShow?.contentRating ?? ''}
                   </span>
                 </div>
 

@@ -205,7 +205,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   // Pause hero trailer when any modal (detail or preview) is open, and resume when closed
   React.useEffect(() => {
     const videoRef: any = youtubeRef.current;
-    const isAnyModalOpen = modalStore.open || previewModalStore.isOpen;
+    const isAnyModalOpen = modalStore.isOpen || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
         videoRef.internalPlayer.pauseVideo();
@@ -223,7 +223,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       videoRef.internalPlayer.playVideo();
       setIsPaused(false);
     }
-  }, [modalStore.open, previewModalStore.isOpen, showTrailer, trailerFinished]);
+  }, [modalStore.isOpen, previewModalStore.isOpen, showTrailer, trailerFinished]);
 
   const fetchTrailer = async () => {
     if (!randomShow?.id) return;
@@ -377,7 +377,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       findMovie
         .then((response: AxiosResponse<Show>) => {
           const { data } = response;
-          useModalStore.setState({ show: data, open: true, play: true });
+          useModalStore.setState({ show: data, isOpen: true, play: true });
         })
         .catch((error) => {
           console.error(`findMovie: `, error);
@@ -541,7 +541,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                         );
                         useModalStore.setState({
                           show: randomShow,
-                          open: true,
+                          isOpen: true,
                           play: true,
                         });
                       }}>

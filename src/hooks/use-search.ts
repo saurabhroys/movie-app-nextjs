@@ -125,6 +125,6 @@ export function useSearch(options: UseSearchOptions = {}) {
     shows: searchStore.shows,
     loading: searchStore.loading,
     isOpen: searchStore.isOpen,
-    setOpen: searchStore.setOpen,
+    setIsOpen: searchStore.setIsOpen,
   };
 }

@@ -61,9 +61,9 @@ export function MainNav({ items }: MainNavProps) {
 
     if (!search?.length || !pathname.includes('/search')) {
       searchStore.reset();
-      searchStore.setOpen(false);
+      searchStore.setIsOpen(false);
     } else if (search?.length) {
-      searchStore.setOpen(true);
+      searchStore.setIsOpen(true);
       searchStore.setLoading(true);
       searchStore.setQuery(search);
       setTimeout(() => {
@@ -130,7 +130,7 @@ export function MainNav({ items }: MainNavProps) {
   }, [isScrolled]);
 
   const handleChangeStatusOpen = (value: boolean): void => {
-    searchStore.setOpen(value);
+    searchStore.setIsOpen(value);
     if (!value) searchStore.reset();
   };
 

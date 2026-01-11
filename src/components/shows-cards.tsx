@@ -162,7 +162,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     window.history.pushState(null, '', `${path}/${getSlug(show.id, name)}`);
     useModalStore.setState({
       show: show,
-      open: true,
+      isOpen: true,
       play: true,
     });
   };
