@@ -38,30 +38,46 @@ export default async function MoviePage() {
       req: { requestType: RequestType.NOW_PLAYING, mediaType: MediaType.MOVIE },
       visible: true,
     },
-    {
-      title: 'Netflix Movies',
-      req: { requestType: RequestType.NETFLIX, mediaType: MediaType.MOVIE, isLatest: true },
-      visible: true,
-    },
-    {
-      title: 'Disney+ Movies',
-      req: { requestType: RequestType.DISNEY_PLUS, mediaType: MediaType.MOVIE, isLatest: true },
-      visible: true,
-    },
-    {
-      title: 'Amazon Prime Movies',
-      req: {
-        requestType: RequestType.AMAZON_PRIME,
-        mediaType: MediaType.MOVIE,
-        isLatest: true,
-      },
-      visible: true,
-    },
-    {
-      title: 'HBO Movies',
-      req: { requestType: RequestType.HBO, mediaType: MediaType.MOVIE, isLatest: true },
-      visible: true,
-    },
+    // {
+    //   title: 'Netflix Movies',
+    //   req: {
+    //     requestType: RequestType.NETWORK,
+    //     mediaType: MediaType.MOVIE,
+    //     networkId: 213,
+    //     isLatest: true,
+    //   },
+    //   visible: true,
+    // },
+    // {
+    //   title: 'Disney+ Movies',
+    //   req: {
+    //     requestType: RequestType.NETWORK,
+    //     mediaType: MediaType.MOVIE,
+    //     networkId: 2739,
+    //     isLatest: true,
+    //   },
+    //   visible: true,
+    // },
+    // {
+    //   title: 'Amazon Prime Movies',
+    //   req: {
+    //     requestType: RequestType.NETWORK,
+    //     mediaType: MediaType.MOVIE,
+    //     networkId: 1024,
+    //     isLatest: true,
+    //   },
+    //   visible: true,
+    // },
+    // {
+    //   title: 'HBO Movies',
+    //   req: {
+    //     requestType: RequestType.NETWORK,
+    //     mediaType: MediaType.MOVIE,
+    //     networkId: 49,
+    //     isLatest: true,
+    //   },
+    //   visible: true,
+    // },
     {
       title: 'Comedy Movies',
       req: {

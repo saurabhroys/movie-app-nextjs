@@ -5,6 +5,7 @@ export enum RequestType {
   TRENDING = 'trending',
   TOP_RATED = 'top_rated',
   NOW_PLAYING = 'now_playing',
+  NETWORK = 'network',
   NETFLIX = 'netflix',
   DISNEY_PLUS = 'disney+',
   AMAZON_PRIME = 'amazon_prime',
@@ -52,6 +53,7 @@ export type TmdbRequest = {
   genre?: Genre;
   page?: number;
   isLatest?: boolean;
+  networkId?: number;
 };
 
 export type ShowRequest = {
