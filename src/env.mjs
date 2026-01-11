@@ -25,6 +25,7 @@ export const env = createEnv({
     NEXT_PUBLIC_INSTAGRAM: z.string().url().optional(),
     NEXT_PUBLIC_YOUTUBE: z.string().url().optional(),
     NEXT_PUBLIC_IMAGE_DOMAIN: z.string().optional(),
+    NEXT_PUBLIC_TMDB_API_URL: z.string().url().optional(),
   },
 
   /**
@@ -48,6 +49,8 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_YOUTUBE ?? 'https://youtube.com',
     NEXT_PUBLIC_IMAGE_DOMAIN:
       process.env.NEXT_PUBLIC_IMAGE_DOMAIN ?? 'image.tmdb.org',
+    NEXT_PUBLIC_TMDB_API_URL:
+      process.env.NEXT_PUBLIC_TMDB_API_URL ?? 'https://api.themoviedb.org/3',
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
