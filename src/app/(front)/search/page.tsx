@@ -9,7 +9,7 @@ interface SearchProps {
   }>;
 }
 
-export const revalidate = siteConfig.revalidate;
+export const revalidate = 1800; // siteConfig.revalidate
 
 export default async function SearchPage(props: SearchProps) {
   const searchParams = await props.searchParams;
