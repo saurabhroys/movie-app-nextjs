@@ -247,6 +247,8 @@ class MovieService extends BaseService {
         return `/${req.mediaType}/top_rated?page=${req.page ?? 1}&with_original_language=en&language=en-US`;
       case RequestType.NOW_PLAYING:
         return `/${req.mediaType}/now_playing?page=${req.page ?? 1}&with_original_language=en&language=en-US`;
+      case RequestType.NETWORK:
+        return `/discover/${req.mediaType}?with_networks=${req.networkId}&with_original_language=en&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : ''}`;
       case RequestType.NETFLIX:
         return `/discover/${req.mediaType}?with_networks=213&with_original_language=en&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : ''}`;
       case RequestType.DISNEY_PLUS:
@@ -264,7 +266,7 @@ class MovieService extends BaseService {
       case RequestType.KOREAN:
         return `/discover/${req.mediaType}?with_genres=${req.genre}&with_original_language=ko&language=en-US&page=${req.page ?? 1}`;
       case RequestType.INDIAN:
-        return `/discover/${req.mediaType}?with_genres=${req.genre}&with_original_language=hi&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre}&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=primary_release_date.desc&vote_count.gte=5&with_runtime.gte=60`;
       case RequestType.TAMIL:
         return `/discover/${req.mediaType}?with_original_language=ta&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc&vote_count.gte=5&with_runtime.gte=60`;
       case RequestType.TELUGU:
