@@ -68,10 +68,6 @@ const ShowModal = () => {
   const IS_MOBILE: boolean = isMobile();
   const router = useRouter();
 
-  const [trailer, setTrailer] = React.useState('');
-  const [isPlaying, setPlaying] = React.useState(true);
-  const [genres, setGenres] = React.useState<Genre[]>([]);
-  const [isAnime, setIsAnime] = React.useState<boolean>(false);
   const [isMuted, setIsMuted] = React.useState<boolean>(
     modalStore.firstLoad || IS_MOBILE,
   );
@@ -79,113 +75,30 @@ const ShowModal = () => {
     React.useState<Record<string, object>>(defaultOptions);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
-  const [contentRating, setContentRating] = React.useState<string | null>(null);
   const [trailerFinished, setTrailerFinished] = React.useState<boolean>(false);
-  const [logoPath, setLogoPath] = React.useState<string | null>(null);
   const [logoTransition, setLogoTransition] = React.useState<
     'initial' | 'trailer-playing' | 'trailer-ended'
   >('initial');
-  const [runtime, setRuntime] = React.useState<number | null>(null);
-  const [cast, setCast] = React.useState<any[]>([]);
-  const [keywords, setKeywords] = React.useState<KeyWord[]>([]);
-  const [movieCollection, setMovieCollection] = React.useState<any>(null);
-  const [tvSeasons, setTvSeasons] = React.useState<any>(null);
   const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
   const [seasonEpisodes, setSeasonEpisodes] = React.useState<any[]>([]);
-  const [recommendedShows, setRecommendedShows] = React.useState<Show[]>([]);
-  const [loadingRecommended, setLoadingRecommended] =
-    React.useState<boolean>(false);
-  const pathname = usePathname();
-  const [recommendedLogos, setRecommendedLogos] = React.useState<
-    Record<number, string | null>
-  >({});
-  const [recommendedDetails, setRecommendedDetails] = React.useState<
-    Record<number, { runtime: number | null; number_of_seasons: number | null }>
-  >({});
-  const [directors, setDirectors] = React.useState<string[]>([]);
-  const [writers, setWriters] = React.useState<string[]>([]);
   const isClosingRef = React.useRef(false);
 
+  const detailedShow = modalStore.detailedShow;
+  const trailer = React.useMemo(() => {
+    if (!detailedShow?.videos?.results) return '';
+    return detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')?.key ?? '';
+  }, [detailedShow]);
+
+  const isAnime = React.useMemo(() => {
+    return !!detailedShow?.keywords?.find((k: KeyWord) => k.name === 'anime');
+  }, [detailedShow]);
+
   React.useEffect(() => {
-    const fetchContentRating = async () => {
-      if (!modalStore.show?.id) return;
-      try {
-        const isTv = modalStore.show.media_type === MediaType.TV;
-        if (isTv) {
-          const { data }: any = await MovieService.getContentRating(
-            'tv',
-            modalStore.show.id,
-          );
-          const results: any[] = data?.results ?? [];
-          const prefOrder = ['RU', 'UA', 'LV', 'TW'];
-          let rating: string | null = null;
-          for (const cc of prefOrder) {
-            const match = results.find((r: any) => r?.iso_3166_1 === cc);
-            const candidate = match?.rating ?? match?.certification ?? '';
-            if (candidate && String(candidate).trim().length > 0) {
-              rating = String(candidate).trim();
-              break;
-            }
-          }
-          if (!rating) {
-            const firstNonEmpty = results.find(
-              (r: any) =>
-                (r?.rating ?? r?.certification ?? '').toString().trim().length >
-                0,
-            );
-            rating = firstNonEmpty
-              ? String(
-                  firstNonEmpty.rating ?? firstNonEmpty.certification,
-                ).trim()
-              : null;
-          }
-          setContentRating(rating);
-          return;
-        }
+    if (modalStore.isOpen && modalStore.show) {
+      modalStore.fetchDetailedShow(modalStore.show.id, modalStore.show.media_type);
+    }
+  }, [modalStore.isOpen, modalStore.show?.id]);
 
-        // Movies use release_dates endpoint
-        const { data }: any = await MovieService.getMovieReleaseDates(
-          modalStore.show.id,
-        );
-        const countries: any[] = data?.results ?? [];
-        const prefOrder = ['RU', 'UA', 'LV', 'TW'];
-        const getFirstNonEmpty = (c: any): string | null => {
-          const arr = (c?.release_dates ?? [])
-            .filter((rd: any) => rd && typeof rd.certification === 'string')
-            .map((rd: any) => ({
-              cert: rd.certification?.trim?.() ?? '',
-              date: rd.release_date,
-            }))
-            .filter((x: any) => x.cert.length > 0)
-            .sort(
-              (a: any, b: any) =>
-                new Date(b.date).getTime() - new Date(a.date).getTime(),
-            );
-          return arr.length ? arr[0].cert : null;
-        };
-        let cert: string | null = null;
-        for (const cc of prefOrder) {
-          const country = countries.find((c: any) => c?.iso_3166_1 === cc);
-          cert = getFirstNonEmpty(country);
-          if (cert) break;
-        }
-        if (!cert) {
-          // fallback to first country with a non-empty certification
-          for (const c of countries) {
-            cert = getFirstNonEmpty(c);
-            if (cert) break;
-          }
-        }
-        setContentRating(cert);
-      } catch (error) {
-        console.error('Failed to fetch content rating:', error);
-        setContentRating(null);
-      }
-    };
-    fetchContentRating();
-  }, [modalStore.show?.id, modalStore.show?.media_type]);
-
-  // get trailer and genres of show
   React.useEffect(() => {
     if (modalStore.firstLoad || IS_MOBILE) {
       setOptions((state: Record<string, object>) => ({
@@ -193,147 +106,10 @@ const ShowModal = () => {
         playerVars: { ...state.playerVars, mute: 1 },
       }));
     }
-    void handleGetData();
-  }, []);
-
-  React.useEffect(() => {
-    setIsAnime(false);
-    // Reset closing flag when modal opens
-    if (modalStore.open) {
-      isClosingRef.current = false;
-    }
-  }, [modalStore.open]);
-
-  // Fetch logo for the current show
-  React.useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        if (!modalStore.show?.id) return;
-        const type =
-          modalStore.show.media_type === MediaType.TV ? 'tv' : 'movie';
-        const { data }: any = await MovieService.getImages(
-          type,
-          modalStore.show.id,
-        );
-        const preferred =
-          data?.logos?.find((l: any) => l?.iso_639_1 === 'en') ??
-          data?.logos?.[0];
-        setLogoPath(preferred ? preferred.file_path : null);
-      } catch (error) {
-        console.error('Failed to fetch logo:', error);
-        setLogoPath(null);
-      }
-    };
-    fetchLogo();
-  }, [modalStore.show?.id, modalStore.show?.media_type]);
-
-  const handleGetData = async () => {
-    const id: number | undefined = modalStore.show?.id;
-    const type: string =
-      modalStore.show?.media_type === MediaType.TV ? 'tv' : 'movie';
-    if (!id || !type) {
-      return;
-    }
-    // Try Hindi trailer first, fallback to English
-    let data: ShowWithGenreAndVideo = await MovieService.findMovieByIdAndType(
-      id,
-      type,
-      'hi-IN',
-    );
-    if (!data.videos?.results?.length) {
-      data = await MovieService.findMovieByIdAndType(id, type, 'en-US');
-    }
-
-    const keywords: KeyWord[] =
-      data?.keywords?.results || data?.keywords?.keywords;
-
-    if (keywords?.length) {
-      setKeywords(keywords);
-      setIsAnime(
-        !!keywords.find((keyword: KeyWord) => keyword.name === 'anime'),
-      );
-    } else {
-      setKeywords([]);
-    }
-
-    if (data?.genres) {
-      setGenres(data.genres);
-    }
-    if (data.videos?.results?.length) {
-      const videoData: VideoResult[] = data.videos?.results;
-      const result: VideoResult | undefined = videoData.find(
-        (item: VideoResult) => item.type === 'Trailer',
-      );
-      if (result?.key) setTrailer(result.key);
-    }
-
-    // Fetch runtime and cast
-    try {
-      const details = await MovieService.findMovieByIdAndType(
-        id,
-        type,
-        'en-US',
-      );
-      if (details.runtime) {
-        setRuntime(details.runtime);
-      }
-
-      // Fetch cast and crew information
-      const { data: credits } = await MovieService.getCredits(type, id);
-      if (credits?.cast) {
-        setCast(credits.cast.slice(0, 10));
-      }
-      if (credits?.crew) {
-        const directorNames: string[] = credits.crew
-          .filter((c: any) => c?.job === 'Director')
-          .map((c: any) => String(c.name))
-          .filter(Boolean);
-        const writerNames: string[] = credits.crew
-          .filter((c: any) =>
-            ['Writer', 'Screenplay', 'Story', 'Teleplay'].includes(c?.job),
-          )
-          .map((c: any) => String(c.name))
-          .filter(Boolean);
-        const uniqueDirectors = Array.from(new Set<string>(directorNames));
-        const uniqueWriters = Array.from(new Set<string>(writerNames));
-        setDirectors(uniqueDirectors.slice(0, 3));
-        setWriters(uniqueWriters.slice(0, 3));
-      }
-
-      // Fetch movie collection if it's a movie
-      if (type === 'movie' && (details as any).belongs_to_collection?.id) {
-        try {
-          const collectionData = await MovieService.getMovieCollection(
-            (details as any).belongs_to_collection.id,
-          );
-          setMovieCollection(collectionData);
-        } catch (error) {
-          console.error('Failed to fetch movie collection:', error);
-        }
-      }
-
-      // Fetch TV seasons if it's a TV show
-      if (type === 'tv') {
-        try {
-          const seasonsData = await MovieService.getTvSeasons(id);
-          setTvSeasons(seasonsData);
-          if (seasonsData.seasons && seasonsData.seasons.length > 0) {
-            setSelectedSeason(1);
-            // Fetch episodes for first season
-            const seasonData = await MovieService.getSeasons(id, 1);
-            setSeasonEpisodes(seasonData.data.episodes || []);
-          }
-        } catch (error) {
-          console.error('Failed to fetch TV seasons:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch additional details:', error);
-    }
-  };
+  }, [modalStore.firstLoad, IS_MOBILE]);
 
   const handleCloseModal = React.useCallback(() => {
-    if (isClosingRef.current || !modalStore.open) return; // Prevent double-closing
+    if (isClosingRef.current || !modalStore.isOpen) return;
     isClosingRef.current = true;
     modalStore.reset();
     if (!modalStore.show || modalStore.firstLoad) {
@@ -341,7 +117,6 @@ const ShowModal = () => {
     } else {
       window.history.back();
     }
-    // Reset the flag after a brief delay to allow for state updates
     setTimeout(() => {
       isClosingRef.current = false;
     }, 100);
@@ -417,127 +192,8 @@ const ShowModal = () => {
     }
   };
 
-  // Fetch recommendations (fallback to similar) for More like this
-  React.useEffect(() => {
-    const fetchRecommendations = async () => {
-      const id: number | undefined = modalStore.show?.id;
-      if (!id) return;
-      setLoadingRecommended(true);
-      try {
-        const isTv = modalStore.show?.media_type === MediaType.TV;
-        const primary = isTv
-          ? await MovieService.getTvRecommendations(id)
-          : await MovieService.getMovieRecommendations(id);
-        let results: any[] =
-          (primary as any)?.results ?? (primary as any)?.data?.results ?? [];
-        if (!results?.length) {
-          const fallback = isTv
-            ? await MovieService.getSimilarTvShows(id)
-            : await MovieService.getSimilarMovies(id);
-          results =
-            (fallback as any)?.results ??
-            (fallback as any)?.data?.results ??
-            [];
-        }
-        const normalized: Show[] = (results || []).map((r: any) => ({
-          media_type:
-            (r?.media_type as MediaType) ??
-            modalStore.show?.media_type ??
-            MediaType.MOVIE,
-          adult: !!r?.adult,
-          backdrop_path: r?.backdrop_path ?? null,
-          budget: null,
-          homepage: null,
-          showId: String(r?.id ?? ''),
-          id: Number(r?.id ?? 0),
-          imdb_id: null,
-          original_language: r?.original_language ?? 'en',
-          original_title: r?.original_title ?? null,
-          overview: r?.overview ?? null,
-          popularity: Number(r?.popularity ?? 0),
-          poster_path: r?.poster_path ?? null,
-          number_of_seasons: r?.number_of_seasons ?? null,
-          number_of_episodes: r?.number_of_episodes ?? null,
-          release_date: r?.release_date ?? null,
-          first_air_date: r?.first_air_date ?? null,
-          last_air_date: r?.last_air_date ?? null,
-          revenue: null,
-          runtime: r?.runtime ?? null,
-          status: r?.status ?? null,
-          tagline: r?.tagline ?? null,
-          title: r?.title ?? null,
-          name: r?.name ?? null,
-          video: !!r?.video,
-          vote_average: Number(r?.vote_average ?? 0),
-          vote_count: Number(r?.vote_count ?? 0),
-          keywords: { id: 0, keywords: [], results: [] },
-          seasons: [],
-        }));
-        setRecommendedShows(normalized);
-
-        // Fetch logos for recommended shows in parallel (best-effort)
-        const logoEntries = await Promise.all(
-          normalized.slice(0, 24).map(async (s) => {
-            try {
-              const type = s.media_type === MediaType.TV ? 'tv' : 'movie';
-              const { data }: any = await MovieService.getImages(type, s.id);
-              const preferred =
-                data?.logos?.find((l: any) => l?.iso_639_1 === 'en') ??
-                data?.logos?.[0];
-              return [s.id, preferred ? preferred.file_path : null] as const;
-            } catch {
-              return [s.id, null] as const;
-            }
-          }),
-        );
-        setRecommendedLogos((prev) => ({
-          ...prev,
-          ...Object.fromEntries(logoEntries),
-        }));
-
-        // Fetch missing details (runtime for movies, seasons for TV) for cards
-        const detailsEntries = await Promise.all(
-          normalized.slice(0, 24).map(async (s) => {
-            try {
-              const type = s.media_type === MediaType.TV ? 'tv' : 'movie';
-              const details: any = await MovieService.findMovieByIdAndType(
-                s.id,
-                type,
-                'en-US',
-              );
-              return [
-                s.id,
-                {
-                  runtime:
-                    typeof details?.runtime === 'number'
-                      ? details.runtime
-                      : null,
-                  number_of_seasons:
-                    typeof details?.number_of_seasons === 'number'
-                      ? details.number_of_seasons
-                      : null,
-                },
-              ] as const;
-            } catch {
-              return [
-                s.id,
-                { runtime: null, number_of_seasons: null },
-              ] as const;
-            }
-          }),
-        );
-        setRecommendedDetails((prev) => ({
-          ...prev,
-          ...Object.fromEntries(detailsEntries),
-        }));
-      } catch (err) {
-        setRecommendedShows([]);
-      } finally {
-        setLoadingRecommended(false);
-      }
-    };
-    fetchRecommendations();
-  }, [modalStore.show?.id, modalStore.show?.media_type]);
+  const recommendedShows = modalStore.detailedShow?.recommendations || [];
+  const loadingRecommended = modalStore.isLoading;
 
   const handleHref = (): string => {
     const type = isAnime
@@ -593,14 +249,14 @@ const ShowModal = () => {
 
   return (
     <Dialog
-      open={modalStore.open}
+      open={modalStore.isOpen}
       onOpenChange={(open) => {
         if (!open) {
           handleCloseModal();
         }
       }}
       aria-label="Modal containing show's details">
-      {modalStore.open && <BodyScrollLock />}
+      {modalStore.isOpen && <BodyScrollLock />}
       <div
         className="'bg-black/20 data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-0 z-50 backdrop-blur-[1px]"
         onClick={handleOverlayClick}>
@@ -650,7 +306,7 @@ const ShowModal = () => {
                 )}
 
                 {/* Show logo with transition states */}
-                {logoPath && (
+                {detailedShow?.logoPath && (
                   <div
                     className={`absolute z-30 flex items-center p-3 md:p-6 transition-all duration-[1500] ease-in-out ${
                       logoTransition === 'initial' ||
@@ -659,7 +315,7 @@ const ShowModal = () => {
                         : 'bottom-22 md:bottom-25 left-0 justify-start'
                     }`}>
                     <CustomImage
-                      src={`https://image.tmdb.org/t/p/original${logoPath}`}
+                      src={`https://image.tmdb.org/t/p/original${detailedShow.logoPath}`}
                       alt={`${modalStore.show?.title ?? modalStore.show?.name} logo`}
                       className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500] ease-in-out ${
                         logoTransition === 'initial' ||
@@ -689,7 +345,7 @@ const ShowModal = () => {
                   <div className="flex items-center gap-2.5">
                     <Link href={handleHref()}>
                       <Button
-                        aria-label={`${isPlaying ? 'Pause' : 'Play'} show`}
+                        aria-label={`${!trailerFinished ? 'Pause' : 'Play'} show`}
                         className="group h-auto rounded-[9px] bg-neutral-50 py-1.5 text-black hover:bg-neutral-300">
                         <>
                           <Icons.play
@@ -761,15 +417,15 @@ const ShowModal = () => {
                     ) : null}
 
                     {/* Duration */}
-                    {runtime && (
+                    {detailedShow?.runtime && (
                       <p className="text-sm font-bold text-slate-200">
-                        {Math.floor(runtime / 60)}h {runtime % 60}m
+                        {Math.floor(detailedShow.runtime / 60)}h {detailedShow.runtime % 60}m
                       </p>
                     )}
                     {/* Seasons (TV only) */}
                     {modalStore.show?.media_type === MediaType.TV &&
                       (() => {
-                        const count = tvSeasons?.seasons?.length ?? modalStore.show?.number_of_seasons ?? null;
+                        const count = detailedShow?.number_of_seasons ?? modalStore.show?.number_of_seasons ?? null;
                         return typeof count === 'number' && count > 0 ? (
                           <p className="text-sm font-bold text-slate-200">
                             {count} {count === 1 ? 'Season' : 'Seasons'}
@@ -793,12 +449,12 @@ const ShowModal = () => {
                   <div className="flex items-center gap-2">
                     {/* Age Rating */}
                     <span className="w-9 place-items-center border border-neutral-400 px-[0.4rem] text-center text-[12px] font-bold text-neutral-200">
-                      {contentRating ?? '16+'}
+                      {detailedShow?.contentRating ?? '16+'}
                     </span>
                     {/* KeyWords */}
                     <span className="text-sm text-slate-50">
-                      {keywords.length > 0
-                        ? keywords
+                      {detailedShow?.keywords && detailedShow.keywords.length > 0
+                        ? detailedShow.keywords
                             .slice(0, 3)
                             .map((keyword) => keyword.name)
                             .join(', ')
@@ -818,8 +474,8 @@ const ShowModal = () => {
                     <div>
                       <span className="text-neutral-50">Cast: </span>
                       <span>
-                        {cast.length > 0
-                          ? `${cast.map((actor) => actor.name).join(', ')}, more`
+                        {detailedShow?.cast && detailedShow.cast.length > 0
+                          ? `${detailedShow.cast.map((actor: any) => actor.name).slice(0, 5).join(', ')}, more`
                           : '-'}
                       </span>
                     </div>
@@ -830,7 +486,7 @@ const ShowModal = () => {
                     <div>
                       <span className="text-neutral-50">Genres: </span>
                       <span>
-                        {genres.map((genre) => genre.name).join(', ')}
+                        {detailedShow?.genres?.map((genre) => genre.name).join(', ') ?? '-'}
                       </span>
                     </div>
                   </div>
@@ -838,17 +494,17 @@ const ShowModal = () => {
               </div>
 
               {/* Movie Collection Section */}
-              {movieCollection &&
+              {detailedShow?.collection &&
                 modalStore.show?.media_type === MediaType.MOVIE && (
                   <div className="px-4 md:px-10 pb-6">
                     <div className="flex items-start justify-start gap-4">
                       <Icons.library />
                       <h3 className="mb-4 text-xl font-semibold text-white">
-                        {movieCollection.name}
+                        {detailedShow?.collection.name}
                       </h3>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      {movieCollection.parts?.map(
+                      {detailedShow?.collection.parts?.map(
                         (movie: any, index: number) => (
                           <div
                             key={movie.id}
@@ -885,20 +541,20 @@ const ShowModal = () => {
                 )}
 
               {/* TV Seasons Section */}
-              {tvSeasons && modalStore.show?.media_type === MediaType.TV && (
+              {detailedShow && modalStore.show?.media_type === MediaType.TV && (
                 <div className="px-4 md:px-10 pb-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-white">
                       Episodes
                     </h3>
-                    {tvSeasons.seasons && tvSeasons.seasons.length > 1 && (
+                    {detailedShow.seasons && detailedShow.seasons.length > 1 && (
                       <select
                         value={selectedSeason}
                         onChange={(e) =>
                           handleSeasonChange(Number(e.target.value))
                         }
                         className="rounded border border-neutral-600 bg-neutral-800 px-3 py-1 text-white">
-                        {tvSeasons.seasons.map((season: any) => (
+                        {detailedShow.seasons.map((season: any) => (
                           <option
                             key={season.season_number}
                             value={season.season_number}>
@@ -972,7 +628,7 @@ const ShowModal = () => {
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                     {recommendedShows.slice(0, 12).map((show) => {
                       const isTv = show.media_type === MediaType.TV;
-                      const detail = recommendedDetails[show.id];
+                      const detail = (detailedShow?.recommendedDetails as any)?.[show.id];
                       const seasons = isTv
                         ? (detail?.number_of_seasons ??
                           show.number_of_seasons ??
@@ -1017,10 +673,10 @@ const ShowModal = () => {
                               }}
                             />
                             {/* Centered logo overlay */}
-                            {recommendedLogos[show.id] && (
+                            {(detailedShow?.recommendedLogos as any)?.[show.id] && (
                               <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-2">
                                 <img
-                                  src={`https://image.tmdb.org/t/p/w500${recommendedLogos[show.id]}`}
+                                  src={`https://image.tmdb.org/t/p/w500${(detailedShow?.recommendedLogos as any)?.[show.id]}`}
                                   alt={
                                     (show.title ??
                                       show.name ??
@@ -1083,38 +739,38 @@ const ShowModal = () => {
                   About {modalStore.show?.title ?? modalStore.show?.name}
                 </h3>
                 <div className="space-y-2 text-sm">
-                  {directors.length > 0 && (
+                  {detailedShow?.directors && detailedShow.directors.length > 0 && (
                     <div className="text-neutral-300">
                       <span className="text-neutral-400">Director: </span>
                       <span className="text-neutral-200">
-                        {directors.join(', ')}
+                        {detailedShow.directors.join(', ')}
                       </span>
                     </div>
                   )}
-                  {cast.length > 0 && (
+                  {detailedShow?.cast && detailedShow.cast.length > 0 && (
                     <div className="text-neutral-300">
                       <span className="text-neutral-400">Cast: </span>
                       <span className="text-neutral-200">
-                        {cast
+                        {detailedShow.cast
                           .map((a: any) => a.name)
                           .slice(0, 12)
                           .join(', ')}
                       </span>
                     </div>
                   )}
-                  {writers.length > 0 && (
+                  {detailedShow?.writers && detailedShow.writers.length > 0 && (
                     <div className="text-neutral-300">
                       <span className="text-neutral-400">Writer: </span>
                       <span className="text-neutral-200">
-                        {writers.join(', ')}
+                        {detailedShow.writers.join(', ')}
                       </span>
                     </div>
                   )}
-                  {genres.length > 0 && (
+                  {detailedShow?.genres && detailedShow.genres.length > 0 && (
                     <div className="text-neutral-300">
                       <span className="text-neutral-400">Genres: </span>
                       <span className="text-neutral-200">
-                        {genres.map((g) => g.name).join(', ')}
+                        {detailedShow.genres.map((g) => g.name).join(', ')}
                       </span>
                     </div>
                   )}
@@ -1127,8 +783,8 @@ const ShowModal = () => {
                       Is:{' '}
                     </span>
                     <span className="text-neutral-200">
-                      {keywords
-                        .slice(0, 4)
+                      {detailedShow?.keywords
+                        ?.slice(0, 4)
                         .map((k) => k.name)
                         .join(', ') || '—'}
                     </span>
@@ -1136,7 +792,7 @@ const ShowModal = () => {
                   <div className="flex items-center gap-2 text-neutral-300">
                     <span className="text-neutral-400">Maturity Rating: </span>
                     <span className="place-items-center border border-neutral-500 px-1.5 py-0.5 text-[10px] font-bold text-neutral-200">
-                      {contentRating ??
+                      {detailedShow?.contentRating ??
                         ((modalStore.show?.vote_average ?? 0) >= 8
                           ? '18+'
                           : '16+')}

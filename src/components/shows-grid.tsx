@@ -22,7 +22,7 @@ const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
 
   return (
     <section aria-label="Grid of shows" className="container w-full max-w-none">
-      {modalStore.open && <ShowModal />}
+      {modalStore.isOpen && <ShowModal />}
       <div className="main-view mt-4 min-h-[800px] pt-[5%]" id="main-view">
         {query && searchStore.loading ? (
           <ShowsSkeleton classname="pl-0" />

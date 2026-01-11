@@ -100,7 +100,7 @@ export function useKeyboardShortcuts() {
 
   // Search shortcuts
   const openSearch = useCallback(() => {
-    searchStore.setOpen(true);
+    searchStore.setIsOpen(true);
     // Focus search input after a short delay to ensure it's rendered
     setTimeout(() => {
       const searchInput = document.getElementById(
@@ -113,7 +113,7 @@ export function useKeyboardShortcuts() {
   }, [searchStore]);
 
   const closeSearch = useCallback(() => {
-    searchStore.setOpen(false);
+    searchStore.setIsOpen(false);
     searchStore.reset();
   }, [searchStore]);
 
@@ -135,7 +135,7 @@ export function useKeyboardShortcuts() {
 
   // Modal shortcuts
   const closeModal = useCallback(() => {
-    modalStore.setOpen(false);
+    modalStore.setIsOpen(false);
     modalStore.reset();
   }, [modalStore]);
 

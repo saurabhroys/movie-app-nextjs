@@ -37,7 +37,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
   }, []);
 
   const handleOpenModal = async (): Promise<void> => {
-    if (!/\d/.test(pathname) || modalStore.open) {
+    if (!/\d/.test(pathname) || modalStore.isOpen) {
       return;
     }
     const mediaId: number = getIdFromSlug(pathname);
@@ -53,7 +53,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
       if (data)
         useModalStore.setState({
           show: data,
-          open: true,
+          isOpen: true,
           play: true,
           firstLoad: true,
         });
@@ -74,7 +74,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
 
   return (
     <>
-      {modalStore.open && <ShowModal />}
+      {modalStore.isOpen && <ShowModal />}
       {shows.map(
         (item) =>
           item.visible && (

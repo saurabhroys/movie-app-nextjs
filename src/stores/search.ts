@@ -8,7 +8,7 @@ interface SearchState {
   shows: Show[];
   setShows: (shows: Show[]) => void;
   isOpen: boolean;
-  setOpen: (value: boolean) => void;
+  setIsOpen: (value: boolean) => void;
   loading: boolean;
   setLoading: (value: boolean) => void;
   currentRequestId: string | null;
@@ -22,7 +22,7 @@ export const useSearchStore = create<SearchState>()((set) => ({
   shows: [],
   setShows: (shows: Show[]) => set(() => ({ shows })),
   isOpen: false,
-  setOpen: (value: boolean) => set(() => ({ isOpen: value })),
+  setIsOpen: (value: boolean) => set(() => ({ isOpen: value })),
   loading: false,
   setLoading: (value: boolean) => set(() => ({ loading: value })),
   currentRequestId: null,
