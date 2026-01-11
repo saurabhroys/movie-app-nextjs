@@ -84,17 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
      <ThemeProvider>
-      <head>
-        {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-          <>
-            <Script
-              id="_next-ga"
-              strategy="afterInteractive"
-              src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
-            />
-          </>
-        )}
-      </head>
+      <head />
         <body
           suppressHydrationWarning
           className={cn(
@@ -112,6 +102,9 @@ export default function RootLayout({
           <Analytics />
           <SpeedInsights />
           <AttributeTooltipManager />
+          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+          )}
           {/* </TrpcProvider> */}
         </body>
       </ThemeProvider>
