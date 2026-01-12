@@ -129,10 +129,7 @@ export function MainNav({ items }: MainNavProps) {
     return () => window.removeEventListener('scroll', changeBgColor);
   }, [isScrolled]);
 
-  const handleChangeStatusOpen = (value: boolean): void => {
-    searchStore.setIsOpen(value);
-    if (!value) searchStore.reset();
-  };
+
 
   const handleMobileMenuOpenChange = (open: boolean) => {
     setIsMobileMenuOpen(open);
@@ -149,8 +146,7 @@ export function MainNav({ items }: MainNavProps) {
       <div className="flex items-center gap-6 md:gap-10">
         <Link
           href="/"
-          className="hidden md:block"
-          onClick={() => handleChangeStatusOpen(false)}>
+          className="hidden md:block">
           <div className="flex items-center space-x-2">
             <Icons.logo_long className="h-7 w-auto" aria-hidden="true" />
             {/* <span className="inline-block font-bold">{siteConfig.name}</span> */}
@@ -173,7 +169,7 @@ export function MainNav({ items }: MainNavProps) {
                         ? 'text-white'
                         : 'text-neutral-950 dark:text-white',
                     )}
-                    onClick={() => handleChangeStatusOpen(false)}>
+                    onClick={() => searchStore.reset()}>
                     {item.title}
                   </Link>
                 ),
@@ -205,8 +201,7 @@ export function MainNav({ items }: MainNavProps) {
               <DropdownMenuLabel>
                 <Link
                   href="/"
-                  className="flex items-center justify-center"
-                  onClick={() => handleChangeStatusOpen(false)}></Link>
+                  className="flex items-center justify-center"></Link>
               </DropdownMenuLabel>
               {/* <DropdownMenuSeparator /> */}
               {items?.map((item, index) => (
@@ -216,8 +211,7 @@ export function MainNav({ items }: MainNavProps) {
                   className="items-center justify-center">
                   {item.href && (
                     <Link
-                      href={item.href}
-                      onClick={() => handleChangeStatusOpen(false)}>
+                      href={item.href}>
                       <span
                         className={cn(
                           'text-foreground/60 hover:text-foreground/80 line-clamp-1',
@@ -236,14 +230,9 @@ export function MainNav({ items }: MainNavProps) {
       <div className="flex items-center gap-1">
         <DebouncedInput
           id="search-input"
-          open={searchStore.isOpen}
           value={searchStore.query}
           onChange={searchShowsByQuery}
-          onChangeStatusOpen={handleChangeStatusOpen}
-          className={cn(
-            // path === '/' || path === '/' ? 'hidden' :
-            'flex',
-          )}
+          className={cn('flex')}
         />
         {/* <Link
           rel="noreferrer"
