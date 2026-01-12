@@ -23,6 +23,10 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     props.params.then(setParams);
   }, [props.params]);
 
+
+  const timeOutTimer = 8000;
+  const scrollDuration = 1000;
+
   // Initialize server recommendation flag from localStorage (default true on first visit)
   React.useEffect(() => {
     try {
@@ -58,7 +62,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       const scrollDown = () => {
         const startScroll = window.pageYOffset;
         const distance = targetScroll - startScroll;
-        const duration = 3000; // 3 seconds to scroll down
+        const duration = scrollDuration;
         let startTime: number;
 
         const animateScrollDown = (currentTime: number) => {
@@ -76,7 +80,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
             requestAnimationFrame(animateScrollDown);
           } else {
             // After scrolling down, wait 2 seconds then scroll back to top
-            setTimeout(scrollBackToTop, 2000);
+            setTimeout(scrollBackToTop, scrollDuration);
           }
         };
 
@@ -87,7 +91,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       const scrollBackToTop = () => {
         const startScroll = window.pageYOffset;
         const distance = 0 - startScroll;
-        const duration = 2000; // 2 seconds to scroll back up
+        const duration = scrollDuration;
         let startTime: number;
 
         const animateScrollUp = (currentTime: number) => {
@@ -114,7 +118,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     };
 
     // Delay to ensure page is fully rendered
-    const timer = setTimeout(autoScrollSequence, 2000);
+    const timer = setTimeout(autoScrollSequence, scrollDuration);
     return () => clearTimeout(timer);
   }, [serverRecommendationEnabled]);
 
@@ -126,7 +130,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
         top: 0,
         behavior: 'smooth',
       });
-    }, 1000);
+    }, scrollDuration);
     return () => clearTimeout(timer);
   }, [serverRecommendationEnabled]);
 
@@ -134,7 +138,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     if (!serverRecommendationEnabled) return;
     const timer = setTimeout(() => {
       setShowScrollHint(false);
-    }, 50000);
+    }, timeOutTimer);
     return () => clearTimeout(timer);
   }, [serverRecommendationEnabled]);
 
@@ -142,7 +146,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     if (!serverRecommendationEnabled) return;
     const timer = setTimeout(() => {
       setShowScrollHintBackdrop(false);
-    }, 10000);
+    }, timeOutTimer);
     return () => clearTimeout(timer);
   }, [serverRecommendationEnabled]);
 
@@ -173,14 +177,14 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       <ModalCloser />
       {/* Main Player */}
       <div
-        className={`absolute z-10 min-h-screen w-full ${serverRecommendationEnabled ? 'block bg-neutral-950/60 backdrop:blur-sm' : 'hidden'}`}>
+        className={`absolute z-10 min-h-screen w-full pointer-events-none ${serverRecommendationEnabled ? 'block' : 'hidden'}`}>
         {/* <EmbedPlayer url={`https://player.autoembed.cc/embed/movie/${id}?server=2`} /> */}
         {/* Scroll hint to choose server */}
         {serverRecommendationEnabled && showScrollHint && (
           <div
             className={`h-screen place-content-center justify-center text-center`}>
-            <div className="mx-auto flex items-center justify-center space-x-2">
-              <div className="flex items-center justify-center gap-3 rounded-xl border bg-neutral-800/50 p-4 backdrop-blur-md">
+            <div className="mx-auto flex items-center justify-center space-x-2 pointer-events-auto">
+              <div className="flex items-center justify-center gap-3 rounded-xl border bg-neutral-800/80 p-4 backdrop-blur-md">
                 <Switch
                   id="airplane-mode"
                   checked={serverRecommendationEnabled}
