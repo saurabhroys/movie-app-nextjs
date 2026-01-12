@@ -20,8 +20,6 @@ export default async function SearchPage({
 }
 
 async function CachedSearch({ query }: { query: string }) {
-  'use cache';
-  cacheLife('show');
   const { results } = await SearchService.searchMovies(query);
   return <SearchContainer query={query} shows={results} />;
 }

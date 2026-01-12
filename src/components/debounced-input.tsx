@@ -6,6 +6,7 @@ import { Input, type InputProps } from '@/components/ui/input';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 import { useSearch } from '@/hooks/use-search';
 import { X, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DebouncedInputProps extends Omit<InputProps, 'onChange'> {
   className?: string;
@@ -31,8 +32,12 @@ export function DebouncedInput({
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
+  const [isFocused, setIsFocused] = React.useState(false);
   const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
-  const { search, clearSearch } = useSearch({ debounceTimeout });
+  const [localValue, setLocalValue] = React.useState(value);
+  const { search, searchImmediate, clearSearch, loading } = useSearch({
+    debounceTimeout,
+  });
 
   // Load recent searches on mount
   React.useEffect(() => {
@@ -46,6 +51,26 @@ export function DebouncedInput({
     }
   }, []);
 
+  // Synchronize localValue with value prop
+  // Only sync if the prop value actually changed and it's different from our local state
+  // This prevents the global store from "fighting" with the local typing state.
+  React.useEffect(() => {
+    if (value !== localValue) {
+      setLocalValue(value);
+    }
+  }, [value]);
+
+  // Debounce the parent's onChange call
+  const debouncedPropsOnChange = React.useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (val: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        void onChange(val);
+      }, debounceTimeout);
+    };
+  }, [onChange, debounceTimeout]);
+
   // Save to history when search is performed
   const addToHistory = React.useCallback((query: string) => {
     if (!query.trim() || query.length < 2) return;
@@ -57,15 +82,15 @@ export function DebouncedInput({
     });
   }, []);
 
-  // close search input on clicking outside,
+  // close search input on clicking outside
   useOnClickOutside(dropdownRef, () => {
     setShowHistory(false);
+    setIsFocused(false);
   });
 
   // configure keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // close search input on pressing escape
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         inputRef.current?.focus();
@@ -73,13 +98,12 @@ export function DebouncedInput({
       if (e.key === 'Escape') {
         inputRef.current?.blur();
         setShowHistory(false);
+        setIsFocused(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-
 
   // change background color on scroll
   React.useEffect(() => {
@@ -93,29 +117,33 @@ export function DebouncedInput({
   const handleSearch = React.useCallback(
     async (val: string) => {
       search(val);
-      await onChange(val);
+      debouncedPropsOnChange(val);
       if (val.trim().length > 3) {
         addToHistory(val.trim());
       }
     },
-    [search, onChange, addToHistory],
+    [search, debouncedPropsOnChange, addToHistory],
   );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const val = event.target.value;
-    handleSearch(val);
+    setLocalValue(val);
+    void handleSearch(val);
     setShowHistory(!val && recentSearches.length > 0);
   };
 
   const handleRecentClick = (s: string) => {
+    setLocalValue(s);
     if (inputRef.current) {
       inputRef.current.value = s;
-      void handleSearch(s);
+      void searchImmediate(s);
+      void onChange(s);
       setShowHistory(false);
     }
   };
 
   const handleClear = () => {
+    setLocalValue('');
     clearSearch();
     void onChange('');
     if (inputRef.current) {
@@ -136,86 +164,136 @@ export function DebouncedInput({
 
   return (
     <div ref={dropdownRef} className={cn('relative', className)}>
-      <div className="flex items-center">
+      <motion.div
+        animate={{
+          scale: isFocused ? 1.02 : 1,
+          boxShadow: isFocused
+            ? '0 0 20px rgba(255, 255, 255, 0.05)'
+            : '0 0 0px rgba(255, 255, 255, 0)',
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="flex items-center">
         <Input
           ref={inputRef}
           id={id}
           type="text"
           placeholder="Search..."
           onFocus={() => {
+            setIsFocused(true);
             if (!inputRef.current?.value && recentSearches.length > 0)
               setShowHistory(true);
           }}
           className={cn(
-            'h-auto w-28 rounded-xl border border-white/20 bg-neutral-800 py-1.5 pl-8 pr-8 text-sm text-white transition-all duration-300 placeholder:text-neutral-500 focus:bg-neutral-700/80 focus:ring-0 md:w-40 lg:w-60',
+            'h-10 w-28 rounded-xl border border-white/10 bg-neutral-900/50 py-1.5 pl-9 pr-9 text-sm text-white backdrop-blur-md transition-colors placeholder:text-neutral-500 focus:border-white/30 focus:bg-neutral-800/80 focus:ring-0 md:w-40 lg:w-64',
             className,
           )}
-          defaultValue={value}
+          value={localValue}
           maxLength={maxLength}
           onChange={handleChange}
           {...props}
         />
-        <Button
-          id="search-btn"
-          aria-label="Search"
-          variant="ghost"
-          className={cn(
-            'absolute top-1/2 left-1 h-auto -translate-y-1/2 rounded-full p-1 transition-all duration-300',
-          )}
-          onClick={() => {
-            inputRef.current?.focus();
-          }}>
-          <Icons.search className="h-4 w-4 text-white" aria-hidden="true" />
-        </Button>
 
-        {(value || (inputRef.current && inputRef.current.value)) ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2 rounded-full p-1 text-white hover:bg-white/10"
-            onClick={handleClear}>
-            <X className="h-4 w-4" />
-          </Button>
-        ) : (
-          <div className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2">
-            <kbd className="hidden h-5 select-none items-center gap-1 rounded border border-neutral-600 bg-neutral-900 px-1.5 font-mono text-[10px] font-medium text-neutral-400 opacity-100 md:flex">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </div>
-        )}
-      </div>
+        <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, scale: 0.8, rotate: -45 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: 45 }}
+                transition={{ duration: 0.2 }}>
+                <Icons.spinner className="h-4 w-4 animate-spin text-neutral-400" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="search"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{
+                  opacity: 1,
+                  scale: isFocused ? 1.1 : 1,
+                  color: isFocused ? '#fff' : '#737373',
+                }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}>
+                <Icons.search className="h-4 w-4" aria-hidden="true" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <AnimatePresence>
+          {localValue ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute right-1 top-1/2 -translate-y-1/2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full p-1 text-neutral-400 hover:bg-white/10 hover:text-white"
+                onClick={handleClear}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+              <kbd className="hidden h-5 select-none items-center gap-1 rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-neutral-500 md:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Recent Searches Dropdown */}
-      {showHistory && recentSearches.length > 0 && (
-        <div className="absolute top-full right-0 mt-3 w-screen max-w-[calc(100vw-2rem)] min-w-[240px] overflow-hidden rounded-xl border border-white/10 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] md:w-full md:max-w-none">
-          <div className="flex items-center justify-between bg-white/5 px-4 py-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              Recent Searches
-            </span>
-            <button
-              onClick={clearAllHistory}
-              className="text-[10px] font-medium text-neutral-500 hover:text-white hover:underline">
-              Clear All
-            </button>
-          </div>
-          <div className="flex flex-col py-1">
-            {recentSearches.map((s, i) => (
+      <AnimatePresence>
+        {showHistory && recentSearches.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className="absolute right-0 top-full mt-3 w-screen min-w-[260px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl md:w-full md:max-w-none">
+            <div className="flex items-center justify-between border-b border-white/5 bg-white/2 px-4 py-3">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                Recent Searches
+              </span>
               <button
-                key={i}
-                className="group/item flex items-center justify-between px-4 py-2.5 text-left transition hover:bg-white/5"
-                onClick={() => handleRecentClick(s)}>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-3.5 w-3.5 text-neutral-500 group-hover/item:text-neutral-300" />
-                  <span className="truncate text-sm text-neutral-300 group-hover/item:text-white">
-                    {s}
-                  </span>
-                </div>
-                <Icons.chevronRight className="h-3 w-3 opacity-0 transition-opacity group-hover/item:opacity-100 text-neutral-500" />
+                onClick={clearAllHistory}
+                className="text-[10px] font-semibold text-neutral-500 transition-colors hover:text-white hover:underline">
+                Clear All
               </button>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+            <motion.div className="flex flex-col py-2">
+              {recentSearches.map((s, i) => (
+                <motion.button
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="group/item flex items-center justify-between px-4 py-3 text-left transition hover:bg-white/4"
+                  onClick={() => handleRecentClick(s)}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 group-hover/item:bg-white/10">
+                      <Clock className="h-3.5 w-3.5 text-neutral-400 group-hover/item:text-white" />
+                    </div>
+                    <span className="truncate text-sm font-medium text-neutral-400 group-hover/item:text-white">
+                      {s}
+                    </span>
+                  </div>
+                  <Icons.chevronRight className="h-3.5 w-3.5 translate-x-1 text-neutral-600 opacity-0 transition-all group-hover/item:translate-x-0 group-hover/item:opacity-100" />
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
