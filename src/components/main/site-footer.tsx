@@ -49,22 +49,30 @@ const SiteFooter = () => {
         <div className="flex h-20 items-center gap-2 px-8">
           <Icons.logo_long className="hidden h-6 w-auto md:block" />
           <p className="place-content-center text-center text-xs leading-loose sm:text-sm md:text-left">
-            Made with ❤️ and dedication by{' Saurabh '}
-            {/* <a
-              href={siteConfig.links.twitter}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline underline-offset-4"
-            >
-              {siteConfig.author}
-            </a> */}
-            . Inspired by{' '}
+            Made with ❤️ and dedication by{' '}
             <a
               href={siteConfig.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-4">
+              {' Saurabh '}
+            </a>
+            . Inspired by{' '}
+            <a
+              href={siteConfig.links.netflix}
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4">
               Netflix
+            </a>
+            {'. Support '}
+            <a
+              href={siteConfig.links.buyMeACoffee}
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex items-center gap-1 font-medium underline underline-offset-4">
+              <Icons.coffee className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+              {'Me a Coffee'}
             </a>
             .
           </p>
