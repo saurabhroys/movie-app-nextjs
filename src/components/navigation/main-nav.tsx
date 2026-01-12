@@ -252,11 +252,11 @@ export function MainNav({ items }: MainNavProps) {
           <Icons.helpCircle className="h-5 w-5" />
         </Button>
         {/* <ThemeToggle /> */}
-        <ServerRecommendationSwitch
+        {/* <ServerRecommendationSwitch
           switchClass="flex item--center gap-2 place-content-center text-sm"
           text=""
           tooltipText="enable or disable scroll down suggestion"
-        />
+        /> */}
       </div>
     </nav>
   );
