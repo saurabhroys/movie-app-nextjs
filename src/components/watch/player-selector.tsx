@@ -625,7 +625,7 @@ const PlayerSelector = ({
                       <span className="absolute -top-3 left-3">
                         {option.language && (
                           <span
-                            className={`rounded-md border border-neutral-800 px-2 py-[1px] text-xs backdrop-blur-md ${
+                            className={`rounded-md border border-neutral-800 px-2 py-px text-xs backdrop-blur-md ${
                               option.language === 'Hindi'
                                 ? 'bg-white/90 text-black'
                                 : option.language === 'Hindi Option'
