@@ -20,6 +20,7 @@ import {
   HelpCircle,
   RotateCcw,
   Menu,
+  Coffee,
 } from 'lucide-react';
 import { Logo, LogoLong } from './logo';
 
@@ -272,4 +273,5 @@ export const Icons = {
   instagram: Instagram,
   youtube: Youtube,
   menu: Menu,
+  coffee: Coffee,
 };

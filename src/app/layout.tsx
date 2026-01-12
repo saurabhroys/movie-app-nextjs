@@ -105,7 +105,7 @@ export default function RootLayout({
           <SiteFooter />
           <TailwindIndicator />
           <Analytics />
-          <SpeedInsights />
+          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
           <AttributeTooltipManager />
           {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
             <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />

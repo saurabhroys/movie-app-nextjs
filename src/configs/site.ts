@@ -9,7 +9,6 @@ import { env } from '@/env.mjs';
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  revalidate: 1800, // 30 minutes for cached data refresh
   name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',
@@ -35,9 +34,10 @@ export const siteConfig = {
   url: env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000',
   ogImage: `${env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/images/hero.jpg`,
   links: {
-    twitter: `${env.NEXT_PUBLIC_TWITTER}`,
-    github: 'https://www.netflix.com',
+    github: 'https://github.com/saurabhroys/movie-app-nextjs.git',
+    netflix: 'https://www.netflix.com',
     githubAccount: '',
+    buyMeACoffee: 'https://buymeacoffee.com/saurabhroy',
   },
   socialLinks: [
     {
