@@ -8,7 +8,8 @@ import MovieService from '@/services/MovieService';
 import { type CategorizedShows, MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-export const revalidate = 1800; // siteConfig.revalidate
+import { cacheLife } from 'next/cache'; // siteConfig
+import { connection } from 'next/server';
 
 export const metadata: Metadata = {
   title: 'Anime',
@@ -16,7 +17,23 @@ export const metadata: Metadata = {
 };
 
 export default async function AnimePage() {
+  await connection();
   const h1 = `${siteConfig.name} Anime`;
+  const allShows = await getAnimeData();
+  const randomShow: Show | null = getRandomShow(allShows);
+
+  return (
+    <>
+      <h1 className="hidden">{h1}</h1>
+      <Hero randomShow={randomShow} />
+      <ShowsContainer shows={allShows} />
+    </>
+  );
+}
+
+async function getAnimeData() {
+  'use cache';
+  cacheLife('show');
   const requests: ShowRequest[] = [
     {
       title: 'Anime TV Shows Latest',
@@ -75,13 +92,5 @@ export default async function AnimePage() {
       }),
     };
   });
-  const randomShow: Show | null = getRandomShow(allShows);
-
-  return (
-    <>
-      <h1 className="hidden">{h1}</h1>
-      <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
-    </>
-  );
+  return allShows;
 }

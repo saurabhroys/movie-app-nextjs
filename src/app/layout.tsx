@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
@@ -92,10 +93,14 @@ export default function RootLayout({
             fontSans.variable,
             fontHeading.variable,
           )}>
-          <SiteHeader />
+          <Suspense fallback={<div className="h-16" />}>
+            <SiteHeader />
+          </Suspense>
           <GlobalShortcutsWrapper />
           {/* <TrpcProvider> */}
-          {children}
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
           <PreviewModal />
           <SiteFooter />
           <TailwindIndicator />

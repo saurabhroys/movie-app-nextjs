@@ -7,10 +7,26 @@ import MovieService from '@/services/MovieService';
 import { Genre } from '@/enums/genre';
 import { getRandomShow } from '@/lib/utils';
 
-export const revalidate = 1800; // siteConfig.revalidate
+import { cacheLife } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function Home() {
+  await connection();
   const h1 = `${siteConfig.name} Home`;
+  const allShows = await getHomeData();
+  const randomShow: Show | null = getRandomShow(allShows);
+  return (
+    <>
+      <h1 className="hidden">{h1}</h1>
+      <Hero randomShow={randomShow} />
+      <ShowsContainer shows={allShows} />
+    </>
+  );
+}
+
+async function getHomeData() {
+  'use cache';
+  cacheLife('show');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',
@@ -127,13 +143,6 @@ export default async function Home() {
       visible: true,
     },
   ];
-  const allShows = await MovieService.getShows(requests);
-  const randomShow: Show | null = getRandomShow(allShows);
-  return (
-    <>
-      <h1 className="hidden">{h1}</h1>
-      <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
-    </>
-  );
+
+  return await MovieService.getShows(requests);
 }

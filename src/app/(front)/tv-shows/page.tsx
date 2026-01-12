@@ -8,7 +8,8 @@ import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-export const revalidate = 1800; // siteConfig.revalidate
+import { cacheLife } from 'next/cache'; // siteConfig
+import { connection } from 'next/server';
 
 export const metadata: Metadata = {
   title: 'TV Shows',
@@ -16,7 +17,23 @@ export const metadata: Metadata = {
 };
 
 export default async function TvShowPage() {
+  await connection();
   const h1 = `${siteConfig.name} TV Shows`;
+  const allShows = await getTvShowData();
+  const randomShow: Show | null = getRandomShow(allShows);
+
+  return (
+    <>
+      <h1 className="hidden">{h1}</h1>
+      <Hero randomShow={randomShow} />
+      <ShowsContainer shows={allShows} />
+    </>
+  );
+}
+
+async function getTvShowData() {
+  'use cache';
+  cacheLife('show');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',
@@ -116,14 +133,5 @@ export default async function TvShowPage() {
       visible: true,
     },
   ];
-  const allShows = await MovieService.getShows(requests);
-  const randomShow: Show | null = getRandomShow(allShows);
-
-  return (
-    <>
-      <h1 className="hidden">{h1}</h1>
-      <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
-    </>
-  );
+  return await MovieService.getShows(requests);
 }

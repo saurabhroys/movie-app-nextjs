@@ -9,7 +9,7 @@ import TvWatchPage from './tv-watch-page';
 import NotFound from '../../../../components/watch/not-found-redirect';
 import { siteConfig } from '@/configs/site';
 
-export const revalidate = 1800; // siteConfig.revalidate
+import { cacheLife } from 'next/cache'; // siteConfig
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -17,6 +17,13 @@ export default async function Page(props: {
   const params = await props.params;
   const id = params.slug.split('-').pop();
   const tvId = id ? parseInt(id) : 0;
+
+  return <CachedTvPage tvId={tvId} slugId={id || ''} />;
+}
+
+async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) {
+  'use cache';
+  cacheLife('show');
 
   // Fetch TV show details and recommended TV shows
   let tvShow: Show | null = null;
@@ -65,7 +72,7 @@ export default async function Page(props: {
           tvShow={tvShow}
           seasons={seasons}
           tvId={tvId}
-          mediaId={id || ''}
+          mediaId={slugId}
           recommendedShows={recommendedShows}
         />
       ) : (
