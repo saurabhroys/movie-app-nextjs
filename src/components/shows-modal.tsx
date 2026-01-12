@@ -301,7 +301,7 @@ const ShowModal = () => {
                     }
                     className="relative aspect-video w-full"
                     style={{ width: '100%', height: '100%' }}
-                    iframeClassName={`relative pointer-events-none w-[100%] h-[100%] z-[-10] opacity-0`}
+                    iframeClassName={`relative pointer-events-none w-full h-full -z-10 opacity-0`}
                   />
                 )}
 
