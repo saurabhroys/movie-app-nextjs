@@ -143,7 +143,8 @@ class SearchService {
   static async searchMovies(
     query: string,
     requestId?: string,
-  ): Promise<{ results: Show[]; requestId: string }> {
+    page?: number,
+  ): Promise<{ results: Show[]; requestId: string; total_pages?: number }> {
     // Validate query
     if (!this.isValidQuery(query)) {
       return { results: [], requestId: requestId || this.generateRequestId() };
@@ -218,7 +219,7 @@ class SearchService {
         }
 
         // Call search with intelligent options
-        const response = await MovieService.searchMovies(trimmedQuery, undefined, searchOptions);
+        const response = await MovieService.searchMovies(trimmedQuery, page, searchOptions);
 
         // Remove from pending requests when completed
         this.pendingRequests.delete(newRequestId);
