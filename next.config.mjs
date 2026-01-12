@@ -7,6 +7,7 @@ const { env } = await import('./src/env.mjs');
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+  expireTime: 86400,
   // devIndicators: false,
 
   /**
@@ -35,6 +36,19 @@ const config = {
     ignoreBuildErrors: false,
   },
   serverExternalPackages: ['@trpc/server'],
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=1800, stale-while-revalidate=86400',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default config;
