@@ -4,12 +4,7 @@ import type { Show } from '@/types';
 import { filterShowsWithImages } from '@/lib/utils';
 import { rankSearchResults, normalizeQuery, filterAdultContent } from '@/lib/search-intelligence';
 
-interface SearchCache {
-  [key: string]: {
-    data: Show[];
-    timestamp: number;
-  };
-}
+
 
 interface PendingRequest {
   requestId: string;
@@ -19,9 +14,7 @@ interface PendingRequest {
 }
 
 class SearchService {
-  private static cache: SearchCache = {};
   private static pendingRequests: Map<string, PendingRequest> = new Map();
-  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private static readonly MIN_QUERY_LENGTH = 2;
 
   /**
@@ -38,83 +31,7 @@ class SearchService {
     return query.trim().length >= this.MIN_QUERY_LENGTH;
   }
 
-  /**
-   * Get cached search results if available and not expired
-   * Uses normalized query for better cache hits
-   */
-  private static getCachedResults(query: string): Show[] | null {
-    // Normalize query for cache lookup (same normalization as ranking)
-    const normalized = normalizeQuery(query);
-    const cacheKey = normalized.normalized.toLowerCase().trim();
-    
-    // Check exact match first
-    const cached = this.cache[cacheKey];
 
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-
-    // Try to find similar cached queries (fuzzy cache matching)
-    const cacheKeys = Object.keys(this.cache);
-    for (const key of cacheKeys) {
-      const cachedItem = this.cache[key];
-      if (
-        cachedItem &&
-        Date.now() - cachedItem.timestamp < this.CACHE_DURATION
-      ) {
-        // Simple similarity check - if normalized queries are very similar, use cached result
-        const similarity = this.calculateSimilarity(cacheKey, key);
-        if (similarity > 0.85) {
-          return cachedItem.data;
-        }
-      }
-    }
-
-    // Remove expired cache entry
-    if (cached) {
-      delete this.cache[cacheKey];
-    }
-
-    return null;
-  }
-
-  /**
-   * Calculate simple similarity between two strings (0-1)
-   */
-  private static calculateSimilarity(str1: string, str2: string): number {
-    if (str1 === str2) return 1;
-    if (!str1 || !str2) return 0;
-
-    const longer = str1.length > str2.length ? str1 : str2;
-    const shorter = str1.length > str2.length ? str2 : str1;
-
-    if (longer.length === 0) return 1;
-
-    // Check if one contains the other
-    if (longer.includes(shorter)) {
-      return shorter.length / longer.length;
-    }
-
-    // Simple word-based similarity
-    const words1 = str1.split(/\s+/);
-    const words2 = str2.split(/\s+/);
-    const commonWords = words1.filter((w) => words2.includes(w));
-    return commonWords.length / Math.max(words1.length, words2.length);
-  }
-
-  /**
-   * Cache search results
-   * Uses normalized query as cache key for better reuse
-   */
-  private static setCachedResults(query: string, results: Show[]): void {
-    // Use normalized query for consistent cache keys
-    const normalized = normalizeQuery(query);
-    const cacheKey = normalized.normalized.toLowerCase().trim();
-    this.cache[cacheKey] = {
-      data: results,
-      timestamp: Date.now(),
-    };
-  }
 
   /**
    * Cancel a specific request
@@ -153,11 +70,7 @@ class SearchService {
     const trimmedQuery = query.trim();
     const newRequestId = requestId || this.generateRequestId();
 
-    // Check cache first
-    const cachedResults = this.getCachedResults(trimmedQuery);
-    if (cachedResults) {
-      return { results: cachedResults, requestId: newRequestId };
-    }
+
 
     // Normalize query for deduplication check
     const normalizedQuery = normalizeQuery(trimmedQuery).normalized.toLowerCase().trim();
@@ -167,9 +80,8 @@ class SearchService {
       (req) => {
         if (req.abortController.signal.aborted) return false;
         const reqNormalized = normalizeQuery(req.query).normalized.toLowerCase().trim();
-        // Cancel if it's the same query or very similar (85%+ similarity)
-        return reqNormalized === normalizedQuery || 
-               this.calculateSimilarity(reqNormalized, normalizedQuery) > 0.85;
+        // Cancel if it's the same query
+        return reqNormalized === normalizedQuery;
       },
     );
 
@@ -282,8 +194,7 @@ class SearchService {
       // Apply intelligent ranking and relevance scoring
       const rankedResults = rankSearchResults(filteredAdultContent, trimmedQuery);
 
-      // Cache the ranked results
-      this.setCachedResults(trimmedQuery, rankedResults);
+
 
       return { results: rankedResults, requestId: newRequestId };
     } catch (error) {
@@ -295,22 +206,7 @@ class SearchService {
     }
   }
 
-  /**
-   * Clear all cache
-   */
-  static clearCache(): void {
-    this.cache = {};
-  }
 
-  /**
-   * Get cache statistics
-   */
-  static getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: Object.keys(this.cache).length,
-      keys: Object.keys(this.cache),
-    };
-  }
 }
 
 export default SearchService;

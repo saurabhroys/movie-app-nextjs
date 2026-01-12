@@ -232,6 +232,7 @@ export function MainNav({ items }: MainNavProps) {
           id="search-input"
           value={searchStore.query}
           onChange={searchShowsByQuery}
+          debounceTimeout={2000}
           className={cn('flex')}
         />
         {/* <Link
