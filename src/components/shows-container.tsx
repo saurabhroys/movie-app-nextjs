@@ -2,18 +2,18 @@
 
 import { usePathname } from 'next/navigation';
 // import { useMounted } from '@/hooks/use-mounted';
-// import { useModalStore } from "@/stores/modal"
+// import { usePreviewModalStore } from "@/stores/modal"
 // import { useProfileStore } from "@/stores/profile"
 import { useSearchStore } from '@/stores/search';
 import type { CategorizedShows } from '@/types';
 
 // import { api } from "@/lib/api/api"
 import { getIdFromSlug } from '@/lib/utils';
-import ShowModal from '@/components/shows-modal';
+import PreviewModal from '@/components/preview-modal';
 import ShowsCarousel from '@/components/shows-carousel';
 import ShowsGrid from '@/components/shows-grid';
 // import ShowsSkeleton from '@/components/shows-skeleton';
-import { useModalStore } from '@/stores/modal';
+import { usePreviewModalStore } from '@/stores/preview-modal';
 import React from 'react';
 import { type Show } from '@/types/index';
 import { type AxiosResponse } from 'axios';
@@ -29,7 +29,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
   const pathname = usePathname();
 
   // stores
-  const modalStore = useModalStore();
+  const modalStore = usePreviewModalStore();
   const searchStore = useSearchStore();
 
   React.useEffect(() => {
@@ -51,7 +51,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
       const data: Show = response.data;
 
       if (data)
-        useModalStore.setState({
+        usePreviewModalStore.setState({
           show: data,
           isOpen: true,
           play: true,
@@ -74,7 +74,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
 
   return (
     <>
-      {modalStore.isOpen && <ShowModal />}
+      {modalStore.isOpen && <PreviewModal />}
       {shows.map(
         (item) =>
           item.visible && (

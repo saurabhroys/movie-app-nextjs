@@ -1,32 +1,56 @@
 'use client';
-import { usePreviewModalStore } from '@/stores/preview-modal';
-import { useModalStore } from '@/stores/modal';
-import {
-  MediaType,
-  type Show,
-  type Genre,
-  type KeyWord,
-  type ShowWithGenreAndVideo,
-  type VideoResult,
-} from '@/types';
-import { getMobileDetect } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import CustomImage from './custom-image';
-import Youtube from 'react-youtube';
+
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { X } from 'lucide-react';
+import { getMobileDetect, getYear } from '@/lib/utils';
+import MovieService from '@/services/MovieService';
+import { usePreviewModalStore } from '@/stores/preview-modal';
+import { useLockBody } from '@/hooks/use-lock-body';
+import {
+  type KeyWord,
+  MediaType,
+  type Genre,
+  type ShowWithGenreAndVideo,
+  type VideoResult,
+  type Show,
+} from '@/types';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import * as React from 'react';
-import { getNameFromShow, getSlug } from '@/lib/utils';
+import Youtube from 'react-youtube';
+import CustomImage from './custom-image';
+import { ShowCard } from './shows-cards';
+import ShowsSkeleton from './shows-skeleton';
+
+type YouTubePlayer = {
+  mute: () => void;
+  unMute: () => void;
+  playVideo: () => void;
+  seekTo: (value: number) => void;
+  container: HTMLDivElement;
+  internalPlayer: YouTubePlayer;
+};
+
+type YouTubeEvent = {
+  target: YouTubePlayer;
+};
 
 const userAgent =
   typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
 const { isMobile } = getMobileDetect(userAgent);
-const defaultOptions = {
+const defaultOptions: Record<string, object> = {
   playerVars: {
+    // https://developers.google.com/youtube/player_parameters
     rel: 0,
-    mute: 0,
-    loop: 1,
+    mute: isMobile() ? 1 : 0,
+    loop: 0,
     autoplay: 1,
     controls: 0,
     showinfo: 0,
@@ -39,417 +63,763 @@ const defaultOptions = {
 };
 
 const PreviewModal = () => {
-  const p = usePreviewModalStore();
-  const modal = useModalStore();
-  const IS_MOBILE = isMobile();
-  const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
-  const [options, setOptions] = React.useState(defaultOptions);
+  // stores
+  const modalStore = usePreviewModalStore();
+  const IS_MOBILE: boolean = isMobile();
+  const router = useRouter();
+
+  const [isMuted, setIsMuted] = React.useState<boolean>(
+    modalStore.firstLoad || IS_MOBILE,
+  );
+  const [options, setOptions] =
+    React.useState<Record<string, object>>(defaultOptions);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
+  const [trailerFinished, setTrailerFinished] = React.useState<boolean>(false);
+  const [logoTransition, setLogoTransition] = React.useState<
+    'initial' | 'trailer-playing' | 'trailer-ended'
+  >('initial');
+  const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
+  const [seasonEpisodes, setSeasonEpisodes] = React.useState<any[]>([]);
+  const isClosingRef = React.useRef(false);
 
-  const detailedShow = p.detailedShow;
-
+  const detailedShow = modalStore.detailedShow;
   const trailer = React.useMemo(() => {
     if (!detailedShow?.videos?.results) return '';
-    return (
-      detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')
-        ?.key ?? ''
-    );
+    return detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')?.key ?? '';
   }, [detailedShow]);
 
   const isAnime = React.useMemo(() => {
-    const keywords: KeyWord[] =
-      (detailedShow as any)?.keywords?.results ||
-      (detailedShow as any)?.keywords?.keywords;
-    return !!keywords?.find((k) => k.name === 'anime');
+    return !!detailedShow?.keywords?.find((k: KeyWord) => k.name === 'anime');
   }, [detailedShow]);
 
   React.useEffect(() => {
-    if (p.isOpen && p.show) {
-      const type = p.show.media_type === MediaType.TV ? 'tv' : 'movie';
-      p.fetchPreviewData(p.show.id, type);
+    if (modalStore.isOpen && modalStore.show) {
+      modalStore.fetchDetailedShow(modalStore.show.id, modalStore.show.media_type);
     }
-  }, [p.isOpen, p.show?.id]);
+  }, [modalStore.isOpen, modalStore.show?.id]);
 
-  // Close preview when the main show modal opens
   React.useEffect(() => {
-    if (!modal.isOpen) return;
-    p.reset();
-  }, [modal.isOpen]);
+    if (modalStore.firstLoad || IS_MOBILE) {
+      setOptions((state: Record<string, object>) => ({
+        ...state,
+        playerVars: { ...state.playerVars, mute: 1 },
+      }));
+    }
+  }, [modalStore.firstLoad, IS_MOBILE]);
 
-  const handleCloseModal = () => {
-    p.reset();
+  const handleCloseModal = React.useCallback(() => {
+    if (isClosingRef.current || !modalStore.isOpen) return;
+    isClosingRef.current = true;
+    modalStore.reset();
+    if (!modalStore.show || modalStore.firstLoad) {
+      window.history.pushState(null, '', '/');
+    } else {
+      window.history.back();
+    }
+    setTimeout(() => {
+      isClosingRef.current = false;
+    }, 100);
+  }, [modalStore]);
+
+  const onEnd = (event: YouTubeEvent) => {
+    setTrailerFinished(true);
+    setLogoTransition('trailer-ended');
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '1';
+    }
+  };
+
+  const onPlay = () => {
+    setTrailerFinished(false);
+    setLogoTransition('trailer-playing');
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '0';
+    }
+    if (youtubeRef.current) {
+      const iframeRef: HTMLElement | null =
+        document.getElementById('video-trailer');
+      if (iframeRef) iframeRef.classList.remove('opacity-0');
+    }
+  };
+
+  const onReady = (event: YouTubeEvent) => {
+    try {
+      if (event?.target && typeof event.target.playVideo === 'function') {
+        event.target.playVideo();
+      }
+    } catch {}
   };
 
   const handleChangeMute = () => {
-    setIsMuted((m) => !m);
-    const videoRef: any = youtubeRef.current;
-    if (!videoRef) return;
-    if (isMuted) videoRef.internalPlayer.unMute();
-    else videoRef.internalPlayer.mute();
+    setIsMuted((state: boolean) => !state);
+    if (!youtubeRef.current) return;
+    const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
+    if (isMuted && youtubeRef.current) {
+      videoRef.internalPlayer.unMute();
+    } else if (youtubeRef.current) {
+      videoRef.internalPlayer.mute();
+    }
   };
 
-  const handleHref = () => {
-    if (!p.show?.id) return '#';
-    const type = isAnime
-      ? 'anime'
-      : p.show?.media_type === MediaType.MOVIE
-        ? 'movie'
-        : 'tv';
-    let id = `${p.show.id}`;
-    if (isAnime)
-      id = `${p.show?.media_type === MediaType.MOVIE ? 'm' : 't'}-${id}`;
-    return `/watch/${type}/${id}`;
-  };
-
-  const getRuntime = () =>
-    detailedShow?.media_type === MediaType.TV
-      ? detailedShow.number_of_seasons
-        ? `${detailedShow.number_of_seasons} Seasons`
-        : null
-      : detailedShow?.runtime
-        ? `${detailedShow.runtime} min`
-        : null;
-
-  const getQuality = () => ((p.show?.vote_average || 0) >= 8 ? 'HD' : 'SD');
-
-  const getGenres = () =>
-    detailedShow?.genres
-      ?.slice(0, 3)
-      .map((g) => g.name)
-      .join(' • ') ?? '';
-
-  // animate in/out on show change
-  const [animKey, setAnimKey] = React.useState<string>('');
-  React.useEffect(() => {
-    if (p.show) {
-      setAnimKey(`${p.show.id}-${Date.now()}`);
-    }
-  }, [p.show]);
-
-  // Stop trailer when preview closes
-  React.useEffect(() => {
-    const videoRef: any = youtubeRef.current;
-    if (!videoRef?.internalPlayer) return;
-    if (!p.isOpen) {
-      try {
-        videoRef.internalPlayer.stopVideo?.();
-        videoRef.internalPlayer.seekTo?.(0);
-      } catch {}
-      if (imageRef.current) imageRef.current.style.opacity = '1';
-    }
-  }, [p.isOpen]);
-
-  // Close preview on any scroll start (wheel, scroll, touchmove)
-  React.useEffect(() => {
-    if (!p.isOpen) return;
-    const close = () => {
-      p.setIsActive(false);
-      p.setIsOpen(false);
-      p.setAnchorRect(null);
-      p.setShow(null);
-      p.reset();
-    };
-    const onWheel = () => close();
-    const onScroll = () => close();
-    const onTouchMove = () => close();
-    window.addEventListener('wheel', onWheel, { passive: true, capture: true });
-    window.addEventListener('scroll', onScroll, {
-      passive: true,
-      capture: true,
-    });
-    window.addEventListener('touchmove', onTouchMove, {
-      passive: true,
-      capture: true,
-    });
-    return () => {
-      window.removeEventListener(
-        'wheel',
-        onWheel,
-        true as unknown as EventListenerOptions,
-      );
-      window.removeEventListener(
-        'scroll',
-        onScroll,
-        true as unknown as EventListenerOptions,
-      );
-      window.removeEventListener(
-        'touchmove',
-        onTouchMove,
-        true as unknown as EventListenerOptions,
-      );
-    };
-  }, [p.isOpen]);
-
-  // Close preview modal on navigation or window minimize
-  React.useEffect(() => {
-    if (!p.isOpen) return;
-
-    const close = () => {
-      p.setIsActive(false);
-      p.setIsOpen(false);
-      p.setAnchorRect(null);
-      p.setShow(null);
-      p.reset();
-    };
-
-    // Close on navigation (popstate event)
-    const handlePopState = () => close();
-
-    // Close on window visibility change (minimize/restore)
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        close();
-      }
-    };
-
-    // Close on beforeunload (page unload)
-    const handleBeforeUnload = () => close();
-
-    // Close on focus loss (when user switches tabs/apps)
-    const handleBlur = () => close();
-
-    window.addEventListener('popstate', handlePopState);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('blur', handleBlur);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('blur', handleBlur);
-    };
-  }, [p.isOpen]);
-
-  if (!p.isOpen || !p.show) return null;
-
-  // Calculate position based on anchor rect
-  const getPosition = () => {
-    const rect = p.anchorRect;
-    if (!rect) {
-      return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-    }
-    const modalWidth = 320; // w-80
-    const modalHeight = 220; // approx
-    const y = Math.max(8, rect.top - modalHeight * 0.4);
-    let x = rect.left + rect.width / 2 - modalWidth / 2;
-    x = Math.max(8, Math.min(x, window.innerWidth - modalWidth - 8));
-    return { top: `${Math.round(y)}px`, left: `${Math.round(x)}px` };
-  };
-
-  const handleMoreDetails = () => {
-    if (!p.show) return;
-    const current = p.show;
-    const name = getNameFromShow(current);
-    const path: string =
-      current.media_type === MediaType.TV ? 'tv-shows' : 'movies';
-    const videoRef: any = youtubeRef.current;
+  const handleReplay = () => {
+    setTrailerFinished(false);
+    setLogoTransition('trailer-playing');
+    if (!youtubeRef.current) return;
+    const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
     try {
-      videoRef?.internalPlayer?.pauseVideo?.();
-      videoRef?.internalPlayer?.stopVideo?.();
-    } catch {}
-    // Open the main modal on the next frame for smoother transition
-    requestAnimationFrame(() => {
-      window.history.pushState(
-        null,
-        '',
-        `${path}/${getSlug(current.id, name)}`,
-      );
-      useModalStore.setState({ show: current, isOpen: true, play: true });
-    });
-  };
-
-  const handleTrailerPlay = () => {
+      videoRef.internalPlayer.seekTo(0);
+      videoRef.internalPlayer.playVideo();
+    } catch (e) {
+      // noop
+    }
     if (imageRef.current) {
       imageRef.current.style.opacity = '0';
     }
   };
 
-  const handleTrailerEnd = (e: any) => {
+  const handleSeasonChange = async (seasonNumber: number) => {
+    if (!modalStore.show?.id) return;
+    setSelectedSeason(seasonNumber);
     try {
-      if (e?.target && typeof e.target.seekTo === 'function') {
-        e.target.seekTo(0);
-      }
-    } catch {}
+      const seasonData = await MovieService.getSeasons(
+        modalStore.show.id,
+        seasonNumber,
+      );
+      setSeasonEpisodes(seasonData.data.episodes || []);
+    } catch (error) {
+      console.error('Failed to fetch season episodes:', error);
+    }
   };
 
-  const handleTrailerReady = (e: any) => {
-    try {
-      if (e?.target && typeof e.target.playVideo === 'function') {
-        e.target.playVideo();
-      }
-    } catch {}
+  const recommendedShows = modalStore.detailedShow?.recommendations || [];
+  const loadingRecommended = modalStore.isLoading;
+
+  const handleHref = (): string => {
+    const type = isAnime
+      ? 'anime'
+      : modalStore.show?.media_type === MediaType.MOVIE
+        ? 'movie'
+        : 'tv';
+    let id = `${modalStore.show?.id}`;
+    if (isAnime) {
+      const prefix: string =
+        modalStore.show?.media_type === MediaType.MOVIE ? 'm' : 't';
+      id = `${prefix}-${id}`;
+    }
+    return `/watch/${type}/${id}`;
   };
 
-  // console.log(detailedShow);
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const contentEl = document.getElementById('content');
+    if (!contentEl) return;
+    if (e.target instanceof Node && contentEl.contains(e.target)) {
+      return;
+    }
+    e.stopPropagation(); // Prevent Dialog's onOpenChange from firing
+    handleCloseModal();
+  };
+
+  const navigateToMovie = (movieId: number) => {
+    // Avoid history.back() to ensure navigation happens
+    modalStore.reset();
+    router.push(`/watch/movie/${movieId}`);
+  };
+
+  const navigateToEpisode = (seasonNumber: number, episodeNumber: number) => {
+    // Avoid history.back() to ensure navigation happens
+    const showId = modalStore.show?.id;
+    if (!showId) return;
+    modalStore.reset();
+    router.push(
+      `/watch/tv/${showId}?season=${seasonNumber}&episode=${episodeNumber}`,
+    );
+  };
+
+  const navigateToShow = (show: Show) => {
+    modalStore.reset();
+    const type = show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+    router.push(`/watch/${type}/${show.id}`);
+  };
+
+  const BodyScrollLock = () => {
+    useLockBody();
+    return null;
+  };
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0 z-50"
-      aria-label="Preview overlay"
-      onMouseEnter={() => p.setIsActive(true)}
-      onMouseLeave={() => {
-        p.setIsActive(false);
-        p.setIsOpen(false);
-        p.setAnchorRect(null);
-        p.setShow(null);
-        handleCloseModal();
-      }}>
+    <Dialog
+      open={modalStore.isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleCloseModal();
+        }
+      }}
+      aria-label="Modal containing show's details">
+      {modalStore.isOpen && <BodyScrollLock />}
       <div
-        key={animKey}
-        className="animate-in fade-in-0 zoom-in-95 pointer-events-auto absolute w-80 max-w-[90vw] duration-150 will-change-transform"
-        style={getPosition()}
-        onWheel={() => {
-          p.setIsActive(false);
-          p.setIsOpen(false);
-          p.setAnchorRect(null);
-          p.setShow(null);
-          p.reset();
-        }}>
-        <div className="overflow-hidden rounded-xl bg-neutral-900 shadow-lg shadow-black">
-          <div className="group relative aspect-video">
-            <CustomImage
-              fill
-              preload
-              ref={imageRef}
-              alt={p?.show?.title ?? 'poster'}
-              className="z-1 h-auto w-full object-cover"
-              src={`https://image.tmdb.org/t/p/original${p.show?.backdrop_path ?? p.show?.poster_path}`}
-              sizes="50vw"
-            />
-            {trailer && (
-              <Youtube
-                opts={defaultOptions}
-                onEnd={handleTrailerEnd}
-                onPlay={handleTrailerPlay}
-                ref={youtubeRef}
-                onReady={handleTrailerReady}
-                videoId={trailer}
-                id="hero-trailer"
-                title={p.show?.title ?? p.show?.name ?? 'hero-trailer'}
-                className="z-0 h-full w-full"
-                style={{ width: '100%', height: '100%' }}
-                iframeClassName="w-full h-full z-10"
-              />
-            )}
-            {detailedShow?.logoPath && (
-              <div className="pointer-events-none absolute bottom-2 left-2 z-20 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
-                <img
-                  src={`https://image.tmdb.org/t/p/w500${detailedShow.logoPath}`}
-                  alt={p.show.title ?? p.show.name ?? 'logo'}
-                  className="h-auto max-h-12 w-auto max-w-[80%] object-contain"
+        className="'bg-black/20 data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-0 z-50 backdrop-blur-[1px]"
+        onClick={handleOverlayClick}>
+        <div className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 translate-all fixed top-[50%] left-[50%] z-50 grid h-full w-full translate-x-[-50%] translate-y-[-50%] overflow-y-auto py-10 duration-500 disabled:pointer-events-none">
+          <div className="flex justify-center">
+            <div
+              id="content"
+              className="relative w-full overflow-y-auto rounded-md border-none bg-neutral-900 p-0 text-left align-middle ring-0 sm:max-w-3xl lg:max-w-4xl">
+              <div
+                className="relative z-10 aspect-video"
+                // style={{
+                //   background: 'linear-gradient(0deg, #181818, transparent 100%)',
+                //   opacity: 1,
+                //   paddingBottom: 'calc(var(--spacing) * 1)'
+                // }}
+              >
+                <CustomImage
+                  fill
+                  preload
+                  ref={imageRef}
+                  alt={modalStore?.show?.title ?? 'poster'}
+                  className="z-1 h-auto w-full object-cover"
+                  src={`https://image.tmdb.org/t/p/original${
+                    modalStore.show?.backdrop_path ??
+                    modalStore.show?.poster_path
+                  }`}
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
                 />
-              </div>
-            )}
-
-            <Link
-              href={handleHref()}
-              className="absolute inset-0 z-10 bg-linear-to-t from-neutral-900 via-neutral-900/20 to-transparent"></Link>
-
-            <div className="pointer-events-auto absolute bottom-2 flex w-full items-center justify-between gap-2 px-2">
-              <div className="flex items-center gap-2"></div>
-              <Button
-                aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
-                className="z-10 h-7 w-7 rounded-full border border-white/30 bg-neutral-950/50 p-0 text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"
-                onClick={handleChangeMute}>
-                {isMuted ? (
-                  <Icons.volumeMute className="h-4 w-4" />
-                ) : (
-                  <Icons.volume className="h-4 w-4" />
+                {trailer && (
+                  <Youtube
+                    opts={options}
+                    onEnd={onEnd}
+                    onPlay={onPlay}
+                    ref={youtubeRef}
+                    onReady={onReady}
+                    videoId={trailer}
+                    id="video-trailer"
+                    title={
+                      modalStore.show?.title ??
+                      modalStore.show?.name ??
+                      'video-trailer'
+                    }
+                    className="relative aspect-video w-full"
+                    style={{ width: '100%', height: '100%' }}
+                    iframeClassName={`relative pointer-events-none w-full h-full -z-10 opacity-0`}
+                  />
                 )}
-              </Button>
-            </div>
-          </div>
-          <a className="cursor-pointer px-3" onClick={handleMoreDetails}>
-            <div className="w-full px-2">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    aria-label="Play show"
-                    className="group h-7 w-7 rounded-full bg-white p-0 text-black transition-all duration-200 hover:scale-105 hover:bg-neutral-200"
-                    onClick={() => {
-                      window.location.href = handleHref();
-                    }}>
-                    <Icons.play className="h-4 w-4 fill-current" />
-                  </Button>
-                  {getRuntime() && (
-                    <span className="text-xs font-medium text-white">
-                      {getRuntime()}
+
+                {/* Show logo with transition states */}
+                {detailedShow?.logoPath && (
+                  <div
+                    className={`absolute z-30 flex items-center p-3 md:p-6 transition-all duration-[1500] ease-in-out ${
+                      logoTransition === 'initial' ||
+                      logoTransition === 'trailer-ended'
+                        ? 'inset-0 justify-center'
+                        : 'bottom-22 md:bottom-25 left-0 justify-start'
+                    }`}>
+                    <CustomImage
+                      src={`https://image.tmdb.org/t/p/original${detailedShow.logoPath}`}
+                      alt={`${modalStore.show?.title ?? modalStore.show?.name} logo`}
+                      className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500] ease-in-out ${
+                        logoTransition === 'initial' ||
+                        logoTransition === 'trailer-ended'
+                          ? 'h-auto max-w-[60%]'
+                          : 'h-auto max-w-[24%] md:max-w-[40%]'
+                      }`}
+                      width={
+                        logoTransition === 'initial' ||
+                        logoTransition === 'trailer-ended'
+                          ? 800
+                          : 400
+                      }
+                      height={
+                        logoTransition === 'initial' ||
+                        logoTransition === 'trailer-ended'
+                          ? 400
+                          : 200
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className="absolute bottom-[-5px] z-10 h-full w-full bg-neutral-900 mask-t-from-9% mask-t-to-50%"></div>
+
+                <div className="absolute bottom-14 md:bottom-20 z-30 flex w-full items-center justify-between gap-2 px-4 md:px-10">
+                  <div className="flex items-center gap-2.5">
+                    <Link href={handleHref()}>
+                      <Button
+                        aria-label={`${!trailerFinished ? 'Pause' : 'Play'} show`}
+                        className="group h-auto rounded-[9px] bg-neutral-50 py-1.5 text-black hover:bg-neutral-300">
+                        <>
+                          <Icons.play
+                            className="mr-1.5 h-6 w-6 fill-current"
+                            aria-hidden="true"
+                          />
+                          Play
+                        </>
+                      </Button>
+                    </Link>
+                  </div>
+                  {trailer &&
+                    (!trailerFinished ? (
+                      <button
+                        aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                        onClick={handleChangeMute}>
+                        {isMuted ? (
+                          <Icons.volumeMute
+                            className="h-5 w-5"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Icons.volume
+                            className="h-5 w-5"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        aria-label="Replay trailer"
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/70 p-0 text-white/50 ring-2 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white"
+                        onClick={handleReplay}>
+                        <Icons.replay className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="relative z-40 -mt-10 flex flex-wrap md:flex-nowrap w-full gap-4 px-4 md:px-10 pb-10">
+                <div className="w-full md:w-3/4">
+                  {/* Title */}
+                  {/* <DialogTitle className="text-lg leading-6 font-medium text-slate-50 sm:text-xl">
+                  {modalStore.show?.title ?? modalStore.show?.name}
+                </DialogTitle> */}
+
+                  {/* Match percentage */}
+                  {/* <div className="flex items-center space-x-2 text-sm sm:text-base">
+                  <p className="font-semibold text-green-400">
+                    {Math.round((Number(modalStore.show?.vote_average) / 10) * 100) ??
+                      '-'}
+                    % Match
+                  </p>
+                </div> */}
+
+                  {/* Movie Details Row */}
+                  <div className="flex items-center space-x-2 text-sm">
+                    {/* Release Year */}
+                    {modalStore.show?.release_date ? (
+                      <p className="text-sm font-bold text-slate-200">
+                        {getYear(modalStore.show?.release_date)}
+                      </p>
+                    ) : modalStore.show?.first_air_date ? (
+                      <p className="text-sm font-bold text-slate-200">
+                        {getYear(modalStore.show?.first_air_date)}
+                      </p>
+                    ) : null}
+
+                    {/* Duration */}
+                    {detailedShow?.runtime && (
+                      <p className="text-sm font-bold text-slate-200">
+                        {Math.floor(detailedShow.runtime / 60)}h {detailedShow.runtime % 60}m
+                      </p>
+                    )}
+                    {/* Seasons (TV only) */}
+                    {modalStore.show?.media_type === MediaType.TV &&
+                      (() => {
+                        const count = detailedShow?.number_of_seasons ?? modalStore.show?.number_of_seasons ?? null;
+                        return typeof count === 'number' && count > 0 ? (
+                          <p className="text-sm font-bold text-slate-200">
+                            {count} {count === 1 ? 'Season' : 'Seasons'}
+                          </p>
+                        ) : null;
+                      })()}
+
+                    {/* Quality Badge */}
+                    <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-semibold text-neutral-300">
+                      HD
                     </span>
-                  )}
-                  <span className="rounded border px-1 py-0.5 text-[8px] font-bold text-white">
-                    {getQuality()}
-                  </span>
-                  <span className="rounded border px-1 py-0.5 text-[8px] font-bold text-white">
-                    {detailedShow?.contentRating ?? ''}
-                  </span>
+
+                    {/* Language */}
+                    {modalStore.show?.original_language && (
+                      <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-bold text-neutral-300">
+                        {modalStore.show.original_language.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Age Rating */}
+                    <span className="w-9 place-items-center border border-neutral-400 px-[0.4rem] text-center text-[12px] font-bold text-neutral-200">
+                      {detailedShow?.contentRating ?? '16+'}
+                    </span>
+                    {/* KeyWords */}
+                    <span className="text-sm text-slate-50">
+                      {detailedShow?.keywords && detailedShow.keywords.length > 0
+                        ? detailedShow.keywords
+                            .slice(0, 3)
+                            .map((keyword) => keyword.name)
+                            .join(', ')
+                        : 'content warning'}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <DialogDescription className="pt-5 text-[15px] leading-relaxed text-slate-50">
+                    {modalStore.show?.overview ?? '-'}
+                  </DialogDescription>
                 </div>
 
-                <Button
-                  className="h-7 w-7 rounded-full border border-white/30 bg-black/50 p-0 text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"
-                  onClick={handleMoreDetails}
-                  data-tooltip="More details">
-                  <Icons.chevronDown className="h-4 w-4" />
-                </Button>
+                <div className="flex w-full md:w-1/4 flex-col gap-3 text-sm text-neutral-400">
+                  {/* Left Column */}
+                  <div className="">
+                    <div>
+                      <span className="text-neutral-50">Cast: </span>
+                      <span>
+                        {detailedShow?.cast && detailedShow.cast.length > 0
+                          ? `${detailedShow.cast.map((actor: any) => actor.name).slice(0, 5).join(', ')}, more`
+                          : '-'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="">
+                    <div>
+                      <span className="text-neutral-50">Genres: </span>
+                      <span>
+                        {detailedShow?.genres?.map((genre) => genre.name).join(', ') ?? '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-xs text-neutral-300">
-                {getGenres() && <span>{getGenres()}</span>}
-              </div>
-              <h1 className="text-md font-medium text-white">
-                {p.show.title || p.show.name}
-              </h1>
-              <span className="text-xs font-medium text-white">
-                {p.show?.release_date || detailedShow?.release_date}
-              </span>
-              <span className="rounded border px-1 py-0.5 text-[11px] font-bold text-white">
-                {detailedShow?.media_type === MediaType.MOVIE
-                  ? (() => {
-                      const runtime = detailedShow?.runtime;
-                      if (!runtime) return 'N/A';
-                      const hours = Math.floor(runtime / 60);
-                      const minutes = runtime % 60;
-                      return hours > 0
-                        ? `${hours}h ${minutes}m`
-                        : `${minutes}m`;
-                    })()
-                  : detailedShow?.media_type === MediaType.TV
-                    ? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
-                    : (() => {
-                        // Fallback to basic show data if detailedShow is not available
-                        const show = p.show;
-                        if (show?.media_type === MediaType.MOVIE) {
-                          const runtime = detailedShow?.runtime;
-                          if (!runtime) return 'N/A';
-                          const hours = Math.floor(runtime / 60);
-                          const minutes = runtime % 60;
-                          return hours > 0
-                            ? `${hours}h ${minutes}m`
-                            : `${minutes}m`;
+
+              {/* Movie Collection Section */}
+              {detailedShow?.collection &&
+                modalStore.show?.media_type === MediaType.MOVIE && (
+                  <div className="px-4 md:px-10 pb-6">
+                    <div className="flex items-start justify-start gap-4">
+                      <Icons.library />
+                      <h3 className="mb-4 text-xl font-semibold text-white">
+                        {detailedShow?.collection.name}
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      {detailedShow?.collection.parts?.map(
+                        (movie: any, index: number) => (
+                          <div
+                            key={movie.id}
+                            className="group flex cursor-pointer gap-3 rounded-lg bg-neutral-800 p-3 transition hover:bg-neutral-700/60"
+                            onClick={() => navigateToMovie(movie.id)}>
+                            <div className="relative h-24 w-16 shrink-0">
+                              <CustomImage
+                                src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
+                                alt={movie.title}
+                                className="h-full w-full rounded object-cover"
+                                width={64}
+                                height={96}
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center rounded bg-black/40 opacity-0 transition group-hover:opacity-100">
+                                <Icons.play className="h-6 w-6 text-white" />
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="truncate text-sm font-medium text-white">
+                                {movie.title}
+                              </h4>
+                              <p className="mt-1 text-xs text-neutral-400">
+                                {getYear(movie.release_date)}
+                              </p>
+                              <p className="mt-1 line-clamp-2 text-xs text-neutral-500">
+                                {movie.overview}
+                              </p>
+                            </div>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* TV Seasons Section */}
+              {detailedShow && modalStore.show?.media_type === MediaType.TV && (
+                <div className="px-4 md:px-10 pb-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-white">
+                      Episodes
+                    </h3>
+                    {detailedShow.seasons && detailedShow.seasons.length > 1 && (
+                      <select
+                        value={selectedSeason}
+                        onChange={(e) =>
+                          handleSeasonChange(Number(e.target.value))
                         }
-                        return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
-                      })()}
-              </span>
-              {detailedShow?.networks && detailedShow?.networks.length > 0 && (
-                <div className="absolute flex w-[95%] flex-row items-end justify-end gap-2 overflow-hidden pb-2">
-                  {detailedShow?.networks.map(
-                    (network, index) =>
-                      network.logo_path && (
-                        <img
-                          key={index}
-                          src={`https://image.tmdb.org/t/p/w92${network.logo_path}`}
-                          alt={network.name || 'Network logo'}
-                          className="h-4 w-auto object-contain"
-                        />
-                      ),
+                        className="rounded border border-neutral-600 bg-neutral-800 px-3 py-1 text-white">
+                        {detailedShow.seasons.map((season: any) => (
+                          <option
+                            key={season.season_number}
+                            value={season.season_number}>
+                            Season {season.season_number}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {seasonEpisodes.length > 0 && (
+                    <div className="space-y-3">
+                      {seasonEpisodes.map((episode: any, index: number) => (
+                        <div
+                          key={episode.id}
+                          className="group flex cursor-pointer gap-4 rounded-lg bg-neutral-800 p-4 transition hover:bg-neutral-700/60"
+                          onClick={() =>
+                            navigateToEpisode(
+                              selectedSeason,
+                              episode.episode_number,
+                            )
+                          }>
+                          <div className="relative h-20 w-32 shrink-0">
+                            <CustomImage
+                              src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                              alt={episode.name}
+                              className="h-full w-full rounded object-cover"
+                              width={128}
+                              height={80}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center rounded bg-black/40 opacity-0 transition group-hover:opacity-100">
+                              <Icons.play className="h-7 w-7 text-white" />
+                            </div>
+                            <div className="absolute right-1 bottom-1 rounded bg-black/70 px-1 text-xs text-white">
+                              {Math.floor(episode.runtime / 60)}h{' '}
+                              {episode.runtime % 60}m
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className="text-sm font-medium text-white">
+                                {episode.episode_number}
+                              </span>
+                              <span className="text-sm text-neutral-400">
+                                {episode.name}
+                              </span>
+                            </div>
+                            <p className="line-clamp-2 text-sm text-neutral-300">
+                              {episode.overview}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
+
+              {/* More like this */}
+              <div className="px-4 md:px-10 pb-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">
+                  More like this
+                </h3>
+                {loadingRecommended ? (
+                  <ShowsSkeleton classname="pl-0" />
+                ) : recommendedShows.length === 0 ? (
+                  <p className="text-sm text-neutral-400">
+                    No recommendations available at the moment.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                    {recommendedShows.slice(0, 12).map((show) => {
+                      const isTv = show.media_type === MediaType.TV;
+                      const detail = (detailedShow?.recommendedDetails as any)?.[show.id];
+                      const seasons = isTv
+                        ? (detail?.number_of_seasons ??
+                          show.number_of_seasons ??
+                          null)
+                        : null;
+                      const runtimeMin = !isTv
+                        ? (detail?.runtime ??
+                          (typeof show.runtime === 'number'
+                            ? (show.runtime as number)
+                            : null))
+                        : null;
+                      const durationLabel = isTv
+                        ? seasons != null
+                          ? `${seasons} ${seasons === 1 ? 'Season' : 'Seasons'}`
+                          : undefined
+                        : runtimeMin != null
+                          ? `${Math.floor(runtimeMin / 60)}h ${runtimeMin % 60}m`
+                          : undefined;
+                      const year = show.release_date
+                        ? getYear(show.release_date)
+                        : show.first_air_date
+                          ? getYear(show.first_air_date)
+                          : undefined;
+                      return (
+                        <div
+                          key={show.id}
+                          className="group overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-800 transition-colors hover:border-neutral-600">
+                          <div
+                            className="relative aspect-video cursor-pointer"
+                            onClick={() => navigateToShow(show)}>
+                            <img
+                              src={
+                                (show.backdrop_path ?? show.poster_path)
+                                  ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path}`
+                                  : '/images/grey-thumbnail.jpg'
+                              }
+                              alt={show.title ?? show.name ?? 'poster'}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src =
+                                  '/images/grey-thumbnail.jpg';
+                              }}
+                            />
+                            {/* Centered logo overlay */}
+                            {(detailedShow?.recommendedLogos as any)?.[show.id] && (
+                              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-2">
+                                <img
+                                  src={`https://image.tmdb.org/t/p/w500${(detailedShow?.recommendedLogos as any)?.[show.id]}`}
+                                  alt={
+                                    (show.title ??
+                                      show.name ??
+                                      'logo') as string
+                                  }
+                                  className="h-auto max-h-10 w-auto max-w-[85%] object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] sm:max-h-12"
+                                  onError={(e) => {
+                                    (
+                                      e.currentTarget as HTMLImageElement
+                                    ).style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            {/* Hover play icon */}
+                            <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/70 ring-2 ring-white/60 sm:h-12 sm:w-12">
+                                <Icons.play className="h-5 w-5 text-white sm:h-6 sm:w-6" />
+                              </div>
+                            </div>
+                            {durationLabel && (
+                              <div className="absolute top-2 right-2 z-30 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+                                {durationLabel}
+                              </div>
+                            )}
+                            <div className="absolute inset-0 z-10 bg-linear-to-t from-black/70 via-black/0 to-black/0"></div>
+                          </div>
+                          <div className="p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="place-items-center border border-neutral-500 px-1.5 py-0.5 text-[10px] font-bold text-neutral-200">
+                                  {(show.vote_average ?? 0) >= 8
+                                    ? '18+'
+                                    : '16+'}
+                                </span>
+                                <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-semibold text-neutral-300">
+                                  HD
+                                </span>
+                                {year && (
+                                  <span className="rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-semibold text-neutral-300">
+                                    {year}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="mt-3 line-clamp-3 text-xs text-neutral-300">
+                              {show.overview ?? ''}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* About Section */}
+              <div className="px-4 md:px-10 pb-6">
+                <h3 className="mb-3 text-xl font-semibold text-white">
+                  About {modalStore.show?.title ?? modalStore.show?.name}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {detailedShow?.directors && detailedShow.directors.length > 0 && (
+                    <div className="text-neutral-300">
+                      <span className="text-neutral-400">Director: </span>
+                      <span className="text-neutral-200">
+                        {detailedShow.directors.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {detailedShow?.cast && detailedShow.cast.length > 0 && (
+                    <div className="text-neutral-300">
+                      <span className="text-neutral-400">Cast: </span>
+                      <span className="text-neutral-200">
+                        {detailedShow.cast
+                          .map((a: any) => a.name)
+                          .slice(0, 12)
+                          .join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {detailedShow?.writers && detailedShow.writers.length > 0 && (
+                    <div className="text-neutral-300">
+                      <span className="text-neutral-400">Writer: </span>
+                      <span className="text-neutral-200">
+                        {detailedShow.writers.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {detailedShow?.genres && detailedShow.genres.length > 0 && (
+                    <div className="text-neutral-300">
+                      <span className="text-neutral-400">Genres: </span>
+                      <span className="text-neutral-200">
+                        {detailedShow.genres.map((g) => g.name).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-neutral-300">
+                    <span className="text-neutral-400">
+                      This{' '}
+                      {modalStore.show?.media_type === MediaType.TV
+                        ? 'Show'
+                        : 'Movie'}{' '}
+                      Is:{' '}
+                    </span>
+                    <span className="text-neutral-200">
+                      {detailedShow?.keywords
+                        ?.slice(0, 4)
+                        .map((k) => k.name)
+                        .join(', ') || '—'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-300">
+                    <span className="text-neutral-400">Maturity Rating: </span>
+                    <span className="place-items-center border border-neutral-500 px-1.5 py-0.5 text-[10px] font-bold text-neutral-200">
+                      {detailedShow?.contentRating ??
+                        ((modalStore.show?.vote_average ?? 0) >= 8
+                          ? '18+'
+                          : '16+')}
+                    </span>
+                    <span className="text-xs text-neutral-400">
+                      {(modalStore.show?.vote_average ?? 0) >= 8
+                        ? 'Recommended for ages 18 and up'
+                        : ''}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="absolute top-4 right-4 z-30 cursor-pointer rounded-full bg-black p-1 text-slate-50 opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseModal();
+                }}>
+                <X className="h-6 w-6" />
+                <span className="sr-only">Close</span>
+              </button>
             </div>
-          </a>
+          </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };
 
