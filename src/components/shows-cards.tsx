@@ -159,7 +159,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     const name = getNameFromShow(show);
     const path: string =
       show.media_type === MediaType.TV ? 'tv-shows' : 'movies';
-    window.history.pushState(null, '', `${path}/${getSlug(show.id, name)}`);
+    window.history.pushState(null, '', `/${path}/${getSlug(show.id, name)}`);
     usePreviewModalStore.setState({
       show: show,
       isOpen: true,
