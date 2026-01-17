@@ -48,7 +48,7 @@ class BaseService {
       timeout: 15000,
       baseURL: baseUrl,
       responseType: 'json',
-      maxContentLength: 100000,
+      maxContentLength: Infinity,
       validateStatus: (status: number) => status >= 200 && status < 300,
       maxRedirects: 5,
     };
