@@ -45,18 +45,12 @@ function ensureTooltipEl(): HTMLDivElement | null {
 
 function getAttrText(target: Element | null): string | null {
   if (!target) return null;
-  const data = target.getAttribute('data-tooltip');
-  if (data) return data;
-  const plain = target.getAttribute('tooltip');
-  if (plain) return plain;
-  const nativeTitle = target.getAttribute('title');
-  if (nativeTitle) return nativeTitle;
-  return null;
+  return target.getAttribute('data-tooltip');
 }
 
 function findTooltipAnchor(start: Element | null): Element | null {
   if (!start) return null;
-  return start.closest('[data-tooltip],[tooltip],[title]');
+  return start.closest('[data-tooltip]');
 }
 
 function positionTooltip(el: HTMLElement, anchor: Element) {
