@@ -45,11 +45,11 @@ async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) 
             : [];
 
         // Fetch seasons data
-        if (tvShow.number_of_seasons) {
-          const seasonPromises = [];
-          for (let i = 1; i <= Math.min(tvShow.number_of_seasons, 10); i++) {
-            seasonPromises.push(MovieService.getSeasons(tvId, i));
-          }
+        if (tvShow.seasons?.length) {
+          const seasonPromises = tvShow.seasons.map((season) =>
+            MovieService.getSeasons(tvId, season.season_number)
+          );
+          
           const seasonResponses = await Promise.allSettled(seasonPromises);
           seasons = seasonResponses
             .filter((response) => response.status === 'fulfilled')
@@ -67,10 +67,10 @@ async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) 
   return (
     <div className="min-h-screen w-screen bg-black pt-5">
       <ModalCloser />
-      {tvShow && seasons.length > 0 ? (
+      {tvShow ? (
         <TvWatchPage
           tvShow={tvShow}
-          seasons={seasons}
+          seasons={seasons.length > 0 ? seasons : (tvShow.seasons || []).map(s => ({...s, episodes: []}))}
           tvId={tvId}
           mediaId={slugId}
           recommendedShows={recommendedShows}
