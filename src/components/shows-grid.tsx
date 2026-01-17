@@ -2,7 +2,7 @@
 
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import type { Show } from '@/types';
-import PreviewModal from './preview-modal';
+// import PreviewModal from './preview-modal';
 import { ShowCard } from './shows-cards';
 import { usePathname } from 'next/navigation';
 import { useSearchStore } from '@/stores/search';
@@ -22,7 +22,7 @@ const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
 
   return (
     <section aria-label="Grid of shows" className="container w-full max-w-none">
-      {modalStore.isOpen && <PreviewModal />}
+      {/* {modalStore.isOpen && <PreviewModal />} */}
       <div className="main-view mt-4 min-h-[800px] pt-[5%]" id="main-view">
         {query && searchStore.loading ? (
           <ShowsSkeleton classname="pl-0" withTitle={false} />

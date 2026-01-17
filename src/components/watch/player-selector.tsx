@@ -140,6 +140,24 @@ const PlayerSelector = ({
     if (mediaType === 'movie') {
       baseOptions.push(
         {
+          id: 'vidify',
+          name: 'Vidify',
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?autoplay=true`),
+          description: 'Multi-language supported',
+          language: 'Original',
+          icon: Icons.play,
+          quality: 'HD',
+        },
+        {
+          id: 'vidify-hindi',
+          name: 'Vidify',
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?server=hindi&autoplay=true`),
+          description: 'Multi-language supported',
+          language: 'Hindi',
+          icon: Icons.play,
+          quality: 'HD',
+        },
+        {
           id: 'vidfast',
           name: 'VidFast',
           url: buildUrl(
@@ -253,6 +271,28 @@ const PlayerSelector = ({
 
     if (mediaType === 'tv') {
       baseOptions.push(
+        {
+          id: 'vidify',
+          name: 'Vidify',
+          url: buildUrl(
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoplay=true`,
+          ),
+          description: 'Multi-language supported',
+          language: 'Original',
+          icon: Icons.play,
+          quality: 'HD',
+        },
+        {
+          id: 'vidify-hindi',
+          name: 'Vidify',
+          url: buildUrl(
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=hindi&autoplay=true`,
+          ),
+          description: 'Multi-language servers',
+          language: 'Hindi',
+          icon: Icons.play,
+          quality: 'HD',
+        },
         {
           id: 'vidfast',
           name: 'VidFast',

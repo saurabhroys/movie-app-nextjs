@@ -9,7 +9,7 @@ import type { CategorizedShows } from '@/types';
 
 // import { api } from "@/lib/api/api"
 import { getIdFromSlug } from '@/lib/utils';
-import PreviewModal from '@/components/preview-modal';
+// import PreviewModal from '@/components/preview-modal';
 import ShowsCarousel from '@/components/shows-carousel';
 import ShowsGrid from '@/components/shows-grid';
 // import ShowsSkeleton from '@/components/shows-skeleton';
@@ -74,7 +74,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
 
   return (
     <>
-      {modalStore.isOpen && <PreviewModal />}
+      {/* {modalStore.isOpen && <PreviewModal />} */}
       {shows.map(
         (item) =>
           item.visible && (

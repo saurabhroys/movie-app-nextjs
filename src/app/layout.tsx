@@ -17,7 +17,8 @@ import SiteHeader from '@/components/main/site-header';
 import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
 import SiteFooter from '@/components/main/site-footer';
 import AttributeTooltipManager from '@/components/attribute-tooltip';
-import PreviewModal from '@/components/hover-modal';
+import HoverModal from '@/components/hover-modal';
+import PreviewModal from '@/components/preview-modal';
 
 // export const runtime = 'edge';
 
@@ -101,6 +102,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             {children}
           </Suspense>
+          <HoverModal />
           <PreviewModal />
           <SiteFooter />
           <TailwindIndicator />
