@@ -26,7 +26,11 @@ const RecommendedMovies = ({
     return (
       <div className="p-4">
         <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
-        <ShowsSkeleton classname="pl-0" />
+        <ShowsSkeleton
+          classname="pl-0"
+          withTitle={false}
+          gridClassName="xs:grid-cols-2 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+        />
       </div>
     );
   }
