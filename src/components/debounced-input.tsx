@@ -82,6 +82,15 @@ export function DebouncedInput({
     });
   }, []);
 
+  const removeFromHistory = (e: React.MouseEvent, query: string) => {
+    e.stopPropagation();
+    setRecentSearches((prev) => {
+      const updated = prev.filter((s) => s !== query);
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // close search input on clicking outside
   useOnClickOutside(dropdownRef, () => {
     setShowHistory(false);
@@ -258,36 +267,47 @@ export function DebouncedInput({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute right-0 top-full mt-3 w-screen min-w-[260px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl md:w-full md:max-w-none">
-            <div className="flex items-center justify-between border-b border-white/5 bg-white/2 px-4 py-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+            className="absolute right-0 top-full mt-2 w-screen min-w-[260px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/70 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md md:w-full md:max-w-none">
+            <div className="flex items-center justify-between border-b border-white/5 bg-white/5 px-4 py-2">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400">
                 Recent Searches
               </span>
               <button
                 onClick={clearAllHistory}
-                className="text-[10px] font-semibold text-neutral-500 transition-colors hover:text-white hover:underline">
+                className="text-[11px] font-medium text-neutral-400 transition-colors hover:text-white">
                 Clear All
               </button>
             </div>
             <motion.div className="flex flex-col py-2">
               {recentSearches.map((s, i) => (
-                <motion.button
+                <div
                   key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="group/item flex items-center justify-between px-4 py-3 text-left transition hover:bg-white/4"
-                  onClick={() => handleRecentClick(s)}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 group-hover/item:bg-white/10">
-                      <Clock className="h-3.5 w-3.5 text-neutral-400 group-hover/item:text-white" />
+                  className="group/item flex items-center justify-between px-2 py-1 "
+                >
+                  <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex w-full justify-between items-center rounded-lg px-2 py-1.5 transition-all hover:bg-white/5"
+                    onClick={() => handleRecentClick(s)}
+                  >
+                    <div className="flex flex-1 gap-3 items-center text-left cursor-pointer">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/5 text-neutral-400 transition-colors group-hover/item:bg-white/10 group-hover/item:text-white">
+                        <Clock className="h-3 w-3" />
+                      </div>
+                      <span className="truncate text-sm font-medium text-neutral-300 transition-colors group-hover/item:text-white">
+                        {s}
+                      </span>
                     </div>
-                    <span className="truncate text-sm font-medium text-neutral-400 group-hover/item:text-white">
-                      {s}
-                    </span>
-                  </div>
-                  <Icons.chevronRight className="h-3.5 w-3.5 translate-x-1 text-neutral-600 opacity-0 transition-all group-hover/item:translate-x-0 group-hover/item:opacity-100" />
-                </motion.button>
+                  <button
+                    onClick={(e) => removeFromHistory(e, s)}
+                    className="-mr-1 flex h-6 w-6 items-center justify-center rounded-lg text-neutral-500 opacity-0 transition-all hover:bg-white/10 hover:text-red-400 group-hover/item:opacity-100 cursor-pointer"
+                    aria-label="Remove from history"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  </motion.button>
+                </div>
               ))}
             </motion.div>
           </motion.div>

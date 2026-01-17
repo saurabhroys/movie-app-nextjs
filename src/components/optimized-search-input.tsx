@@ -102,7 +102,11 @@ export function OptimizedSearchInput({
   };
 
   return (
-    <div className={cn('relative', className)}>
+    <form
+      className={cn('relative', className)}
+      onSubmit={(e) => e.preventDefault()}
+      autoComplete="off"
+    >
       <Input
         ref={inputRef}
         id={id}
@@ -118,6 +122,13 @@ export function OptimizedSearchInput({
         defaultValue={value}
         maxLength={maxLength}
         onChange={handleChange}
+        autoComplete="new-password"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        aria-autocomplete="none"
+        role="presentation"
+        name={`search_${Math.random().toString(36).substring(7)}`}
         {...props}
       />
 
@@ -182,6 +193,6 @@ export function OptimizedSearchInput({
           {shows.length} result{shows.length !== 1 ? 's' : ''} found
         </div>
       )}
-    </div>
+    </form>
   );
 }
