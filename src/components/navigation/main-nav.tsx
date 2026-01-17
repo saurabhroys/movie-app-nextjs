@@ -248,7 +248,8 @@ export function MainNav({ items }: MainNavProps) {
           onClick={showHelp}
           className="hidden hover:bg-transparent md:flex"
           aria-label="Show keyboard shortcuts help"
-          title="Show keyboard shortcuts (?)">
+          data-tooltip="Show keyboard shortcuts (?)"
+          >
           <Icons.helpCircle className="h-5 w-5" />
         </Button>
         {/* <ThemeToggle /> */}

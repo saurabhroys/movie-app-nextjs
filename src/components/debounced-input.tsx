@@ -282,7 +282,7 @@ export function DebouncedInput({
               {recentSearches.map((s, i) => (
                 <div
                   key={i}
-                  className="group/item flex items-center justify-between px-1 py-1 "
+                  className="group/item flex items-center justify-between px-1"
                 >
                   <motion.button
                     initial={{ opacity: 0, x: -10 }}
