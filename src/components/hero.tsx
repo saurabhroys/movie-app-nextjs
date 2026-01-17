@@ -537,7 +537,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                         window.history.pushState(
                           null,
                           '',
-                          `${path}/${getSlug(randomShow.id, name)}`,
+                          `/${path}/${getSlug(randomShow.id, name)}`,
                         );
                         usePreviewModalStore.setState({
                           show: randomShow,
