@@ -1,5 +1,5 @@
-import { useModalStore } from '@/stores/modal';
 import { usePreviewModalStore } from '@/stores/preview-modal';
+import { useHoverModalStore } from '@/stores/hover-modal';
 import { Genre, MediaType, type Show } from '@/types';
 import * as React from 'react';
 import MovieService from '@/services/MovieService';
@@ -35,7 +35,7 @@ interface ShowCardProps {
 }
 
 export const ShowCard = ({ show, pathname }: ShowCardProps) => {
-  const previewModalStore = usePreviewModalStore();
+  const previewModalStore = useHoverModalStore();
   const [isHovered, setIsHovered] = React.useState(false);
   const openTimerRef = React.useRef<number | null>(null);
   const closeTimerRef = React.useRef<number | null>(null);
@@ -65,7 +65,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     }
     const target = e.currentTarget as HTMLDivElement;
     const rect = target.getBoundingClientRect();
-    const immediate = usePreviewModalStore.getState().isOpen;
+    const immediate = useHoverModalStore.getState().isOpen;
     if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
     const run = () => {
       previewModalStore.setIsActive(true);
@@ -90,7 +90,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     }
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
     closeTimerRef.current = window.setTimeout(() => {
-      const { isActive } = usePreviewModalStore.getState();
+      const { isActive } = useHoverModalStore.getState();
       if (!isActive) {
         previewModalStore.setIsOpen(false);
         previewModalStore.setAnchorRect(null);
@@ -160,7 +160,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     const path: string =
       show.media_type === MediaType.TV ? 'tv-shows' : 'movies';
     window.history.pushState(null, '', `${path}/${getSlug(show.id, name)}`);
-    useModalStore.setState({
+    usePreviewModalStore.setState({
       show: show,
       isOpen: true,
       play: true,

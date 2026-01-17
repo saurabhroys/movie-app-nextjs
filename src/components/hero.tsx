@@ -21,8 +21,8 @@ import React from 'react';
 import CustomImage from './custom-image';
 import { usePathname } from 'next/navigation';
 import Youtube from 'react-youtube';
-import { useModalStore } from '@/stores/modal';
 import { usePreviewModalStore } from '@/stores/preview-modal';
+import { useHoverModalStore } from '@/stores/hover-modal';
 
 interface HeroProps {
   randomShow: Show | null;
@@ -52,8 +52,8 @@ const Hero = ({ randomShow }: HeroProps) => {
   const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
   const textHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const prevMutedRef = React.useRef<boolean>(isMuted);
-  const modalStore = useModalStore();
-  const previewModalStore = usePreviewModalStore();
+  const modalStore = usePreviewModalStore();
+  const previewModalStore = useHoverModalStore();
 
   const defaultOptions = React.useMemo(
     () => ({
@@ -377,7 +377,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       findMovie
         .then((response: AxiosResponse<Show>) => {
           const { data } = response;
-          useModalStore.setState({ show: data, isOpen: true, play: true });
+          usePreviewModalStore.setState({ show: data, isOpen: true, play: true });
         })
         .catch((error) => {
           console.error(`findMovie: `, error);
@@ -539,7 +539,7 @@ const Hero = ({ randomShow }: HeroProps) => {
                           '',
                           `${path}/${getSlug(randomShow.id, name)}`,
                         );
-                        useModalStore.setState({
+                        usePreviewModalStore.setState({
                           show: randomShow,
                           isOpen: true,
                           play: true,

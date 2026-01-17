@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useModalStore } from '@/stores/modal';
+import { usePreviewModalStore } from '@/stores/preview-modal';
 
 const ModalCloser = () => {
-  const reset = useModalStore((state) => state.reset);
+  const reset = usePreviewModalStore((state) => state.reset);
 
   useEffect(() => {
     // Close any open modals when this component mounts (page loads)

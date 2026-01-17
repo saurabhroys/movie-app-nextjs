@@ -17,7 +17,7 @@ import SiteHeader from '@/components/main/site-header';
 import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
 import SiteFooter from '@/components/main/site-footer';
 import AttributeTooltipManager from '@/components/attribute-tooltip';
-import PreviewModal from '@/components/preview-modal';
+import PreviewModal from '@/components/hover-modal';
 
 // export const runtime = 'edge';
 

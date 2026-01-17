@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useModalStore } from '@/stores/modal';
+import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useSearchStore } from '@/stores/search';
 
 interface ShortcutConfig {
@@ -22,7 +22,7 @@ export function useKeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
   const { setTheme, theme } = useTheme();
-  const modalStore = useModalStore();
+  const modalStore = usePreviewModalStore();
   const searchStore = useSearchStore();
 
   // Ensure router is only used after mount

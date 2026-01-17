@@ -4,8 +4,8 @@ import React from 'react';
 import { Show } from '@/types';
 import { ShowCard } from './shows-cards';
 import { usePathname } from 'next/navigation';
-import { useModalStore } from '@/stores/modal';
-import ShowModal from './shows-modal';
+import { usePreviewModalStore } from '@/stores/preview-modal';
+import PreviewModal from './preview-modal';
 import ShowsSkeleton from './shows-skeleton';
 
 interface RecommendedMoviesProps {
@@ -20,7 +20,7 @@ const RecommendedMovies = ({
   loading = false,
 }: RecommendedMoviesProps) => {
   const pathname = usePathname();
-  const modalStore = useModalStore();
+  const modalStore = usePreviewModalStore();
 
   if (loading) {
     return (
@@ -45,7 +45,7 @@ const RecommendedMovies = ({
   return (
     <div className="p-4">
       <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
-      {modalStore.isOpen && <ShowModal />}
+      {modalStore.isOpen && <PreviewModal />}
       <div className="xs:grid-cols-2 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {shows.slice(0, 30).map((show: Show) => (
           <ShowCard key={show.id} show={show} pathname={pathname} />
