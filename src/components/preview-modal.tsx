@@ -247,6 +247,8 @@ const PreviewModal = () => {
     return null;
   };
 
+  if (!modalStore.isOpen) return null;
+
   return (
     <Dialog
       open={modalStore.isOpen}

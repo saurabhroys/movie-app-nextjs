@@ -238,7 +238,8 @@ const PreviewModal = () => {
     return { top: `${Math.round(y)}px`, left: `${Math.round(x)}px` };
   };
 
-  const handleMoreDetails = () => {
+  const handleMoreDetails = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!p.show) return;
     const current = p.show;
     const name = getNameFromShow(current);
