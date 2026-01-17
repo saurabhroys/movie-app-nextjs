@@ -14,6 +14,8 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
   const [showScrollHintBackdrop, setShowScrollHintBackdrop] =
     React.useState(true);
   const [recommendedMovies, setRecommendedMovies] = React.useState<Show[]>([]);
+  const [isRecommendationsLoading, setIsRecommendationsLoading] =
+    React.useState<boolean>(true);
   const [params, setParams] = React.useState<{ slug: string } | null>(null);
   const [serverRecommendationEnabled, setServerRecommendationEnabled] =
     React.useState<boolean>(true);
@@ -157,12 +159,16 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     const mediaId = id ? parseInt(id) : 0;
 
     if (mediaId > 0) {
+      setIsRecommendationsLoading(true);
       MovieService.getMovieRecommendations(mediaId)
         .then((recommendations) => {
           setRecommendedMovies(recommendations.results || []);
         })
         .catch((error) => {
           console.error('Failed to fetch recommended movies:', error);
+        })
+        .finally(() => {
+          setIsRecommendationsLoading(false);
         });
     }
   }, [params]);
@@ -279,7 +285,11 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
 
       {/* Recommended Movies */}
       <div className="relative z-10 bg-linear-to-t from-black via-black/80 to-transparent">
-        <RecommendedMovies shows={recommendedMovies} title="More like this" />
+        <RecommendedMovies
+          shows={recommendedMovies}
+          title="More like this"
+          loading={isRecommendationsLoading}
+        />
       </div>
     </div>
   );
