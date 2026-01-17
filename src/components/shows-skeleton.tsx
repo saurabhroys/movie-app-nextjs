@@ -1,71 +1,63 @@
-import { motion } from 'framer-motion';
-
 import { Skeleton } from '@/components/ui/skeleton';
-import { itemFade, itemsReveal } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useSearchStore } from '@/stores/search';
-import CustomImage from './custom-image';
 
 interface ShowsSkeletonProps {
   count?: number;
   classname?: string;
-  variant?: 'with-title' | 'without-title';
+  // Default to grid to maintain backward compatibility for now, 
+  // but we can switch 'mode' based on variant if needed or explicit prop.
+  mode?: 'grid' | 'carousel'; 
+  withTitle?: boolean;
+  gridClassName?: string;
 }
 
 const ShowsSkeleton = ({
   count = 6,
   classname = '',
-  variant = 'with-title',
+  // Default to grid to maintain backward compatibility for now, 
+  // but we can switch 'mode' based on variant if needed or explicit prop.
+  mode = 'grid', 
+  withTitle = true,
+  gridClassName,
 }: ShowsSkeletonProps) => {
   const searchStore = useSearchStore();
 
   return (
     <>
-      {variant === 'with-title' ? (
+      {mode === 'grid' ? (
         <div
           className={cn(
             'no-scrollbar container mx-0 w-full overflow-x-auto overflow-y-hidden',
             classname,
           )}>
-          <Skeleton className="h-[1.62rem] w-28 rounded bg-neutral-700" />
+          {withTitle && <Skeleton className="mb-2.5 h-[1.62rem] w-28 rounded bg-neutral-700" />}
           <div
             className={cn(
-              'xxs:grid-cols-2 xxs:gap-x-1.5 xxs:gap-y-5 xs:grid-cols-3 xs:gap-y-7 mt-2.5 grid w-fit gap-y-3.5 sm:grid-cols-3 sm:gap-y-10 md:grid-cols-4 md:gap-y-12 lg:gap-y-14 xl:grid-cols-6 xl:gap-y-16',
-              searchStore.query && 'max-[375px]:grid-cols-2 max-sm:grid-cols-3',
+              'xxs:grid-cols-1 xxs:gap-x-1.5 xxs:gap-y-5 xs:grid-cols-2 xs:gap-y-7 grid w-full gap-y-3.5 sm:grid-cols-2 sm:gap-y-10 md:grid-cols-4 md:gap-y-12 lg:gap-y-14 xl:grid-cols-6 xl:gap-y-16',
+              searchStore.query && 'max-[375px]:grid-cols-1 max-sm:grid-cols-2',
+              gridClassName 
             )}
-            // initial="hidden"
-            // animate="visible"
-            // variants={itemsReveal}>
           >
             {Array.from({ length: count }, (_, i) => (
-              <motion.div key={i} variants={itemFade}>
-                {/* <picture className="relative aspect-2/3 md:aspect-video"> */}
-                <picture className="relative aspect-2/3">
-                  {/* <source */}
-                  {/*   media="(min-width: 780px)" */}
-                  {/*   srcSet={'/images/grey-thumbnail.jpg'} */}
-                  {/* /> */}
-                  <CustomImage
-                    alt={'poster'}
-                    src={'/images/grey-thumbnail.jpg'}
-                    fill={true}
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
-                    className="h-full w-full cursor-pointer rounded-lg px-1 transition-all md:hover:scale-110"
-                    style={{ objectFit: 'cover' }}
-                  />
-                </picture>
-              </motion.div>
+              <div key={i}>
+                <Skeleton className="aspect-video w-full rounded-lg bg-neutral-700" />
+              </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="no-scrollbar container mx-0 flex w-full items-center gap-1.5 overflow-x-auto overflow-y-hidden">
-          {Array.from({ length: count }, (_, i) => (
-            <motion.div key={i} variants={itemFade}>
-              <Skeleton className="aspect-2/3 min-w-60 rounded bg-neutral-700" />
-            </motion.div>
-          ))}
-        </div>
+        <section className={cn("relative my-[3vw] p-0", classname)}>
+             {withTitle && <Skeleton className="mb-2.5 mx-[4%] h-[1.62rem] w-36 rounded bg-neutral-700 2xl:px-[60px]" />}
+             <div className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 sm:auto-cols-[25%] lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]"
+             >
+             {Array.from({ length: count }, (_, i) => (
+                <div key={i} className="px-1">
+                   <Skeleton className="aspect-video w-full rounded-lg bg-neutral-700" />
+                </div>
+              ))}
+             </div>
+        </section>
       )}
     </>
   );
