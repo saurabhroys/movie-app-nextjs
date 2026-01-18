@@ -154,7 +154,7 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
       // Fetch collection
       if (mediaType === MediaType.MOVIE && data.belongs_to_collection) {
         try {
-          const { data: collectionData } = await MovieService.getMovieCollection(data.belongs_to_collection.id);
+          const collectionData = await MovieService.getMovieCollection(data.belongs_to_collection.id);
           data.collection = collectionData;
         } catch (e) {}
       }
