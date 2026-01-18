@@ -108,6 +108,20 @@ const PreviewModal = () => {
     }
   }, [modalStore.firstLoad, IS_MOBILE]);
 
+  // Initial fetch for Season 1 episodes when opening a TV show
+  React.useEffect(() => {
+    if (
+      modalStore.isOpen && 
+      modalStore.show?.media_type === MediaType.TV && 
+      detailedShow?.seasons?.length
+    ) {
+      // Default to season 1 or the first available season number
+      const defaultSeason = detailedShow.seasons[0]?.season_number || 1;
+      setSelectedSeason(defaultSeason);
+      handleSeasonChange(defaultSeason);
+    }
+  }, [modalStore.isOpen, modalStore.show?.media_type, detailedShow?.id]); // depend on detailedShow.id to trigger only when data is ready
+
   const handleCloseModal = React.useCallback(() => {
     if (isClosingRef.current || !modalStore.isOpen) return;
     isClosingRef.current = true;
