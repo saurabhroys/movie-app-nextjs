@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '../ui/button';
+import { siteConfig } from '@/configs/site';
 
 interface PlayerOption {
   id: string;
@@ -142,7 +143,7 @@ const PlayerSelector = ({
         {
           id: 'vidify',
           name: 'Vidify',
-          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?autoplay=true`),
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?autoplay=true&pip=true&logourl=${siteConfig.logoPng}`),
           description: 'Multi-language supported',
           language: 'Original',
           icon: Icons.play,
@@ -151,7 +152,7 @@ const PlayerSelector = ({
         {
           id: 'vidify-hindi',
           name: 'Vidify',
-          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?server=hindi&autoplay=true`),
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.logoPng}`),
           description: 'Multi-language supported',
           language: 'Hindi',
           icon: Icons.play,
@@ -275,7 +276,7 @@ const PlayerSelector = ({
           id: 'vidify',
           name: 'Vidify',
           url: buildUrl(
-            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoplay=true`,
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoplay=true&pip=true&logourl=${siteConfig.logoPng}`,
           ),
           description: 'Multi-language supported',
           language: 'Original',
@@ -286,7 +287,7 @@ const PlayerSelector = ({
           id: 'vidify-hindi',
           name: 'Vidify',
           url: buildUrl(
-            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=hindi&autoplay=true`,
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.logoPng}`,
           ),
           description: 'Multi-language servers',
           language: 'Hindi',

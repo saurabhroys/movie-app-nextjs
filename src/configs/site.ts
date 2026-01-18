@@ -12,6 +12,8 @@ export const siteConfig = {
   name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',
+  logoLong: Icons.logo_long,
+  logoPng: '/logo.png',
   description:
     'Watch movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more.',
   keywords: [
