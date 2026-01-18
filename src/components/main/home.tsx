@@ -73,14 +73,14 @@ async function getHomeData() {
       },
       visible: true,
     },
-    {
-      title: 'Indian TV Shows - Netflix',
-      req: {
-        requestType: RequestType.INDIAN_TV_NETFLIX,
-        mediaType: MediaType.TV,
-      },
-      visible: true,
-    },
+    // {
+    //   title: 'Indian TV Shows - Netflix',
+    //   req: {
+    //     requestType: RequestType.INDIAN_TV_NETFLIX,
+    //     mediaType: MediaType.TV,
+    //   },
+    //   visible: true,
+    // },
     {
       title: 'Indian TV Shows - Amazon Prime Video',
       req: {
@@ -89,14 +89,14 @@ async function getHomeData() {
       },
       visible: true,
     },
-    {
-      title: 'Indian TV Shows - Disney+ Hotstar',
-      req: {
-        requestType: RequestType.INDIAN_TV_DISNEY_HOTSTAR,
-        mediaType: MediaType.TV,
-      },
-      visible: true,
-    },
+    // {
+    //   title: 'Indian TV Shows - Disney+ Hotstar',
+    //   req: {
+    //     requestType: RequestType.INDIAN_TV_DISNEY_HOTSTAR,
+    //     mediaType: MediaType.TV,
+    //   },
+    //   visible: true,
+    // },
     {
       title: 'Korean Movies',
       req: {

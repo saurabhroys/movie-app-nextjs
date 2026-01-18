@@ -284,11 +284,12 @@ export function DebouncedInput({
                   key={i}
                   className="group/item flex items-center justify-between px-1"
                 >
-                  <motion.button
+                  <motion.div
+                    role="button"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex w-full justify-between items-center rounded-lg px-2 py-1.5 transition-all hover:bg-white/5"
+                    className="flex w-full justify-between items-center rounded-lg px-2 py-1.5 transition-all hover:bg-white/5 cursor-pointer"
                     onClick={() => handleRecentClick(s)}
                   >
                     <div className="flex flex-1 gap-3 items-center text-left cursor-pointer">
@@ -306,7 +307,7 @@ export function DebouncedInput({
                   >
                     <X className="h-4 w-4" />
                   </button>
-                  </motion.button>
+                  </motion.div>
                 </div>
               ))}
             </motion.div>
