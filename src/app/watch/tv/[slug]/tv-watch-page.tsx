@@ -5,7 +5,7 @@ import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import SeasonsEpisodesSelector from '@/components/season';
 import { Show, ISeason } from '@/types';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface TvWatchPageProps {
   tvShow: Show;
@@ -23,18 +23,43 @@ const TvWatchPage = ({
   recommendedShows,
 }: TvWatchPageProps) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Initialize from URL or default to 1, but keep them responsive to URL changes if we want purely URL driven
+  // However, for smoother UI sometimes local state + effect is used. 
+  // Let's rely on local state synced with URL.
   const initialSeason = Number(searchParams.get('season')) || 1;
   const initialEpisode = Number(searchParams.get('episode')) || 1;
+  
   const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason);
-  const [selectedEpisode, setSelectedEpisode] =
-    useState<number>(initialEpisode);
+  const [selectedEpisode, setSelectedEpisode] = useState<number>(initialEpisode);
+
+  // Sync state when URL params change (e.g. back button)
+  React.useEffect(() => {
+    const seasonParam = searchParams.get('season');
+    const episodeParam = searchParams.get('episode');
+    
+    if (seasonParam) {
+      setSelectedSeason(Number(seasonParam));
+    }
+    if (episodeParam) {
+      setSelectedEpisode(Number(episodeParam));
+    }
+  }, [searchParams]);
 
   const handleSeasonEpisodeChange = (season: number, episode: number) => {
     setSelectedSeason(season);
     setSelectedEpisode(episode);
+    
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('season', season.toString());
+    params.set('episode', episode.toString());
+    
+    // Use scroll: false to prevent jumping to top
+    // casting to any because nextjs types might strictly require string url
+    router.push(`?${params.toString()}`, { scroll: false } as any);
   };
-
-  // console.log("tvShow-",tvShow,"seasons-", seasons,"tvId-", tvId,"mediaId-", mediaId,)
 
   return (
     <div className="">
