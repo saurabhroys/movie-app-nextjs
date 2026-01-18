@@ -143,7 +143,7 @@ const PlayerSelector = ({
         {
           id: 'vidify',
           name: 'Vidify',
-          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?autoplay=true&pip=true&logourl=${siteConfig.logoPng}`),
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png`),
           description: 'Multi-language supported',
           language: 'Original',
           icon: Icons.play,
@@ -152,7 +152,7 @@ const PlayerSelector = ({
         {
           id: 'vidify-hindi',
           name: 'Vidify',
-          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.logoPng}`),
+          url: buildUrl(`https://player.vidify.top/embed/movie/${mediaId}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png`),
           description: 'Multi-language supported',
           language: 'Hindi',
           icon: Icons.play,
@@ -276,7 +276,7 @@ const PlayerSelector = ({
           id: 'vidify',
           name: 'Vidify',
           url: buildUrl(
-            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoplay=true&pip=true&logourl=${siteConfig.logoPng}`,
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png`,
           ),
           description: 'Multi-language supported',
           language: 'Original',
@@ -287,7 +287,7 @@ const PlayerSelector = ({
           id: 'vidify-hindi',
           name: 'Vidify',
           url: buildUrl(
-            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.logoPng}`,
+            `https://player.vidify.top/embed/tv/${mediaId}/${season || 1}/${episode || 1}?server=hindi&autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png`,
           ),
           description: 'Multi-language servers',
           language: 'Hindi',
