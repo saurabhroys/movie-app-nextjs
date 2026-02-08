@@ -169,9 +169,9 @@ const PreviewModal = () => {
     setIsMuted((state: boolean) => !state);
     if (!youtubeRef.current) return;
     const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
-    if (isMuted && youtubeRef.current) {
+    if (isMuted && videoRef.internalPlayer) {
       videoRef.internalPlayer.unMute();
-    } else if (youtubeRef.current) {
+    } else if (videoRef.internalPlayer) {
       videoRef.internalPlayer.mute();
     }
   };
@@ -182,8 +182,10 @@ const PreviewModal = () => {
     if (!youtubeRef.current) return;
     const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
     try {
-      videoRef.internalPlayer.seekTo(0);
-      videoRef.internalPlayer.playVideo();
+      if (videoRef.internalPlayer) {
+        videoRef.internalPlayer.seekTo(0);
+        videoRef.internalPlayer.playVideo();
+      }
     } catch (e) {
       // noop
     }
