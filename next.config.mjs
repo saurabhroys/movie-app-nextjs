@@ -40,9 +40,6 @@ const config = {
     imageSizes: [48, 64, 96],
     deviceSizes: [128, 256, 512, 1200],
   },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
   serverExternalPackages: ['@trpc/server'],
 };
 
