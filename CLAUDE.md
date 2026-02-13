@@ -7,11 +7,11 @@
 
 ## Local Setup
 1. Install dependencies:
-   - `npm install`
+   - `bun install`
 2. Configure environment:
    - `cp .env.example .env`
 3. Start dev server:
-   - `npm run dev`
+   - `bun run dev`
 
 ## Environment Variables
 - `NEXT_PUBLIC_APP_URL`: Public app URL
@@ -19,12 +19,12 @@
 - `NEXT_PUBLIC_SITE_NAME`: Display site name
 
 ## Common Commands
-- Dev: `npm run dev`
-- Build: `npm run build`
-- Start production build: `npm run start`
-- Lint: `npm run lint`
-- Type-check: `npm run typecheck`
-- Format: `npm run format`
+- Dev: `bun run dev`
+- Build: `bun run build`
+- Start production build: `bun run start`
+- Lint: `bun run lint`
+- Type-check: `bun run typecheck`
+- Format: `bun run format`
 
 ## Codebase Landmarks
 - App source: `src/`
@@ -39,6 +39,6 @@
 - Run lint and type-check for non-trivial changes before handing off.
 
 ## Validation Checklist
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build` (for release-sensitive changes)
+- `bun run lint`
+- `bun run typecheck`
+- `bun run build` (for release-sensitive changes)
