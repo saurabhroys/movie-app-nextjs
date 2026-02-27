@@ -1,4 +1,4 @@
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 export function GET() {
   const sitemapIndices: string[] = [];
   // tmdb has a limit of 500 pages
