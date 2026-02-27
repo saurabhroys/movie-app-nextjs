@@ -7,7 +7,6 @@ const { env } = await import('./src/env.mjs');
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  // devIndicators: false,
   cacheComponents: true,
   cacheLife: {
     show: {
@@ -16,7 +15,6 @@ const config = {
       expire: 86400,
     },
   },
-  experimental: {},
 
   /**
    * i18n configuration is unsupported in App Router.
