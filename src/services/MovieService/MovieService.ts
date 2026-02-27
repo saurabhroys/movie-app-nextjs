@@ -294,7 +294,7 @@ class MovieService extends BaseService {
 
       // Indian Movies
       case RequestType.INDIAN_MOVIES:
-        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=popularity.desc'}`;
+        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=primary_release_date.desc&vote_count.gte=200'}`;
 
       // Indian TV Shows by platform
       case RequestType.INDIAN_TV_NETFLIX:
@@ -391,7 +391,7 @@ class MovieService extends BaseService {
   static getShows = cache(async (requests: ShowRequest[]) => {
     const shows: CategorizedShows[] = [];
     // Limit concurrency to reduce risk of socket resets and rate limiting
-    const concurrency = 4;
+    const concurrency = 2;
     for (let start = 0; start < requests.length; start += concurrency) {
       const slice = requests.slice(start, start + concurrency);
       const promises = slice.map((m) => this.executeRequestWithRetry(m.req));
@@ -460,7 +460,7 @@ class MovieService extends BaseService {
       }
 
       // Build search URL
-      let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${page ?? 2
+      let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${page ?? 1
         }&include_adult=true`;
 
       // Add year filter if specified (TMDB search doesn't directly support this, but we'll filter results)

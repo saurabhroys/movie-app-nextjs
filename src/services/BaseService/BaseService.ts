@@ -45,7 +45,7 @@ class BaseService {
 
   static getConfig(baseUrl: string): AxiosRequestConfig {
     return {
-      timeout: 30000,
+      timeout: 60000,
       baseURL: baseUrl,
       responseType: 'json',
       maxContentLength: Infinity,
