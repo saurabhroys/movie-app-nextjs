@@ -176,7 +176,7 @@ class MovieService extends BaseService {
     ) => {
       const sleep = (ms: number) =>
         new Promise((resolve) => setTimeout(resolve, ms));
-      
+
       const isRetryable = (error: unknown): boolean => {
         // Network/transient errors we want to retry
         if (!error || typeof error !== 'object') return false;
@@ -184,7 +184,7 @@ class MovieService extends BaseService {
         const code: string | undefined = anyErr?.code;
         const message: string | undefined = anyErr?.message?.toLowerCase();
         const status: number | undefined = anyErr?.response?.status;
-        
+
         return (
           code === 'ECONNRESET' ||
           code === 'ECONNABORTED' ||
@@ -199,7 +199,7 @@ class MovieService extends BaseService {
 
       let attempt = 0;
       let backoff = 300;
-      
+
       while (true) {
         try {
           const params: Record<string, string> = {
@@ -209,7 +209,7 @@ class MovieService extends BaseService {
           // Use a longer timeout for requests with append_to_response as they fetch more data
           const response: AxiosResponse<ShowWithGenreAndVideo> = await this.axios(
             baseUrl,
-          ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, { 
+          ).get<ShowWithGenreAndVideo>(`/${type}/${id}`, {
             params,
             timeout: 20000, // 20 seconds for requests with additional data
           });
@@ -229,7 +229,7 @@ class MovieService extends BaseService {
 
   static urlBuilder(req: TmdbRequest) {
     const currentDate = new Date().toISOString().split('T')[0];
-    const latestFilter = `&sort_by=primary_release_date.desc&primary_release_date.lte=${currentDate}&vote_count.gte=5&with_runtime.gte=60`;
+    const latestFilter = `&sort_by=primary_release_date.desc&primary_release_date.lte=${currentDate}&primary_release_date.gte=2024-01-01&vote_count.gte=5&with_runtime.gte=60`;
 
     switch (req.requestType) {
       case RequestType.ANIME_LATEST:
@@ -460,9 +460,8 @@ class MovieService extends BaseService {
       }
 
       // Build search URL
-      let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
-        page ?? 1
-      }&include_adult=true`;
+      let searchUrl = `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${page ?? 2
+        }&include_adult=true`;
 
       // Add year filter if specified (TMDB search doesn't directly support this, but we'll filter results)
       const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(searchUrl);
@@ -527,9 +526,8 @@ class MovieService extends BaseService {
     const languages = options.languages.join('|'); // TMDB supports multiple languages with |
 
     // Build discover URL
-    let discoverUrl = `/discover/${mediaType}?with_original_language=${languages}&language=en-US&page=${
-      page ?? 1
-    }&include_adult=true&sort_by=popularity.desc`;
+    let discoverUrl = `/discover/${mediaType}?with_original_language=${languages}&language=en-US&page=${page ?? 1
+      }&include_adult=true&sort_by=popularity.desc`;
 
     // Add year filter if specified
     if (options.year) {
@@ -563,7 +561,7 @@ class MovieService extends BaseService {
     // Only filter by additional keywords if there are meaningful search terms left
     if (cleanQuery.length > 2) {
       const queryWords = cleanQuery.split(/\s+/).filter((w) => w.length > 1);
-      
+
       if (queryWords.length > 0) {
         // Filter results that match the remaining query keywords
         const relevantResults = filteredResults.filter((item) => {
