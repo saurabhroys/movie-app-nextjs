@@ -13,13 +13,16 @@ import { connection } from 'next/server';
 export default async function Home() {
   await connection();
   const h1 = `${siteConfig.name} Home`;
-  const allShows = await getHomeData();
-  const randomShow: Show | null = getRandomShow(allShows);
+  const categorizedShows = await getHomeData();
+
+  // Flatten for random show selection
+  const randomShow: Show | null = getRandomShow(categorizedShows);
+
   return (
     <>
       <h1 className="hidden">{h1}</h1>
       <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
+      <ShowsContainer shows={categorizedShows} />
     </>
   );
 }
@@ -66,7 +69,7 @@ async function getHomeData() {
       visible: true,
     },
     {
-      title: 'Indian Movies',
+      title: 'Latest Bollywood Movies',
       req: {
         requestType: RequestType.INDIAN_MOVIES,
         mediaType: MediaType.MOVIE,
@@ -74,14 +77,6 @@ async function getHomeData() {
       },
       visible: true,
     },
-    // {
-    //   title: 'Indian TV Shows - Netflix',
-    //   req: {
-    //     requestType: RequestType.INDIAN_TV_NETFLIX,
-    //     mediaType: MediaType.TV,
-    //   },
-    //   visible: true,
-    // },
     {
       title: 'Indian TV Shows - Amazon Prime Video',
       req: {
@@ -90,14 +85,6 @@ async function getHomeData() {
       },
       visible: true,
     },
-    // {
-    //   title: 'Indian TV Shows - Disney+ Hotstar',
-    //   req: {
-    //     requestType: RequestType.INDIAN_TV_DISNEY_HOTSTAR,
-    //     mediaType: MediaType.TV,
-    //   },
-    //   visible: true,
-    // },
     {
       title: 'Korean Movies',
       req: {

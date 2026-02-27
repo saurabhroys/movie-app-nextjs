@@ -140,8 +140,8 @@ export function MainNav({ items }: MainNavProps) {
   return (
     <nav
       className={cn(
-        'from-secondary/70 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
-        isScrolled ? 'bg-neutral-950 text-white shadow-md' : 'bg-transparent',
+        'from-neutral-950/80 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
+        isScrolled ? 'bg-neutral-950/80 text-white shadow-md backdrop-blur-2xl' : 'bg-transparent',
       )}>
       <div className="flex items-center gap-6 md:gap-10">
         <Link

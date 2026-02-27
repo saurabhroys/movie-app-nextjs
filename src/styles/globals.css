@@ -60,14 +60,17 @@
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
@@ -77,10 +80,12 @@
 @utility container {
   margin-inline: auto;
   padding-inline: 4vw;
-  @media (width >= --theme(--breakpoint-xs)) {
+
+  @media (width >=--theme(--breakpoint-xs)) {
     max-width: none;
   }
-  @media (width >= 1400px) {
+
+  @media (width >=1400px) {
     max-width: 1400px;
   }
 }
@@ -94,6 +99,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -107,6 +113,7 @@
   &::-webkit-scrollbar {
     display: none;
   }
+
   -ms-overflow-style: none;
   /* IE and Edge */
   scrollbar-width: none;
@@ -114,6 +121,7 @@
 }
 
 @layer utilities {
+
   html,
   body,
   :root {
@@ -167,11 +175,11 @@
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 222 5% 15.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 222 5% 15.5%;
+    --muted-foreground: 215 5% 65.1%;
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -332,11 +340,9 @@
 }
 
 .episodes li a.active {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0,
-    rgba(255, 255, 255, 0.2) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 0,
+      rgba(255, 255, 255, 0.2) 100%);
   color: #fff;
 }
 

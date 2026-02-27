@@ -7,12 +7,6 @@ export enum MediaType {
   ANIME = 'anime',
 }
 
-export type CategorizedShows = {
-  title: string;
-  shows: Show[];
-  visible: boolean;
-};
-
 export type NavItem = {
   title: string;
   href?: string;
