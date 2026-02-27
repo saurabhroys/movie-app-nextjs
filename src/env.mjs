@@ -16,16 +16,16 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_APP_URL: z.url().optional(),
     NEXT_PUBLIC_TMDB_TOKEN: z.string().optional(),
     NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: z.string().optional(),
     NEXT_PUBLIC_SITE_NAME: z.string().optional(),
-    NEXT_PUBLIC_TWITTER: z.string().url().optional(),
-    NEXT_PUBLIC_FACEBOOK: z.string().url().optional(),
-    NEXT_PUBLIC_INSTAGRAM: z.string().url().optional(),
-    NEXT_PUBLIC_YOUTUBE: z.string().url().optional(),
+    NEXT_PUBLIC_TWITTER: z.url().optional(),
+    NEXT_PUBLIC_FACEBOOK: z.url().optional(),
+    NEXT_PUBLIC_INSTAGRAM: z.url().optional(),
+    NEXT_PUBLIC_YOUTUBE: z.url().optional(),
     NEXT_PUBLIC_IMAGE_DOMAIN: z.string().optional(),
-    NEXT_PUBLIC_TMDB_API_URL: z.string().url().optional(),
+    NEXT_PUBLIC_TMDB_API_URL: z.url().optional(),
   },
 
   /**
