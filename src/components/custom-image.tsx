@@ -1,7 +1,7 @@
 import { type ImageProps, type ImageLoaderProps } from 'next/image';
 import React, { forwardRef } from 'react';
 import Image from 'next/image';
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 
 const customLoader = ({ src, width, quality }: ImageLoaderProps) => {
   // local image

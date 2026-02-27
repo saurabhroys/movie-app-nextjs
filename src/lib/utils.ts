@@ -1,5 +1,5 @@
 import { siteConfig } from '@/configs/site';
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 import MovieService from '@/services/MovieService';
 import {
   MediaType,

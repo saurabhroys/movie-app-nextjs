@@ -4,7 +4,7 @@
 // import { slugify } from "@/lib/utils"
 
 import { Icons } from '@/components/icons';
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 
 export type SiteConfig = typeof siteConfig;
 

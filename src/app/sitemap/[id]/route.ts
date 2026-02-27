@@ -1,4 +1,4 @@
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 import { buildMovieUrl } from '@/lib/utils';
 import { getTrendingAll } from '@/services/MovieService/tmdbService';
 

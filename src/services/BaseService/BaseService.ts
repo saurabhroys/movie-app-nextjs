@@ -4,7 +4,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 
 /**
  * @class BaseService
