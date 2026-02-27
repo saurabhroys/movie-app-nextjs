@@ -70,6 +70,7 @@ async function getHomeData() {
       req: {
         requestType: RequestType.INDIAN_MOVIES,
         mediaType: MediaType.MOVIE,
+        isLatest: true,
       },
       visible: true,
     },
