@@ -1,6 +1,5 @@
 import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
 import type {
-  CategorizedShows,
   ISeason,
   KeyWordResponse,
   MediaType,
@@ -14,6 +13,7 @@ import {
   type ShowRequest,
   type TmdbPagingResponse,
   type TmdbRequest,
+  type CategorizedShows,
 } from '@/enums/request-type';
 import { Genre } from '@/enums/genre';
 import { cache } from 'react';
@@ -97,41 +97,30 @@ class SportsService extends BaseService {
       case RequestType.ANIME_NETFLIX:
         return `/discover/${req.mediaType}?with_keywords=210024%2C&with_networks=213&language=en-US`;
       case RequestType.TRENDING:
-        return `/trending/${
-          req.mediaType
-        }/day?language=en-US&with_original_language=en&page=${req.page ?? 1}`;
+        return `/trending/${req.mediaType
+          }/day?language=en-US&with_original_language=en&page=${req.page ?? 1}`;
       case RequestType.TOP_RATED:
-        return `/${req.mediaType}/top_rated?page=${
-          req.page ?? 1
-        }&with_original_language=en&language=en-US`;
+        return `/${req.mediaType}/top_rated?page=${req.page ?? 1
+          }&with_original_language=en&language=en-US`;
       case RequestType.NETFLIX:
-        return `/discover/${
-          req.mediaType
-        }?with_networks=213&with_original_language=en&language=en-US&page=${
-          req.page ?? 1
-        }`;
+        return `/discover/${req.mediaType
+          }?with_networks=213&with_original_language=en&language=en-US&page=${req.page ?? 1
+          }`;
       case RequestType.POPULAR:
-        return `/${
-          req.mediaType
-        }/popular?language=en-US&with_original_language=en&page=${
-          req.page ?? 1
-        }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/${req.mediaType
+          }/popular?language=en-US&with_original_language=en&page=${req.page ?? 1
+          }&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.GENRE:
-        return `/discover/${req.mediaType}?with_genres=${
-          req.genre
-        }&language=en-US&with_original_language=en&page=${
-          req.page ?? 1
-        }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre
+          }&language=en-US&with_original_language=en&page=${req.page ?? 1
+          }&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.ANIME_GENRE:
-        return `/discover/${req.mediaType}?with_genres=${
-          req.genre
-        }&with_keywords=210024%2C&language=en-US&with_original_language=en&page=${
-          req.page ?? 1
-        }&without_genres=${Genre.TALK},${Genre.NEWS}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre
+          }&with_keywords=210024%2C&language=en-US&with_original_language=en&page=${req.page ?? 1
+          }&without_genres=${Genre.TALK},${Genre.NEWS}`;
       case RequestType.KOREAN:
-        return `/discover/${req.mediaType}?with_genres=${
-          req.genre
-        }&with_original_language=ko&language=en-US&page=${req.page ?? 1}`;
+        return `/discover/${req.mediaType}?with_genres=${req.genre
+          }&with_original_language=ko&language=en-US&page=${req.page ?? 1}`;
       default:
         throw new Error(
           `request type ${req.requestType} is not implemented yet`,
@@ -139,26 +128,24 @@ class SportsService extends BaseService {
     }
   }
 
-  static executeRequest(req: {
-    requestType: RequestType;
-    mediaType: MediaType;
-    page?: number;
-  }) {
+  static executeRequest(req: TmdbRequest) {
     return this.axios(baseUrl).get<TmdbPagingResponse>(this.urlBuilder(req));
   }
 
-  static getShows = cache(async (requests: ShowRequest[]) => {
+  static async getShows(requests: ShowRequest[]) {
     const shows: CategorizedShows[] = [];
     const promises = requests.map((m) => this.executeRequest(m.req));
     const responses = await Promise.allSettled(promises);
     for (let i = 0; i < requests.length; i++) {
       const res = responses[i];
       if (this.isRejected(res)) {
-        console.warn(`Failed to fetch shows ${requests[i].title}`, res.reason);
+        console.warn(`Failed to fetch shows "${requests[i].title}":`, res.reason);
+        console.warn(`Request details:`, JSON.stringify(requests[i].req));
         shows.push({
           title: requests[i].title,
           shows: [],
           visible: requests[i].visible,
+          req: requests[i].req,
         });
       } else if (this.isFulfilled(res)) {
         if (
@@ -173,18 +160,16 @@ class SportsService extends BaseService {
           title: requests[i].title,
           shows: res.value.data.results,
           visible: requests[i].visible,
+          req: requests[i].req,
         });
-      } else {
-        throw new Error('unexpected response');
       }
     }
     return shows;
-  });
+  }
 
   static searchMovies = cache(async (query: string, page?: number) => {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
-      `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${
-        page ?? 1
+      `/search/multi?query=${encodeURIComponent(query)}&language=en-US&page=${page ?? 1
       }`,
     );
 

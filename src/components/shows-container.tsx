@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 // import { usePreviewModalStore } from "@/stores/modal"
 // import { useProfileStore } from "@/stores/profile"
 import { useSearchStore } from '@/stores/search';
-import type { CategorizedShows } from '@/types';
+import { type CategorizedShows } from '@/enums/request-type';
 
 // import { api } from "@/lib/api/api"
 import { getIdFromSlug } from '@/lib/utils';
@@ -57,7 +57,7 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
           play: true,
           firstLoad: true,
         });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   // if (!mounted) {
@@ -81,7 +81,8 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
             <ShowsCarousel
               key={item.title}
               title={item.title}
-              shows={item.shows ?? []}
+              initialShows={item.shows ?? []}
+              req={item.req}
             />
           ),
       )}

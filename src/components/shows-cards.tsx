@@ -57,7 +57,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't show preview modal on mobile devices
     if (IS_MOBILE) return;
-    
+
     setIsHovered(true);
     if (closeTimerRef.current) {
       window.clearTimeout(closeTimerRef.current);
@@ -82,7 +82,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const handleMouseLeave = () => {
     // Don't handle mouse leave on mobile devices
     if (IS_MOBILE) return;
-    
+
     setIsHovered(false);
     if (openTimerRef.current) {
       window.clearTimeout(openTimerRef.current);
@@ -190,9 +190,8 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
       <img
         src={
           (show.backdrop_path ?? show.poster_path)
-            ? `https://image.tmdb.org/t/p/w780${
-                show.backdrop_path ?? show.poster_path
-              }`
+            ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path
+            }`
             : '/images/grey-thumbnail.jpg'
         }
         alt={show.title ?? show.name ?? 'poster'}

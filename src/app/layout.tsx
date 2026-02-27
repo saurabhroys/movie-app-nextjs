@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
-// import { TrpcProvider } from '@/client/trpc-provider';
 import type { Metadata, Viewport } from 'next';
 import { Inter as FontSans } from 'next/font/google';
 import localFont from 'next/font/local';
@@ -14,6 +13,7 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 import SiteHeader from '@/components/main/site-header';
 import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
+import { TrpcProvider } from '@/client/trpc-provider';
 import SiteFooter from '@/components/main/site-footer';
 import AttributeTooltipManager from '@/components/attribute-tooltip';
 import HoverModal from '@/components/hover-modal';
@@ -91,25 +91,25 @@ export default function RootLayout({
           fontSans.variable,
           fontHeading.variable,
         )}>
-        <Suspense fallback={<div className="h-16" />}>
-          <SiteHeader />
-        </Suspense>
-        <GlobalShortcutsWrapper />
-        {/* <TrpcProvider> */}
-        <Suspense fallback={null}>
-          {children}
-        </Suspense>
-        <HoverModal />
-        <PreviewModal />
-        <SiteFooter />
-        <TailwindIndicator />
-        <Analytics />
-        {process.env.NODE_ENV === 'production' && <SpeedInsights />}
-        <AttributeTooltipManager />
-        {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-          <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
-        )}
-        {/* </TrpcProvider> */}
+        <TrpcProvider>
+          <Suspense fallback={<div className="h-16" />}>
+            <SiteHeader />
+          </Suspense>
+          <GlobalShortcutsWrapper />
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
+          <HoverModal />
+          <PreviewModal />
+          <SiteFooter />
+          <TailwindIndicator />
+          <Analytics />
+          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+          <AttributeTooltipManager />
+          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+          )}
+        </TrpcProvider>
       </body>
     </html>
   );
