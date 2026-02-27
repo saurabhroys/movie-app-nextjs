@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
 // import { TrpcProvider } from '@/client/trpc-provider';
@@ -84,37 +83,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-     <ThemeProvider>
+    <html lang="en" className="dark">
       <head />
-        <body
-          suppressHydrationWarning
-          className={cn(
-            'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]',
-            fontSans.variable,
-            fontHeading.variable,
-          )}>
-          <Suspense fallback={<div className="h-16" />}>
-            <SiteHeader />
-          </Suspense>
-          <GlobalShortcutsWrapper />
-          {/* <TrpcProvider> */}
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
-          <HoverModal />
-          <PreviewModal />
-          <SiteFooter />
-          <TailwindIndicator />
-          <Analytics />
-          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
-          <AttributeTooltipManager />
-          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
-          )}
-          {/* </TrpcProvider> */}
-        </body>
-      </ThemeProvider>
+      <body
+        className={cn(
+          'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]',
+          fontSans.variable,
+          fontHeading.variable,
+        )}>
+        <Suspense fallback={<div className="h-16" />}>
+          <SiteHeader />
+        </Suspense>
+        <GlobalShortcutsWrapper />
+        {/* <TrpcProvider> */}
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
+        <HoverModal />
+        <PreviewModal />
+        <SiteFooter />
+        <TailwindIndicator />
+        <Analytics />
+        {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+        <AttributeTooltipManager />
+        {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+          <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+        )}
+        {/* </TrpcProvider> */}
+      </body>
     </html>
   );
 }

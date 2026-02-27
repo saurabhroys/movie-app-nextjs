@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useSearchStore } from '@/stores/search';
 
@@ -21,7 +20,6 @@ export function useKeyboardShortcuts() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { setTheme, theme } = useTheme();
   const modalStore = usePreviewModalStore();
   const searchStore = useSearchStore();
 
@@ -117,22 +115,6 @@ export function useKeyboardShortcuts() {
     searchStore.reset();
   }, [searchStore]);
 
-  // Theme shortcuts
-  const toggleTheme = useCallback(() => {
-    const themes = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(theme || 'system');
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  }, [theme, setTheme]);
-
-  const setLightTheme = useCallback(() => {
-    setTheme('light');
-  }, [setTheme]);
-
-  const setDarkTheme = useCallback(() => {
-    setTheme('dark');
-  }, [setTheme]);
-
   // Modal shortcuts
   const closeModal = useCallback(() => {
     modalStore.setIsOpen(false);
@@ -205,13 +187,6 @@ export function useKeyboardShortcuts() {
               </div>
             </div>
             <div>
-              <h3 class="font-semibold mb-2">Theme</h3>
-              <div class="space-y-1 text-sm">
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">T</kbd> Toggle Theme</div>
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">L</kbd> Light Theme</div>
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">D</kbd> Dark Theme</div>
-              </div>
-            </div>
             <div>
               <h3 class="font-semibold mb-2">Carousel</h3>
               <div class="space-y-1 text-sm">
@@ -321,25 +296,6 @@ export function useKeyboardShortcuts() {
       preventDefault: true,
     },
 
-    // Theme shortcuts
-    {
-      key: 't',
-      description: 'Toggle Theme',
-      action: toggleTheme,
-      preventDefault: true,
-    },
-    {
-      key: 'l',
-      description: 'Light Theme',
-      action: setLightTheme,
-      preventDefault: true,
-    },
-    {
-      key: 'd',
-      description: 'Dark Theme',
-      action: setDarkTheme,
-      preventDefault: true,
-    },
 
     // Modal shortcuts
     {
