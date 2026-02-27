@@ -61,3 +61,10 @@ export type ShowRequest = {
   req: TmdbRequest;
   visible: boolean;
 };
+
+export type CategorizedShows = {
+  title: string;
+  shows: Show[];
+  visible: boolean;
+  req: TmdbRequest;
+};

@@ -8,7 +8,7 @@ import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-import { cacheLife } from 'next/cache'; // siteConfig
+import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
 export default async function TvShowPage() {
   await connection();
   const h1 = `${siteConfig.name} TV Shows`;
-  const allShows = await getTvShowData();
-  const randomShow: Show | null = getRandomShow(allShows);
+  const categorizedShows = await getTvShowData();
+  const randomShow: Show | null = getRandomShow(categorizedShows);
 
   return (
     <>
       <h1 className="hidden">{h1}</h1>
       <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
+      <ShowsContainer shows={categorizedShows} />
     </>
   );
 }

@@ -3,11 +3,11 @@ import { env } from '@/env';
 import MovieService from '@/services/MovieService';
 import {
   MediaType,
-  type CategorizedShows,
   type KeyWord,
   type KeyWordResponse,
   type Show,
 } from '@/types';
+import { type CategorizedShows } from '@/enums/request-type';
 import { type AxiosResponse } from 'axios';
 import { clsx, type ClassValue } from 'clsx';
 import { cache } from 'react';
@@ -59,9 +59,8 @@ export function getSlug(id: number, name: string): string {
 export function buildMovieUrl(show: Show): string {
   const name = getNameFromShow(show);
   const id = show.id;
-  return `${env.NEXT_PUBLIC_APP_URL}/${
-    show.media_type === MediaType.MOVIE ? 'movies' : 'tv-shows'
-  }/${getSlug(id, name)}`;
+  return `${env.NEXT_PUBLIC_APP_URL}/${show.media_type === MediaType.MOVIE ? 'movies' : 'tv-shows'
+    }/${getSlug(id, name)}`;
 }
 
 export function getIdFromSlug(slug: string): number {
@@ -166,9 +165,8 @@ export const handleMetadata = cache(
         type: 'website',
         locale: 'en_US',
         url: `${siteConfig.url}/${page}/${slug}`,
-        images: `https://image.tmdb.org/t/p/original${
-          data?.backdrop_path ?? data?.poster_path ?? ''
-        }`,
+        images: `https://image.tmdb.org/t/p/original${data?.backdrop_path ?? data?.poster_path ?? ''
+          }`,
         title: getNameFromShow(data),
         description: data?.overview ?? '',
         siteName: siteConfig.name || 'TuneBox',
@@ -177,9 +175,8 @@ export const handleMetadata = cache(
         card: 'summary_large_image',
         title: getNameFromShow(data),
         description: data?.overview ?? '',
-        images: `https://image.tmdb.org/t/p/original${
-          data?.backdrop_path ?? data?.poster_path ?? ''
-        }`,
+        images: `https://image.tmdb.org/t/p/original${data?.backdrop_path ?? data?.poster_path ?? ''
+          }`,
         creator: siteConfig.author,
       },
     };

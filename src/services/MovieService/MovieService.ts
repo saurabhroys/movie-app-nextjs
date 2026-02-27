@@ -1,6 +1,5 @@
 import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
 import type {
-  CategorizedShows,
   ISeason,
   KeyWordResponse,
   MediaType,
@@ -15,6 +14,7 @@ import {
   type ShowRequest,
   type TmdbPagingResponse,
   type TmdbRequest,
+  type CategorizedShows,
 } from '@/enums/request-type';
 import { Genre } from '@/enums/genre';
 import { cache } from 'react';
@@ -280,9 +280,9 @@ class MovieService extends BaseService {
       case RequestType.INDIAN_NETFLIX:
         return `/discover/${req.mediaType}?with_networks=213&with_original_language=hi&language=en-US&&page=${req.page ?? 1}&sort_by=popularity.desc`;
       case RequestType.INDIAN_AMAZON_PRIME:
-        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=first_air_date.desc`;
       case RequestType.INDIAN_DISNEY_HOTSTAR:
-        return `/discover/${req.mediaType}?with_networks=3919&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_networks=3919&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=first_air_date.desc`;
 
       // New OTT Platform TV Shows
       case RequestType.DISNEY_PLUS_TV:
@@ -294,15 +294,15 @@ class MovieService extends BaseService {
 
       // Indian Movies
       case RequestType.INDIAN_MOVIES:
-        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=primary_release_date.desc&vote_count.gte=200'}`;
+        return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=primary_release_date.desc&vote_count.gte=100'}`;
 
       // Indian TV Shows by platform
       case RequestType.INDIAN_TV_NETFLIX:
         return `/discover/${req.mediaType}?with_networks=213&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
       case RequestType.INDIAN_TV_AMAZON_PRIME:
-        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_networks=1024&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=first_air_date.desc`;
       case RequestType.INDIAN_TV_DISNEY_HOTSTAR:
-        return `/discover/${req.mediaType}?with_networks=3919&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=popularity.desc`;
+        return `/discover/${req.mediaType}?with_networks=3919&with_original_language=hi&language=en-US&page=${req.page ?? 1}&sort_by=first_air_date.desc`;
 
       default:
         throw new Error(
@@ -313,37 +313,43 @@ class MovieService extends BaseService {
 
   /**
    * Cached base request method for deduplication.
-   * Uses stable cache keys based on serialized request parameters.
+   * Uses stable cache keys based on all relevant request parameters.
    */
   private static executeRequestCached = cache(
-    (requestType: RequestType, mediaType: MediaType, page?: number, genre?: number) => {
-      const url = this.urlBuilder({ requestType, mediaType, page, genre });
+    (
+      requestType: RequestType,
+      mediaType: MediaType,
+      page?: number,
+      genre?: number,
+      isLatest?: boolean,
+      networkId?: number,
+    ) => {
+      const url = this.urlBuilder({
+        requestType,
+        mediaType,
+        page,
+        genre,
+        isLatest,
+        networkId,
+      });
       return this.axios(baseUrl).get<TmdbPagingResponse>(url);
     },
   );
 
-  static executeRequest(req: {
-    requestType: RequestType;
-    mediaType: MediaType;
-    page?: number;
-    genre?: number;
-  }) {
+  static executeRequest(req: TmdbRequest) {
     // Use cached version for deduplication during render
     return this.executeRequestCached(
       req.requestType,
       req.mediaType,
       req.page,
       req.genre,
+      req.isLatest,
+      req.networkId,
     );
   }
 
   static async executeRequestWithRetry(
-    req: {
-      requestType: RequestType;
-      mediaType: MediaType;
-      page?: number;
-      genre?: number;
-    },
+    req: TmdbRequest,
     maxAttempts: number = 3,
     initialBackoffMs: number = 300,
   ) {
@@ -384,11 +390,10 @@ class MovieService extends BaseService {
   }
 
   /**
-   * Cached: Fetches multiple show categories in batches.
-   * Deduplicates requests within the same render cycle.
+   * Fetches multiple show categories in batches.
    * Uses controlled concurrency to prevent rate limiting.
    */
-  static getShows = cache(async (requests: ShowRequest[]) => {
+  static async getShows(requests: ShowRequest[]) {
     const shows: CategorizedShows[] = [];
     // Limit concurrency to reduce risk of socket resets and rate limiting
     const concurrency = 2;
@@ -401,14 +406,18 @@ class MovieService extends BaseService {
         const res = responses[i];
         if (this.isRejected(res)) {
           console.error(
-            `Failed to fetch shows ${requests[reqIndex].title}:`,
+            `Failed to fetch shows "${requests[reqIndex].title}":`,
             res.reason,
           );
-          console.error(`Request details:`, requests[reqIndex].req);
+          console.error(
+            `Request details:`,
+            JSON.stringify(requests[reqIndex].req),
+          );
           shows.push({
             title: requests[reqIndex].title,
             shows: [],
             visible: requests[reqIndex].visible,
+            req: requests[reqIndex].req,
           });
         } else if (this.isFulfilled(res)) {
           if (
@@ -424,14 +433,13 @@ class MovieService extends BaseService {
             title: requests[reqIndex].title,
             shows: res.value.data.results,
             visible: requests[reqIndex].visible,
+            req: requests[reqIndex].req,
           });
-        } else {
-          throw new Error('unexpected response');
         }
       }
     }
     return shows;
-  });
+  }
 
   /**
    * Cached: Searches for movies and TV shows.

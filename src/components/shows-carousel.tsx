@@ -8,127 +8,136 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { ShowCard } from './shows-cards';
+import { trpc } from '@/client/trpc';
+import { type TmdbRequest } from '@/enums/request-type';
 
 interface ShowsCarouselProps {
   title: string;
-  shows: Show[];
+  initialShows: Show[];
+  req: TmdbRequest;
 }
 
-const ShowsCarousel = ({ title, shows }: ShowsCarouselProps) => {
+const ShowsCarousel = ({ title, initialShows, req }: ShowsCarouselProps) => {
+  // console.log(`ShowsCarousel [${title}] req:`, JSON.stringify(req, null, 2));
   const pathname = usePathname();
-
   const showsRef = React.useRef<HTMLDivElement>(null);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = trpc.movie.getInfiniteShows.useInfiniteQuery(
+    { ...req },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialData: {
+        pages: [
+          {
+            items: initialShows,
+            nextCursor: 2, // Assume there's a next page initially
+          },
+        ],
+        pageParams: [1],
+      },
+    }
+  );
+
+  const allShows = data?.pages.flatMap((page) => page.items) ?? initialShows;
+
   const [isScrollable, setIsScrollable] = React.useState(false);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
-  // Check scroll position and update button visibility
   const checkScrollPosition = React.useCallback(() => {
     if (!showsRef.current) return;
 
     const { scrollLeft, scrollWidth, offsetWidth } = showsRef.current;
     const isAtStart = scrollLeft <= 0;
-    const isAtEnd = scrollLeft + offsetWidth >= scrollWidth - 1; // -1 for floating point precision
+    const isAtEnd = scrollLeft + offsetWidth >= scrollWidth - 100; // Trigger slightly before the absolute end
 
     setCanScrollLeft(!isAtStart);
-    setCanScrollRight(!isAtEnd);
-  }, []);
+    setCanScrollRight(hasNextPage || scrollLeft + offsetWidth < scrollWidth - 1);
 
-  // Set up scroll event listener and initial check
+    if (isAtEnd && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   React.useEffect(() => {
     const element = showsRef.current;
     if (!element) return;
 
-    // Small delay to ensure DOM is fully rendered
     const timer = setTimeout(() => {
-      // Check if carousel is scrollable
-      const isScrollable = element.scrollWidth > element.offsetWidth;
+      const isScrollable = element.scrollWidth > element.offsetWidth || hasNextPage;
       setIsScrollable(isScrollable);
-
-      // Initial check
       checkScrollPosition();
     }, 100);
 
-    // Add scroll event listener
     element.addEventListener('scroll', checkScrollPosition);
-
-    // Cleanup
     return () => {
       clearTimeout(timer);
       element.removeEventListener('scroll', checkScrollPosition);
     };
-  }, [checkScrollPosition, shows.length]);
+  }, [checkScrollPosition, allShows.length, hasNextPage]);
 
-  // handle scroll to left and right
   const scrollToDirection = (direction: 'left' | 'right') => {
     if (!showsRef.current) return;
 
     const { scrollLeft, offsetWidth } = showsRef.current;
     const handleSize = offsetWidth > 1400 ? 60 : 0.04 * offsetWidth;
-    const offset =
-      direction === 'left'
-        ? scrollLeft - (offsetWidth - 2 * handleSize)
-        : scrollLeft + (offsetWidth - 2 * handleSize);
+    const scrollAmount = offsetWidth - 2 * handleSize;
+
+    const offset = direction === 'left'
+      ? scrollLeft - scrollAmount
+      : scrollLeft + scrollAmount;
+
     showsRef.current.scrollTo({ left: offset, behavior: 'smooth' });
 
-    if (scrollLeft === 0 && direction === 'left') {
-      showsRef.current.scrollTo({
-        left: showsRef.current.scrollWidth,
-        behavior: 'smooth',
-      });
-    } else if (
-      scrollLeft + offsetWidth === showsRef.current.scrollWidth &&
-      direction === 'right'
-    ) {
-      showsRef.current.scrollTo({
-        left: 0,
-        behavior: 'smooth',
-      });
-    }
-
-    // Check scroll position after scrolling
-    setTimeout(() => {
-      checkScrollPosition();
-    }, 100);
+    setTimeout(checkScrollPosition, 500); // Check after animation
   };
 
   return (
-    <section aria-label="Carousel of shows" className="relative my-[3vw] p-0">
-      {shows.length !== 0 && (
+    <section aria-label={`Carousel of ${title}`} className="relative my-[3vw] p-0">
+      {allShows.length !== 0 && (
         <div className="space-y-1 sm:space-y-2.5">
           <h2 className="text-foreground/80 hover:text-foreground m-0 px-[4%] pb-2 text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
-            {title ?? '-'}
+            {title}
           </h2>
-          <div
-            className="overflow-disable relative w-full items-center justify-center"
-            data-carousel>
+          <div className="overflow-disable relative w-full items-center justify-center">
             <Button
-              aria-label="Scroll to left"
+              aria-label="Scroll left"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/90 hover:text-foreground text-foreground absolute top-0 left-0 z-10 mr-2 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 md:block 2xl:w-[60px]',
-                isScrollable && canScrollLeft ? 'md:block' : 'md:hidden',
+                'hover:bg-secondary/90 hover:text-foreground text-foreground absolute top-0 left-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 md:flex 2xl:w-[60px]',
+                !canScrollLeft && 'opacity-0 pointer-events-none'
               )}
               onClick={() => scrollToDirection('left')}>
-              <Icons.chevronLeft className="h-8 w-8" aria-hidden="true" />
+              <Icons.chevronLeft className="h-8 w-8" />
             </Button>
+
             <div
               ref={showsRef}
-              data-carousel-scroll
               className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 duration-500 ease-in-out sm:auto-cols-[25%] md:touch-pan-y lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]">
-              {shows.map((show) => (
-                <ShowCard key={show.id} show={show} pathname={pathname} />
+              {allShows.map((show, idx) => (
+                <ShowCard key={`${show.id}-${idx}`} show={show} pathname={pathname} />
               ))}
+              {isFetchingNextPage && (
+                <div className="flex h-full items-center justify-center p-4">
+                  <Icons.spinner className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
+
             <Button
-              aria-label="Scroll to right"
+              aria-label="Scroll right"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/70 hover:text-foreground text-foreground absolute top-0 right-0 z-10 m-0 ml-2 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 md:block 2xl:w-[60px]',
-                isScrollable && canScrollRight ? 'md:block' : 'md:hidden',
+                'hover:bg-secondary/70 hover:text-foreground text-foreground absolute top-0 right-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 md:flex 2xl:w-[60px]',
+                !canScrollRight && !hasNextPage && 'opacity-0 pointer-events-none'
               )}
               onClick={() => scrollToDirection('right')}>
-              <Icons.chevronRight className="h-8 w-8" aria-hidden="true" />
+              <Icons.chevronRight className="h-8 w-8" />
             </Button>
           </div>
         </div>

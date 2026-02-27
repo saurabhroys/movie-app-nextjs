@@ -8,7 +8,7 @@ import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-import { cacheLife } from 'next/cache'; // siteConfig
+import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
 export default async function MoviePage() {
   await connection();
   const h1 = `${siteConfig.name} Movie`;
-  const allShows = await getMovieData();
-  const randomShow: Show | null = getRandomShow(allShows);
+  const categorizedShows = await getMovieData();
+  const randomShow: Show | null = getRandomShow(categorizedShows);
   return (
     <>
       <h1 className="hidden">{h1}</h1>
       <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
+      <ShowsContainer shows={categorizedShows} />
     </>
   );
 }
@@ -54,46 +54,6 @@ async function getMovieData() {
       req: { requestType: RequestType.NOW_PLAYING, mediaType: MediaType.MOVIE },
       visible: true,
     },
-    // {
-    //   title: 'Netflix Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 213,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'Disney+ Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 2739,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'Amazon Prime Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 1024,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'HBO Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 49,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
     {
       title: 'Comedy Movies',
       req: {

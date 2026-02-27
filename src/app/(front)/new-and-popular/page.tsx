@@ -1,14 +1,13 @@
 import Hero from '@/components/hero';
 import ShowsContainer from '@/components/shows-container';
 import { siteConfig } from '@/configs/site';
-import { Genre } from '@/enums/genre';
 import { RequestType, type ShowRequest } from '@/enums/request-type';
 import { getRandomShow } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { MediaType, type Show } from '@/types';
 import { type Metadata } from 'next';
 
-import { cacheLife } from 'next/cache'; // siteConfig
+import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
@@ -19,14 +18,14 @@ export const metadata: Metadata = {
 export default async function NewAndPopularPage() {
   await connection();
   const h1 = `${siteConfig.name} New And Popular`;
-  const allShows = await getNewAndPopularData();
-  const randomShow: Show | null = getRandomShow(allShows);
+  const categorizedShows = await getNewAndPopularData();
+  const randomShow: Show | null = getRandomShow(categorizedShows);
 
   return (
     <>
       <h1 className="hidden">{h1}</h1>
       <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
+      <ShowsContainer shows={categorizedShows} />
     </>
   );
 }
@@ -35,11 +34,6 @@ async function getNewAndPopularData() {
   'use cache';
   cacheLife('show');
   const requests: ShowRequest[] = [
-    {
-      title: 'Netflix',
-      req: { requestType: RequestType.NETFLIX, mediaType: MediaType.TV },
-      visible: false,
-    },
     {
       title: 'Trending TV Shows',
       req: { requestType: RequestType.TRENDING, mediaType: MediaType.TV },
@@ -111,5 +105,6 @@ async function getNewAndPopularData() {
       visible: true,
     },
   ];
+
   return await MovieService.getShows(requests);
 }
