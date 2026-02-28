@@ -133,8 +133,8 @@ const Hero = ({ randomShow }: HeroProps) => {
             );
             rating = firstNonEmpty
               ? String(
-                  firstNonEmpty.rating ?? firstNonEmpty.certification,
-                ).trim()
+                firstNonEmpty.rating ?? firstNonEmpty.certification,
+              ).trim()
               : null;
           }
           setContentRating(rating);
@@ -208,7 +208,7 @@ const Hero = ({ randomShow }: HeroProps) => {
     const isAnyModalOpen = modalStore.isOpen || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
-        videoRef.internalPlayer.pauseVideo();
+        videoRef.internalPlayer.pauseVideo?.();
         setIsPaused(true);
       }
       return;
@@ -220,7 +220,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       !trailerFinished &&
       isPaused
     ) {
-      videoRef.internalPlayer.playVideo();
+      videoRef.internalPlayer.playVideo?.();
       setIsPaused(false);
     }
   }, [modalStore.isOpen, previewModalStore.isOpen, showTrailer, trailerFinished]);
@@ -328,15 +328,15 @@ const Hero = ({ randomShow }: HeroProps) => {
       if (e?.target && typeof e.target.playVideo === 'function') {
         e.target.playVideo();
       }
-    } catch {}
+    } catch { }
   };
 
   const handleChangeMute = () => {
     setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
-    if (!videoRef) return;
-    if (isMuted) videoRef.internalPlayer.unMute();
-    else videoRef.internalPlayer.mute();
+    if (!videoRef?.internalPlayer) return;
+    if (isMuted) videoRef.internalPlayer.unMute?.();
+    else videoRef.internalPlayer.mute?.();
   };
 
   const handleReplayTrailer = () => {
@@ -414,194 +414,191 @@ const Hero = ({ randomShow }: HeroProps) => {
             {/* player or poster */}
             <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full">
               {/* Background Image - Base Layer */}
-             <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full mask-t-from-60% mask-t-to-100% mask-b-from-50% mask-b-to-95% bg-neutral-950">
-             <CustomImage
-                ref={imageRef}
-                src={`https://image.tmdb.org/t/p/original${
-                  randomShow?.backdrop_path ?? randomShow?.poster_path ?? ''
-                }`}
-                alt={randomShow?.title ?? 'poster'}
-                className="z-0 h-auto w-full object-cover transition-opacity duration-500"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
-                fill
-                preload
-              />
-              {trailer && showTrailer && !trailerFinished && (
-                <Youtube
-                  opts={defaultOptions}
-                  onEnd={handleTrailerEnd}
-                  onPlay={handleTrailerPlay}
-                  ref={youtubeRef}
-                  onReady={handleTrailerReady}
-                  videoId={trailer}
-                  id="hero-trailer"
-                  title={
-                    randomShow?.title ?? randomShow?.name ?? 'hero-trailer'
-                  }
-                  className="absolute inset-0 z-0 h-full w-full"
-                  style={{ width: '100%', height: '100%' }}
-                  iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10"
+              <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full mask-t-from-60% mask-t-to-100% mask-b-from-50% mask-b-to-95% bg-neutral-950">
+                <CustomImage
+                  ref={imageRef}
+                  src={`https://image.tmdb.org/t/p/original${randomShow?.backdrop_path ?? randomShow?.poster_path ?? ''
+                    }`}
+                  alt={randomShow?.title ?? 'poster'}
+                  className="z-0 h-auto w-full object-cover transition-opacity duration-500"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
+                  fill
+                  preload
                 />
-              )}
-              {/* shadows */}
-              <div className="absolute inset-0 right-[26.09%] bg-linear-to-r from-neutral-900 to-85% opacity-71"></div>
-              <div className="absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-neutral-900/0 from-30% via-neutral-900/30 via-50% to-neutral-900 to-80%"></div>
-              {/* shadows end */}
-             </div>
+                {trailer && showTrailer && !trailerFinished && (
+                  <Youtube
+                    opts={defaultOptions}
+                    onEnd={handleTrailerEnd}
+                    onPlay={handleTrailerPlay}
+                    ref={youtubeRef}
+                    onReady={handleTrailerReady}
+                    videoId={trailer}
+                    id="hero-trailer"
+                    title={
+                      randomShow?.title ?? randomShow?.name ?? 'hero-trailer'
+                    }
+                    className="absolute inset-0 z-0 h-full w-full"
+                    style={{ width: '100%', height: '100%' }}
+                    iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10"
+                  />
+                )}
+                {/* shadows */}
+                <div className="absolute inset-0 right-[26.09%] bg-linear-to-r from-neutral-900 to-85% opacity-71"></div>
+                <div className="absolute right-0 bottom-[-1.1px] left-0 h-[14.7vw] bg-linear-to-b from-neutral-900/0 from-30% via-neutral-900/30 via-50% to-neutral-900 to-80%"></div>
+                {/* shadows end */}
+              </div>
 
-            {/* text details, Title and buttons */}
-            <div className="absolute right-0 bottom-[35%] md:bottom-[30%] left-0 z-10 w-full pl-[4%] pb-4 sm:pb-0 2xl:pl-[60px]">
-              <div className="">
-                {/* Show logo when trailer is playing, otherwise show title */}
-                <div className="flex w-[30.87vw] flex-col justify-end gap-4 space-y-2">
-                  {showLogo && logoPath ? (
+              {/* text details, Title and buttons */}
+              <div className="absolute right-0 bottom-[35%] md:bottom-[30%] left-0 z-10 w-full pl-[4%] pb-4 sm:pb-0 2xl:pl-[60px]">
+                <div className="">
+                  {/* Show logo when trailer is playing, otherwise show title */}
+                  <div className="flex w-[30.87vw] flex-col justify-end gap-4 space-y-2">
+                    {showLogo && logoPath ? (
+                      <div
+                        className={` ${showTextElements
+                            ? 'h-auto w-[30.87vw]'
+                            : 'h-auto w-[26.46vw]'
+                          }`}
+                        style={{
+                          transformOrigin: 'left bottom',
+                          transform: showTextElements
+                            ? 'scale(1) translate3d(0px, 0px, 0px)'
+                            : 'scale(0.8) translate3d(0px, 0px, 0px)',
+                          transitionDuration: '1300ms',
+                          transitionDelay: '0ms',
+                        }}>
+                        <CustomImage
+                          src={`https://image.tmdb.org/t/p/original${logoPath}`}
+                          alt={`${randomShow?.title ?? randomShow?.name} logo`}
+                          className="h-auto w-full object-contain"
+                          width={showTextElements ? 500 : 200}
+                          height={showTextElements ? 250 : 100}
+                        />
+                      </div>
+                    ) : (
+                      <h1 className="text-xl font-bold sm:text-2xl md:text-3xl lg:text-4xl xl:text-[3vw]">
+                        {randomShow?.title ?? randomShow?.name}
+                      </h1>
+                    )}
+
+                    {/* Show text elements when showTextElements is true */}
                     <div
-                      className={` ${
-                        showTextElements
-                          ? 'h-auto w-[30.87vw]'
-                          : 'h-auto w-[26.46vw]'
-                      }`}
+                      className={`overflow-hidden ${showTextElements ? 'max-h-96' : 'max-h-0'
+                        }`}
                       style={{
-                        transformOrigin: 'left bottom',
                         transform: showTextElements
-                          ? 'scale(1) translate3d(0px, 0px, 0px)'
-                          : 'scale(0.8) translate3d(0px, 0px, 0px)',
+                          ? 'translate3d(0px, 0px, 0px)'
+                          : 'translate3d(0px, 24px, 0px)',
                         transitionDuration: '1300ms',
                         transitionDelay: '0ms',
+                        opacity: showTextElements ? 1 : 0,
                       }}>
-                      <CustomImage
-                        src={`https://image.tmdb.org/t/p/original${logoPath}`}
-                        alt={`${randomShow?.title ?? randomShow?.name} logo`}
-                        className="h-auto w-full object-contain"
-                        width={showTextElements ? 500 : 200}
-                        height={showTextElements ? 250 : 100}
-                      />
-                    </div>
-                  ) : (
-                    <h1 className="text-xl font-bold sm:text-2xl md:text-3xl lg:text-4xl xl:text-[3vw]">
-                      {randomShow?.title ?? randomShow?.name}
-                    </h1>
-                  )}
-
-                  {/* Show text elements when showTextElements is true */}
-                  <div
-                    className={`overflow-hidden ${
-                      showTextElements ? 'max-h-96' : 'max-h-0'
-                    }`}
-                    style={{
-                      transform: showTextElements
-                        ? 'translate3d(0px, 0px, 0px)'
-                        : 'translate3d(0px, 24px, 0px)',
-                      transitionDuration: '1300ms',
-                      transitionDelay: '0ms',
-                      opacity: showTextElements ? 1 : 0,
-                    }}>
-                    <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
-                      <p className="text-green-600">
-                        {Math.round(randomShow?.vote_average * 10) ?? '-'}%
-                        Match
-                      </p>
-                      <p>{randomShow?.release_date ?? '-'}</p>
-                    </div>
-                    <p className="hidden text-[1.2vw] sm:line-clamp-3">
-                      {randomShow?.overview ?? '-'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Combined controls with justify-between */}
-                <div className="mt-[1.5vw] flex w-full items-center justify-between">
-                  {/* Left side - Play and More Info buttons */}
-                  <div className="flex items-center gap-2 sm:space-x-2">
-                    <Link prefetch={false} href={handleHref()}>
-                      <Button
-                        aria-label="Play video"
-                        className="h-7 shrink-0 gap-1.5 rounded-lg px-2 text-xs sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm">
-                        <Icons.play
-                          className="h-3 w-3 fill-current md:h-7 md:w-7"
-                          aria-hidden="true"
-                        />
-                        Play
-                      </Button>
-                    </Link>
-                    <Button
-                      aria-label="Open show's details modal"
-                      variant="outline"
-                      className="h-7 shrink-0 gap-1.5 rounded-lg bg-neutral-900/60 px-2 text-xs backdrop-blur-md sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
-                      onClick={() => {
-                        const name = getNameFromShow(randomShow);
-                        const path: string =
-                          randomShow.media_type === MediaType.TV
-                            ? 'tv-shows'
-                            : 'movies';
-                        window.history.pushState(
-                          null,
-                          '',
-                          `/${path}/${getSlug(randomShow.id, name)}`,
-                        );
-                        usePreviewModalStore.setState({
-                          show: randomShow,
-                          isOpen: true,
-                          play: true,
-                        });
-                      }}>
-                      <Icons.info className="h-3 w-3 md:h-7 md:w-7" aria-hidden="true" />
-                      More Info
-                    </Button>
-                  </div>
-
-                  {/* Right side - Mute/Replay button */}
-                  <div className="flex flex-row items-center gap-2">
-                    {showControls && (
-                      <div className="flex cursor-pointer items-center sm:mr-5 sm:gap-2">
-                        {!trailerFinished ? (
-                          <Button
-                            aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
-                            className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
-                            onClick={handleChangeMute}>
-                            {isMuted ? (
-                              <Icons.volumeMute className="h-3.5 w-3.5 md:h-7 md:w-7" />
-                            ) : (
-                              <Icons.volume className="h-3.5 w-3.5 md:h-7 md:w-7" />
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            aria-label="Replay trailer"
-                            className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
-                            onClick={handleReplayTrailer}>
-                            <Icons.replay className="h-3.5 w-3.5 md:h-7 md:w-7" />
-                          </Button>
-                        )}
+                      <div className="flex space-x-2 text-[2vw] font-semibold md:text-[1.2vw]">
+                        <p className="text-green-600">
+                          {Math.round(randomShow?.vote_average * 10) ?? '-'}%
+                          Match
+                        </p>
+                        <p>{randomShow?.release_date ?? '-'}</p>
                       </div>
-                    )}
-                    <div className="flex h-7 w-16 md:h-10 md:w-25 items-center justify-start border-l-2 border-white bg-black/30 px-2 text-xs backdrop-blur-sm sm:h-10 sm:w-25 sm:border-l-3 sm:p-3 sm:text-lg">
-                      {contentRating ?? 'NA'}
+                      <p className="hidden text-[1.2vw] sm:line-clamp-3">
+                        {randomShow?.overview ?? '-'}
+                      </p>
                     </div>
                   </div>
-                  {/* buttons end */}
-                </div>
-              </div>
-            </div>
-            {/* end text details */}
 
-            {/* Timer */}
-            {isCountdownActive && (
-              <div
-                className="absolute flex items-center gap-2"
-                style={{
-                  top: '50%',
-                  right: '3vw',
-                  zIndex: '999',
-                }}>
-                <div className="z-50 flex items-center justify-center rounded-lg bg-black/50 px-2 py-1.5 text-white backdrop-blur-md sm:rounded-xl sm:px-3 sm:py-2">
-                  <span className="z-50 text-sm font-bold text-white sm:text-lg">
-                    Trailer - {countdown}
-                  </span>
+                  {/* Combined controls with justify-between */}
+                  <div className="mt-[1.5vw] flex w-full items-center justify-between">
+                    {/* Left side - Play and More Info buttons */}
+                    <div className="flex items-center gap-2 sm:space-x-2">
+                      <Link prefetch={false} href={handleHref()}>
+                        <Button
+                          aria-label="Play video"
+                          className="h-7 shrink-0 gap-1.5 rounded-lg px-2 text-xs sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm">
+                          <Icons.play
+                            className="h-3 w-3 fill-current md:h-7 md:w-7"
+                            aria-hidden="true"
+                          />
+                          Play
+                        </Button>
+                      </Link>
+                      <Button
+                        aria-label="Open show's details modal"
+                        variant="outline"
+                        className="h-7 shrink-0 gap-1.5 rounded-lg bg-neutral-900/60 px-2 text-xs backdrop-blur-md sm:h-auto sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
+                        onClick={() => {
+                          const name = getNameFromShow(randomShow);
+                          const path: string =
+                            randomShow.media_type === MediaType.TV
+                              ? 'tv-shows'
+                              : 'movies';
+                          window.history.pushState(
+                            null,
+                            '',
+                            `/${path}/${getSlug(randomShow.id, name)}`,
+                          );
+                          usePreviewModalStore.setState({
+                            show: randomShow,
+                            isOpen: true,
+                            play: true,
+                          });
+                        }}>
+                        <Icons.info className="h-3 w-3 md:h-7 md:w-7" aria-hidden="true" />
+                        More Info
+                      </Button>
+                    </div>
+
+                    {/* Right side - Mute/Replay button */}
+                    <div className="flex flex-row items-center gap-2">
+                      {showControls && (
+                        <div className="flex cursor-pointer items-center sm:mr-5 sm:gap-2">
+                          {!trailerFinished ? (
+                            <Button
+                              aria-label={`${isMuted ? 'Unmute' : 'Mute'} video`}
+                              className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
+                              onClick={handleChangeMute}>
+                              {isMuted ? (
+                                <Icons.volumeMute className="h-3.5 w-3.5 md:h-7 md:w-7" />
+                              ) : (
+                                <Icons.volume className="h-3.5 w-3.5 md:h-7 md:w-7" />
+                              )}
+                            </Button>
+                          ) : (
+                            <Button
+                              aria-label="Replay trailer"
+                              className="h-7 w-7 rounded-full bg-black/70 p-0 text-white/50 ring-1 ring-white/50 transition-all duration-500 hover:bg-white/20 hover:text-white hover:ring-white sm:h-10 sm:w-10 sm:ring-2"
+                              onClick={handleReplayTrailer}>
+                              <Icons.replay className="h-3.5 w-3.5 md:h-7 md:w-7" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex h-7 w-16 md:h-10 md:w-25 items-center justify-start border-l-2 border-white bg-black/30 px-2 text-xs backdrop-blur-sm sm:h-10 sm:w-25 sm:border-l-3 sm:p-3 sm:text-lg">
+                        {contentRating ?? 'NA'}
+                      </div>
+                    </div>
+                    {/* buttons end */}
+                  </div>
                 </div>
               </div>
-            )}
-            {/* timer end */}
+              {/* end text details */}
+
+              {/* Timer */}
+              {isCountdownActive && (
+                <div
+                  className="absolute flex items-center gap-2"
+                  style={{
+                    top: '50%',
+                    right: '3vw',
+                    zIndex: '999',
+                  }}>
+                  <div className="z-50 flex items-center justify-center rounded-lg bg-black/50 px-2 py-1.5 text-white backdrop-blur-md sm:rounded-xl sm:px-3 sm:py-2">
+                    <span className="z-50 text-sm font-bold text-white sm:text-lg">
+                      Trailer - {countdown}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {/* timer end */}
 
 
             </div>
