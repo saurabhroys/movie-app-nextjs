@@ -43,8 +43,8 @@ export enum RequestType {
 export type TmdbPagingResponse = {
   results: Show[];
   page: number;
-  totalPages: number;
-  totalResults: number;
+  total_pages: number;
+  total_results: number;
 };
 
 export type TmdbRequest = {

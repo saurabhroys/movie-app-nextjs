@@ -30,7 +30,7 @@ export const movieRouter = router({
 
             return {
                 items: data.results,
-                nextCursor: data.page < data.totalPages ? data.page + 1 : undefined,
+                nextCursor: data.page < data.total_pages ? data.page + 1 : undefined,
             };
         }),
 });
