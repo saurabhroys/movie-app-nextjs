@@ -111,8 +111,8 @@ const PreviewModal = () => {
   // Initial fetch for Season 1 episodes when opening a TV show
   React.useEffect(() => {
     if (
-      modalStore.isOpen && 
-      modalStore.show?.media_type === MediaType.TV && 
+      modalStore.isOpen &&
+      modalStore.show?.media_type === MediaType.TV &&
       detailedShow?.seasons?.length
     ) {
       // Default to season 1 or the first available season number
@@ -162,7 +162,7 @@ const PreviewModal = () => {
       if (event?.target && typeof event.target.playVideo === 'function') {
         event.target.playVideo();
       }
-    } catch {}
+    } catch { }
   };
 
   const handleChangeMute = () => {
@@ -170,9 +170,9 @@ const PreviewModal = () => {
     if (!youtubeRef.current) return;
     const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
     if (isMuted && videoRef.internalPlayer) {
-      videoRef.internalPlayer.unMute();
+      videoRef.internalPlayer.unMute?.();
     } else if (videoRef.internalPlayer) {
-      videoRef.internalPlayer.mute();
+      videoRef.internalPlayer.mute?.();
     }
   };
 
@@ -183,8 +183,8 @@ const PreviewModal = () => {
     const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
     try {
       if (videoRef.internalPlayer) {
-        videoRef.internalPlayer.seekTo(0);
-        videoRef.internalPlayer.playVideo();
+        videoRef.internalPlayer.seekTo?.(0);
+        videoRef.internalPlayer.playVideo?.();
       }
     } catch (e) {
       // noop
@@ -285,11 +285,11 @@ const PreviewModal = () => {
               className="relative w-full overflow-y-auto rounded-md border-none bg-neutral-900 p-0 text-left align-middle ring-0 sm:max-w-3xl lg:max-w-4xl">
               <div
                 className="relative z-10 aspect-video"
-                // style={{
-                //   background: 'linear-gradient(0deg, #181818, transparent 100%)',
-                //   opacity: 1,
-                //   paddingBottom: 'calc(var(--spacing) * 1)'
-                // }}
+              // style={{
+              //   background: 'linear-gradient(0deg, #181818, transparent 100%)',
+              //   opacity: 1,
+              //   paddingBottom: 'calc(var(--spacing) * 1)'
+              // }}
               >
                 <CustomImage
                   fill
@@ -297,10 +297,9 @@ const PreviewModal = () => {
                   ref={imageRef}
                   alt={modalStore?.show?.title ?? 'poster'}
                   className="z-1 h-auto w-full object-cover"
-                  src={`https://image.tmdb.org/t/p/original${
-                    modalStore.show?.backdrop_path ??
+                  src={`https://image.tmdb.org/t/p/original${modalStore.show?.backdrop_path ??
                     modalStore.show?.poster_path
-                  }`}
+                    }`}
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
                 />
                 {trailer && (
@@ -326,30 +325,28 @@ const PreviewModal = () => {
                 {/* Show logo with transition states */}
                 {detailedShow?.logoPath && (
                   <div
-                    className={`absolute z-30 flex items-center p-3 md:p-6 transition-all duration-[1500] ease-in-out ${
-                      logoTransition === 'initial' ||
-                      logoTransition === 'trailer-ended'
+                    className={`absolute z-30 flex items-center p-3 md:p-6 transition-all duration-[1500] ease-in-out ${logoTransition === 'initial' ||
+                        logoTransition === 'trailer-ended'
                         ? 'inset-0 justify-center'
                         : 'bottom-22 md:bottom-25 left-0 justify-start'
-                    }`}>
+                      }`}>
                     <CustomImage
                       src={`https://image.tmdb.org/t/p/original${detailedShow.logoPath}`}
                       alt={`${modalStore.show?.title ?? modalStore.show?.name} logo`}
-                      className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500] ease-in-out ${
-                        logoTransition === 'initial' ||
-                        logoTransition === 'trailer-ended'
+                      className={`object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-[1500] ease-in-out ${logoTransition === 'initial' ||
+                          logoTransition === 'trailer-ended'
                           ? 'h-auto max-w-[60%]'
                           : 'h-auto max-w-[24%] md:max-w-[40%]'
-                      }`}
+                        }`}
                       width={
                         logoTransition === 'initial' ||
-                        logoTransition === 'trailer-ended'
+                          logoTransition === 'trailer-ended'
                           ? 800
                           : 400
                       }
                       height={
                         logoTransition === 'initial' ||
-                        logoTransition === 'trailer-ended'
+                          logoTransition === 'trailer-ended'
                           ? 400
                           : 200
                       }
@@ -473,9 +470,9 @@ const PreviewModal = () => {
                     <span className="text-sm text-slate-50">
                       {detailedShow?.keywords && detailedShow.keywords.length > 0
                         ? detailedShow.keywords
-                            .slice(0, 3)
-                            .map((keyword) => keyword.name)
-                            .join(', ')
+                          .slice(0, 3)
+                          .map((keyword) => keyword.name)
+                          .join(', ')
                         : 'content warning'}
                     </span>
                   </div>

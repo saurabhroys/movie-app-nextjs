@@ -54,10 +54,12 @@ const ShowsCarousel = ({ title, initialShows, req }: ShowsCarouselProps) => {
 
     const { scrollLeft, scrollWidth, offsetWidth } = showsRef.current;
     const isAtStart = scrollLeft <= 0;
-    const isAtEnd = scrollLeft + offsetWidth >= scrollWidth - 100; // Trigger slightly before the absolute end
+    // Trigger much earlier (500px before end) for smoother infinite scroll
+    const isAtEnd = scrollLeft + offsetWidth >= scrollWidth - 500;
 
     setCanScrollLeft(!isAtStart);
-    setCanScrollRight(hasNextPage || scrollLeft + offsetWidth < scrollWidth - 1);
+    // Button should be active if there's more to scroll OR more pages to fetch
+    setCanScrollRight(scrollLeft + offsetWidth < scrollWidth - 1 || hasNextPage);
 
     if (isAtEnd && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();

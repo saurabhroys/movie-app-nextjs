@@ -84,9 +84,9 @@ const PreviewModal = () => {
   const handleChangeMute = () => {
     setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
-    if (!videoRef) return;
-    if (isMuted) videoRef.internalPlayer.unMute();
-    else videoRef.internalPlayer.mute();
+    if (!videoRef?.internalPlayer) return;
+    if (isMuted) videoRef.internalPlayer.unMute?.();
+    else videoRef.internalPlayer.mute?.();
   };
 
   const handleHref = () => {
@@ -135,7 +135,7 @@ const PreviewModal = () => {
       try {
         videoRef.internalPlayer.stopVideo?.();
         videoRef.internalPlayer.seekTo?.(0);
-      } catch {}
+      } catch { }
       if (imageRef.current) imageRef.current.style.opacity = '1';
     }
   }, [p.isOpen]);
@@ -249,7 +249,7 @@ const PreviewModal = () => {
     try {
       videoRef?.internalPlayer?.pauseVideo?.();
       videoRef?.internalPlayer?.stopVideo?.();
-    } catch {}
+    } catch { }
     // Open the main modal on the next frame for smoother transition
     requestAnimationFrame(() => {
       window.history.pushState(
@@ -272,7 +272,7 @@ const PreviewModal = () => {
       if (e?.target && typeof e.target.seekTo === 'function') {
         e.target.seekTo(0);
       }
-    } catch {}
+    } catch { }
   };
 
   const handleTrailerReady = (e: any) => {
@@ -280,7 +280,7 @@ const PreviewModal = () => {
       if (e?.target && typeof e.target.playVideo === 'function') {
         e.target.playVideo();
       }
-    } catch {}
+    } catch { }
   };
 
   // console.log(detailedShow);
@@ -406,30 +406,30 @@ const PreviewModal = () => {
               <span className="rounded border px-1 py-0.5 text-[11px] font-bold text-white">
                 {detailedShow?.media_type === MediaType.MOVIE
                   ? (() => {
-                      const runtime = detailedShow?.runtime;
-                      if (!runtime) return 'N/A';
-                      const hours = Math.floor(runtime / 60);
-                      const minutes = runtime % 60;
-                      return hours > 0
-                        ? `${hours}h ${minutes}m`
-                        : `${minutes}m`;
-                    })()
+                    const runtime = detailedShow?.runtime;
+                    if (!runtime) return 'N/A';
+                    const hours = Math.floor(runtime / 60);
+                    const minutes = runtime % 60;
+                    return hours > 0
+                      ? `${hours}h ${minutes}m`
+                      : `${minutes}m`;
+                  })()
                   : detailedShow?.media_type === MediaType.TV
                     ? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
                     : (() => {
-                        // Fallback to basic show data if detailedShow is not available
-                        const show = p.show;
-                        if (show?.media_type === MediaType.MOVIE) {
-                          const runtime = detailedShow?.runtime;
-                          if (!runtime) return 'N/A';
-                          const hours = Math.floor(runtime / 60);
-                          const minutes = runtime % 60;
-                          return hours > 0
-                            ? `${hours}h ${minutes}m`
-                            : `${minutes}m`;
-                        }
-                        return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
-                      })()}
+                      // Fallback to basic show data if detailedShow is not available
+                      const show = p.show;
+                      if (show?.media_type === MediaType.MOVIE) {
+                        const runtime = detailedShow?.runtime;
+                        if (!runtime) return 'N/A';
+                        const hours = Math.floor(runtime / 60);
+                        const minutes = runtime % 60;
+                        return hours > 0
+                          ? `${hours}h ${minutes}m`
+                          : `${minutes}m`;
+                      }
+                      return `${detailedShow?.number_of_seasons} Season${show?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`;
+                    })()}
               </span>
               {detailedShow?.networks && detailedShow?.networks.length > 0 && (
                 <div className="absolute flex w-[95%] flex-row items-end justify-end gap-2 overflow-hidden pb-2">
