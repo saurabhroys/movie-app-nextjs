@@ -33,7 +33,7 @@ export default async function TvShowPage() {
 
 async function getTvShowData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',

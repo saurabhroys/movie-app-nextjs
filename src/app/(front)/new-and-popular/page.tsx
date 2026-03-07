@@ -32,7 +32,7 @@ export default async function NewAndPopularPage() {
 
 async function getNewAndPopularData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending TV Shows',

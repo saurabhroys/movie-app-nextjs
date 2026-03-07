@@ -29,7 +29,7 @@ export default async function Home() {
 
 async function getHomeData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',
