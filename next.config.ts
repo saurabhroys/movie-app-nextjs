@@ -1,4 +1,3 @@
-import { env } from './src/env';
 import type { NextConfig } from 'next';
 
 /**
@@ -27,18 +26,6 @@ const config: NextConfig = {
     //   locales: ['en'],
     //   defaultLocale: 'en',
     // },
-    images: {
-        unoptimized: !env.NEXT_PUBLIC_IMAGE_DOMAIN,
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: env.NEXT_PUBLIC_IMAGE_DOMAIN ?? 'image.tmdb.org',
-                pathname: '/**',
-            },
-        ],
-        imageSizes: [48, 64, 96],
-        deviceSizes: [128, 256, 512, 1200],
-    },
     serverExternalPackages: ['@trpc/server'],
 };
 
