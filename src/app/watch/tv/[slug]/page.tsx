@@ -23,7 +23,7 @@ export default async function Page(props: {
 
 async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
 
   // Fetch TV show details and recommended TV shows
   let tvShow: Show | null = null;

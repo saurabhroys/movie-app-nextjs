@@ -45,6 +45,7 @@ class BaseService {
 
   static getConfig(baseUrl: string): AxiosRequestConfig {
     return {
+      adapter: 'fetch',
       timeout: 60000,
       baseURL: baseUrl,
       responseType: 'json',

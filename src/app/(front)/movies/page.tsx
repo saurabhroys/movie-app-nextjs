@@ -32,7 +32,7 @@ export default async function MoviePage() {
 
 async function getMovieData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',

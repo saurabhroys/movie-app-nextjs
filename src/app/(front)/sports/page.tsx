@@ -25,7 +25,7 @@ export default async function SportsPage() {
 
 async function getSportsData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',

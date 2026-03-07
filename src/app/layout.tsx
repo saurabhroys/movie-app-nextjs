@@ -3,13 +3,11 @@ import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Inter as FontSans } from 'next/font/google';
-import localFont from 'next/font/local';
+
 import { Analytics } from '@/components/analytics';
 import { siteConfig } from '@/configs/site';
 import { env } from '@/env';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 import SiteHeader from '@/components/main/site-header';
 import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
@@ -21,17 +19,7 @@ import PreviewModal from '@/components/preview-modal';
 
 // export const runtime = 'edge';
 
-const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-});
 
-// Font files can be colocated inside of `pages`
-const fontHeading = localFont({
-  src: '../assets/fonts/CalSans-SemiBold.woff2',
-  variable: '--font-heading',
-});
 
 export const viewport: Viewport = {
   themeColor: [
@@ -87,9 +75,7 @@ export default function RootLayout({
       <head />
       <body
         className={cn(
-          'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]',
-          fontSans.variable,
-          fontHeading.variable,
+          'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]'
         )}>
         <TrpcProvider>
           <Suspense fallback={<div className="h-16" />}>
@@ -107,7 +93,21 @@ export default function RootLayout({
           {process.env.NODE_ENV === 'production' && <SpeedInsights />}
           <AttributeTooltipManager />
           {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){window.dataLayer.push(arguments);}
+                  gtag('js', new Date());
+
+                  gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
+                `}
+              </Script>
+            </>
           )}
         </TrpcProvider>
       </body>

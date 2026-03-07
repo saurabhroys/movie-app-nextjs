@@ -26,7 +26,7 @@ async function CachedAnimePage({
   slugId: string;
 }) {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
 
   // Fetch anime (tv) show details, seasons and recommendations
   let tvShow: Show | null = null;

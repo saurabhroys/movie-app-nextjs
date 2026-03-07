@@ -32,7 +32,7 @@ export default async function AnimePage() {
 
 async function getAnimeData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Anime TV Shows Latest',
