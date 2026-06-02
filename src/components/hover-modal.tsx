@@ -66,7 +66,7 @@ const PreviewModal = () => {
 
   React.useEffect(() => {
     if (p.isOpen && p.show) {
-      const type = p.show.media_type === MediaType.TV ? 'tv' : 'movie';
+      const type = (p.show.media_type as string) === 'tv' ? 'tv' : 'movie';
       p.fetchPreviewData(p.show.id, type);
     }
   }, [p.isOpen, p.show?.id]);
@@ -93,23 +93,25 @@ const PreviewModal = () => {
     if (!p.show?.id) return '#';
     const type = isAnime
       ? 'anime'
-      : p.show?.media_type === MediaType.MOVIE
+      : (p.show?.media_type as string) === 'movie'
         ? 'movie'
         : 'tv';
     let id = `${p.show.id}`;
     if (isAnime)
-      id = `${p.show?.media_type === MediaType.MOVIE ? 'm' : 't'}-${id}`;
+      id = `${(p.show?.media_type as string) === 'movie' ? 'm' : 't'}-${id}`;
     return `/watch/${type}/${id}`;
   };
 
-  const getRuntime = () =>
-    detailedShow?.media_type === MediaType.TV
+  const getRuntime = () => {
+    if (!detailedShow) return null;
+    return (detailedShow.media_type as string) === 'tv'
       ? detailedShow.number_of_seasons
         ? `${detailedShow.number_of_seasons} Seasons`
         : null
-      : detailedShow?.runtime
+      : detailedShow.runtime
         ? `${detailedShow.runtime} min`
         : null;
+  };
 
   const getQuality = () => ((p.show?.vote_average || 0) >= 8 ? 'HD' : 'SD');
 
@@ -244,7 +246,7 @@ const PreviewModal = () => {
     const current = p.show;
     const name = getNameFromShow(current);
     const path: string =
-      current.media_type === MediaType.TV ? 'tv-shows' : 'movies';
+      (current.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
     const videoRef: any = youtubeRef.current;
     try {
       videoRef?.internalPlayer?.pauseVideo?.();
@@ -404,7 +406,7 @@ const PreviewModal = () => {
                 {p.show?.release_date || detailedShow?.release_date}
               </span>
               <span className="rounded border px-1 py-0.5 text-[11px] font-bold text-white">
-                {detailedShow?.media_type === MediaType.MOVIE
+                {(detailedShow?.media_type as string) === 'movie'
                   ? (() => {
                     const runtime = detailedShow?.runtime;
                     if (!runtime) return 'N/A';
@@ -414,12 +416,12 @@ const PreviewModal = () => {
                       ? `${hours}h ${minutes}m`
                       : `${minutes}m`;
                   })()
-                  : detailedShow?.media_type === MediaType.TV
+                  : (detailedShow?.media_type as string) === 'tv'
                     ? `${detailedShow?.number_of_seasons} Season${detailedShow?.number_of_seasons !== 1 ? 's' : ''} • ${detailedShow?.number_of_episodes} Episode${detailedShow?.number_of_episodes !== 1 ? 's' : ''}`
                     : (() => {
                       // Fallback to basic show data if detailedShow is not available
                       const show = p.show;
-                      if (show?.media_type === MediaType.MOVIE) {
+                      if ((show?.media_type as string) === 'movie') {
                         const runtime = detailedShow?.runtime;
                         if (!runtime) return 'N/A';
                         const hours = Math.floor(runtime / 60);

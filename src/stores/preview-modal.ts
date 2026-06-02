@@ -203,6 +203,7 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
         data.recommendedDetails = Object.fromEntries(details) as any;
       }
 
+      data.media_type = mediaType;
       set({ detailedShow: data, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch detailed show info:', error);

@@ -127,6 +127,7 @@ export const useHoverModalStore = create<PreviewModalState>()((set) => ({
         data.logoPath = preferred ? preferred.file_path : null;
       } catch (e) {}
 
+      data.media_type = effectiveType === 'tv' ? MediaType.TV : MediaType.MOVIE;
       set({ detailedShow: data, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch preview data:', error);
