@@ -104,7 +104,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     (async () => {
       try {
         const apiMediaType =
-          show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+          (show.media_type as string) === 'movie' ? 'movie' : 'tv';
         const { data } = await MovieService.getImages(apiMediaType, show.id);
         const preferred =
           data.logos?.find((l) => l.iso_639_1 === 'en') ?? data.logos?.[0];
@@ -121,17 +121,17 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const handleHref = () => {
     const type = isAnime
       ? 'anime'
-      : show?.media_type === MediaType.MOVIE
+      : (show?.media_type as string) === 'movie'
         ? 'movie'
         : 'tv';
     let id = `${show?.id}`;
     if (isAnime)
-      id = `${show?.media_type === MediaType.MOVIE ? 'm' : 't'}-${id}`;
+      id = `${(show?.media_type as string) === 'movie' ? 'm' : 't'}-${id}`;
     return `/watch/${type}/${id}`;
   };
 
   const getRuntime = () =>
-    show?.media_type === MediaType.TV
+    (show?.media_type as string) === 'tv'
       ? show.number_of_seasons
         ? `${show.number_of_seasons} Seasons`
         : null
@@ -158,7 +158,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const handleMoreDetails = () => {
     const name = getNameFromShow(show);
     const path: string =
-      show.media_type === MediaType.TV ? 'tv-shows' : 'movies';
+      (show.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
     window.history.pushState(null, '', `/${path}/${getSlug(show.id, name)}`);
     usePreviewModalStore.setState({
       show: show,
