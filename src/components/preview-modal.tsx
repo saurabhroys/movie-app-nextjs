@@ -112,7 +112,7 @@ const PreviewModal = () => {
   React.useEffect(() => {
     if (
       modalStore.isOpen &&
-      modalStore.show?.media_type === MediaType.TV &&
+      (modalStore.show?.media_type as string) === 'tv' &&
       detailedShow?.seasons?.length
     ) {
       // Default to season 1 or the first available season number
@@ -214,13 +214,13 @@ const PreviewModal = () => {
   const handleHref = (): string => {
     const type = isAnime
       ? 'anime'
-      : modalStore.show?.media_type === MediaType.MOVIE
+      : (modalStore.show?.media_type as string) === 'movie'
         ? 'movie'
         : 'tv';
     let id = `${modalStore.show?.id}`;
     if (isAnime) {
       const prefix: string =
-        modalStore.show?.media_type === MediaType.MOVIE ? 'm' : 't';
+        (modalStore.show?.media_type as string) === 'movie' ? 'm' : 't';
       id = `${prefix}-${id}`;
     }
     return `/watch/${type}/${id}`;
@@ -254,7 +254,7 @@ const PreviewModal = () => {
 
   const navigateToShow = (show: Show) => {
     modalStore.reset();
-    const type = show.media_type === MediaType.MOVIE ? 'movie' : 'tv';
+    const type = (show.media_type as string) === 'movie' ? 'movie' : 'tv';
     router.push(`/watch/${type}/${show.id}`);
   };
 
@@ -438,7 +438,7 @@ const PreviewModal = () => {
                       </p>
                     )}
                     {/* Seasons (TV only) */}
-                    {modalStore.show?.media_type === MediaType.TV &&
+                    {(modalStore.show?.media_type as string) === 'tv' &&
                       (() => {
                         const count = detailedShow?.number_of_seasons ?? modalStore.show?.number_of_seasons ?? null;
                         return typeof count === 'number' && count > 0 ? (
@@ -510,7 +510,7 @@ const PreviewModal = () => {
 
               {/* Movie Collection Section */}
               {detailedShow?.collection &&
-                modalStore.show?.media_type === MediaType.MOVIE && (
+                (modalStore.show?.media_type as string) === 'movie' && (
                   <div className="px-4 md:px-10 pb-6">
                     <div className="flex items-start justify-start gap-4">
                       <Icons.library />
@@ -556,7 +556,7 @@ const PreviewModal = () => {
                 )}
 
               {/* TV Seasons Section */}
-              {detailedShow && modalStore.show?.media_type === MediaType.TV && (
+              {detailedShow && (modalStore.show?.media_type as string) === 'tv' && (
                 <div className="px-4 md:px-10 pb-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-white">
@@ -642,7 +642,7 @@ const PreviewModal = () => {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                     {recommendedShows.slice(0, 12).map((show) => {
-                      const isTv = show.media_type === MediaType.TV;
+                      const isTv = (show.media_type as string) === 'tv';
                       const detail = (detailedShow?.recommendedDetails as any)?.[show.id];
                       const seasons = isTv
                         ? (detail?.number_of_seasons ??
@@ -792,7 +792,7 @@ const PreviewModal = () => {
                   <div className="text-neutral-300">
                     <span className="text-neutral-400">
                       This{' '}
-                      {modalStore.show?.media_type === MediaType.TV
+                      {(modalStore.show?.media_type as string) === 'tv'
                         ? 'Show'
                         : 'Movie'}{' '}
                       Is:{' '}

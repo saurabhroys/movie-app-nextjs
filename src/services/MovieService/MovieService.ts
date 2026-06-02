@@ -113,17 +113,55 @@ class MovieService extends BaseService {
   );
 
   /**
-   * Cached: Fetches images for a movie, TV show, or anime.
+   * Cached: Fetches images for a movie, TV show, or anime with retry logic.
    * Deduplicates requests within the same render cycle.
    */
   static getImages = cache(
     async (
       mediaType: 'movie' | 'tv' | 'anime',
       mediaId: number,
+      maxAttempts: number = 3,
     ): Promise<AxiosResponse<ImagesResponse>> => {
-      return this.axios(baseUrl).get<ImagesResponse>(
-        `/${mediaType}/${mediaId}/images`,
-      );
+      const sleep = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms));
+
+      const isRetryable = (error: unknown): boolean => {
+        if (!error || typeof error !== 'object') return false;
+        const anyErr = error as any;
+        const code: string | undefined = anyErr?.code;
+        const message: string | undefined = anyErr?.message?.toLowerCase();
+        const status: number | undefined = anyErr?.response?.status;
+
+        return (
+          code === 'ECONNRESET' ||
+          code === 'ECONNABORTED' ||
+          code === 'ETIMEDOUT' ||
+          code === 'ENOTFOUND' ||
+          code === 'EAI_AGAIN' ||
+          message?.includes('timeout') ||
+          (typeof status === 'number' &&
+            (status === 429 || (status >= 500 && status < 600)))
+        );
+      };
+
+      let attempt = 0;
+      let backoff = 300;
+
+      while (true) {
+        try {
+          const apiType = mediaType === 'anime' ? 'tv' : mediaType;
+          return await this.axios(baseUrl).get<ImagesResponse>(
+            `/${apiType}/${mediaId}/images`,
+          );
+        } catch (error) {
+          attempt += 1;
+          if (attempt >= maxAttempts || !isRetryable(error)) {
+            throw error;
+          }
+          await sleep(backoff + Math.random() * 200);
+          backoff = Math.min(backoff * 2, 3000);
+        }
+      }
     },
   );
 
@@ -336,9 +374,9 @@ class MovieService extends BaseService {
     },
   );
 
-  static executeRequest(req: TmdbRequest) {
+  static async executeRequest(req: TmdbRequest) {
     // Use cached version for deduplication during render
-    return this.executeRequestCached(
+    const res = await this.executeRequestCached(
       req.requestType,
       req.mediaType,
       req.page,
@@ -346,6 +384,19 @@ class MovieService extends BaseService {
       req.isLatest,
       req.networkId,
     );
+
+    const reqMediaType = req.mediaType;
+    if (res.data?.results) {
+      res.data.results.forEach((f) => {
+        if (
+          requestTypesNeedUpdateMediaType.indexOf(req.requestType) > -1 ||
+          (!f.media_type && reqMediaType && reqMediaType !== MediaType.ALL)
+        ) {
+          f.media_type = reqMediaType;
+        }
+      });
+    }
+    return res;
   }
 
   static async executeRequestWithRetry(

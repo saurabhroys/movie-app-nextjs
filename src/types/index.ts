@@ -1,11 +1,13 @@
 // import type { MEDIA_TYPE } from "@prisma/client";
 
-export enum MediaType {
-  ALL = 'all',
-  TV = 'tv',
-  MOVIE = 'movie',
-  ANIME = 'anime',
-}
+export const MediaType = {
+  ALL: 'all',
+  TV: 'tv',
+  MOVIE: 'movie',
+  ANIME: 'anime',
+} as const;
+
+export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 
 export type NavItem = {
   title: string;
