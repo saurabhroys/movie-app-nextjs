@@ -31,6 +31,7 @@ interface PlayerSelectorProps {
   selectorClass: string;
   season?: number;
   episode?: number;
+  title?: string;
 }
 
 const PlayerSelector = ({
@@ -40,6 +41,7 @@ const PlayerSelector = ({
   selectorClass,
   season,
   episode,
+  title,
 }: PlayerSelectorProps) => {
   const [activePlayer, setActivePlayer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -623,9 +625,9 @@ const PlayerSelector = ({
         </div>
 
         <div className="w-full px-4 pt-2">
-          {playerOptions[activePlayer]?.description && (
+          {title && (
             <p className="mb-4 text-center text-sm text-neutral-400">
-              {playerOptions[activePlayer].description}
+              {title}
             </p>
           )}
         </div>

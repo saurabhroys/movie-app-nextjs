@@ -85,8 +85,8 @@ const PreviewModal = () => {
     setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
     if (!videoRef?.internalPlayer) return;
-    if (isMuted) videoRef.internalPlayer.unMute?.();
-    else videoRef.internalPlayer.mute?.();
+    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
   };
 
   const handleHref = () => {
@@ -135,8 +135,8 @@ const PreviewModal = () => {
     if (!videoRef?.internalPlayer) return;
     if (!p.isOpen) {
       try {
-        videoRef.internalPlayer.stopVideo?.();
-        videoRef.internalPlayer.seekTo?.(0);
+        videoRef.internalPlayer.stopVideo?.()?.catch?.(() => {});
+        videoRef.internalPlayer.seekTo?.(0)?.catch?.(() => {});
       } catch { }
       if (imageRef.current) imageRef.current.style.opacity = '1';
     }
@@ -249,8 +249,8 @@ const PreviewModal = () => {
       (current.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
     const videoRef: any = youtubeRef.current;
     try {
-      videoRef?.internalPlayer?.pauseVideo?.();
-      videoRef?.internalPlayer?.stopVideo?.();
+      videoRef?.internalPlayer?.pauseVideo?.()?.catch?.(() => {});
+      videoRef?.internalPlayer?.stopVideo?.()?.catch?.(() => {});
     } catch { }
     // Open the main modal on the next frame for smoother transition
     requestAnimationFrame(() => {
@@ -280,7 +280,7 @@ const PreviewModal = () => {
   const handleTrailerReady = (e: any) => {
     try {
       if (e?.target && typeof e.target.playVideo === 'function') {
-        e.target.playVideo();
+        e.target.playVideo()?.catch?.(() => {});
       }
     } catch { }
   };
