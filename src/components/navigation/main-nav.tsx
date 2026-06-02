@@ -129,6 +129,14 @@ export function MainNav({ items }: MainNavProps) {
     return () => window.removeEventListener('scroll', changeBgColor);
   }, [isScrolled]);
 
+  // Clear search on navigation away from search page
+  React.useEffect(() => {
+    if (path !== '/search') {
+      searchStore.reset();
+      searchStore.setIsOpen(false);
+    }
+  }, [path]);
+
 
 
   const handleMobileMenuOpenChange = (open: boolean) => {
