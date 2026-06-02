@@ -73,6 +73,7 @@ const TvWatchPage = ({
             selectorClass="h-80 md:h-160"
             season={selectedSeason}
             episode={selectedEpisode}
+            title={tvShow.name || tvShow.title || ''}
           />
         </div>
 

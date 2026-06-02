@@ -16,6 +16,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
   const [showScrollHintBackdrop, setShowScrollHintBackdrop] =
     React.useState(true);
   const [recommendedMovies, setRecommendedMovies] = React.useState<Show[]>([]);
+  const [movie, setMovie] = React.useState<Show | null>(null);
   const [isRecommendationsLoading, setIsRecommendationsLoading] =
     React.useState<boolean>(true);
   const [params, setParams] = React.useState<{ slug: string } | null>(null);
@@ -163,7 +164,8 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     if (mediaId > 0) {
       setIsRecommendationsLoading(true);
       MovieService.findMovie(mediaId)
-        .then(() => {
+        .then((res) => {
+          setMovie(res.data);
           // Movie exists, fetch recommendations
           return MovieService.getMovieRecommendations(mediaId);
         })
@@ -296,6 +298,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
           mediaType="movie"
           selectorClass="h-screen"
           playerClass=""
+          title={movie?.title || movie?.name || ''}
         />
       </div>
 

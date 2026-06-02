@@ -160,7 +160,7 @@ const PreviewModal = () => {
   const onReady = (event: YouTubeEvent) => {
     try {
       if (event?.target && typeof event.target.playVideo === 'function') {
-        event.target.playVideo();
+        (event.target as any).playVideo()?.catch?.(() => {});
       }
     } catch { }
   };
@@ -168,11 +168,11 @@ const PreviewModal = () => {
   const handleChangeMute = () => {
     setIsMuted((state: boolean) => !state);
     if (!youtubeRef.current) return;
-    const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
+    const videoRef: any = youtubeRef.current;
     if (isMuted && videoRef.internalPlayer) {
-      videoRef.internalPlayer.unMute?.();
+      videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
     } else if (videoRef.internalPlayer) {
-      videoRef.internalPlayer.mute?.();
+      videoRef.internalPlayer.mute?.()?.catch?.(() => {});
     }
   };
 
@@ -180,11 +180,11 @@ const PreviewModal = () => {
     setTrailerFinished(false);
     setLogoTransition('trailer-playing');
     if (!youtubeRef.current) return;
-    const videoRef: YouTubePlayer = youtubeRef.current as YouTubePlayer;
+    const videoRef: any = youtubeRef.current;
     try {
       if (videoRef.internalPlayer) {
-        videoRef.internalPlayer.seekTo?.(0);
-        videoRef.internalPlayer.playVideo?.();
+        videoRef.internalPlayer.seekTo?.(0)?.catch?.(() => {});
+        videoRef.internalPlayer.playVideo?.()?.catch?.(() => {});
       }
     } catch (e) {
       // noop
