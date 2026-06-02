@@ -591,6 +591,12 @@ const PlayerSelector = ({
     setTimeout(() => setIsLoading(false), 1000);
   };
 
+  const handleNextPlayer = () => {
+    if (playerOptions.length <= 1) return;
+    const nextIndex = (activePlayer + 1) % playerOptions.length;
+    handlePlayerChange(nextIndex);
+  };
+
   if (!playerOptions.length) {
     return (
       <div className="backdrop-blur-sm">
@@ -624,11 +630,22 @@ const PlayerSelector = ({
           />
         </div>
 
-        <div className="w-full px-4 pt-2">
+        <div className="w-full px-4 pt-2 flex flex-col items-center gap-2">
           {title && (
-            <p className="mb-4 text-center text-sm text-neutral-400">
+            <p className="text-center text-sm text-neutral-400">
               {title}
             </p>
+          )}
+          {playerOptions.length > 1 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNextPlayer}
+              className="text-xs text-neutral-500 hover:text-white transition-colors flex items-center gap-1.5 py-1 px-3 rounded-md hover:bg-neutral-900/50"
+            >
+              <span>Player not working? Try next server</span>
+              <Icons.chevronRight className="h-3.5 w-3.5" />
+            </Button>
           )}
         </div>
 
