@@ -208,7 +208,7 @@ const Hero = ({ randomShow }: HeroProps) => {
     const isAnyModalOpen = modalStore.isOpen || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
-        videoRef.internalPlayer.pauseVideo?.();
+        videoRef.internalPlayer.pauseVideo?.()?.catch?.(() => {});
         setIsPaused(true);
       }
       return;
@@ -220,7 +220,7 @@ const Hero = ({ randomShow }: HeroProps) => {
       !trailerFinished &&
       isPaused
     ) {
-      videoRef.internalPlayer.playVideo?.();
+      videoRef.internalPlayer.playVideo?.()?.catch?.(() => {});
       setIsPaused(false);
     }
   }, [modalStore.isOpen, previewModalStore.isOpen, showTrailer, trailerFinished]);
@@ -326,7 +326,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   const handleTrailerReady = (e: any) => {
     try {
       if (e?.target && typeof e.target.playVideo === 'function') {
-        e.target.playVideo();
+        e.target.playVideo()?.catch?.(() => {});
       }
     } catch { }
   };
@@ -335,8 +335,8 @@ const Hero = ({ randomShow }: HeroProps) => {
     setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
     if (!videoRef?.internalPlayer) return;
-    if (isMuted) videoRef.internalPlayer.unMute?.();
-    else videoRef.internalPlayer.mute?.();
+    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
   };
 
   const handleReplayTrailer = () => {

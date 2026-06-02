@@ -150,9 +150,9 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
   const handleChangeMute = () => {
     setIsMuted((m) => !m);
     const videoRef: any = youtubeRef.current;
-    if (!videoRef) return;
-    if (isMuted) videoRef.internalPlayer.unMute();
-    else videoRef.internalPlayer.mute();
+    if (!videoRef?.internalPlayer) return;
+    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
   };
 
   const handleMoreDetails = () => {

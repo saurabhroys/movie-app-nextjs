@@ -3,38 +3,20 @@
 import React from 'react';
 import { type Show, type NavItem } from '@/types';
 import Link from 'next/link';
-import {
-  cn,
-  getSearchValue,
-  handleDefaultSearchBtn,
-  handleDefaultSearchInp,
-} from '@/lib/utils';
-import { siteConfig } from '@/configs/site';
+import { cn } from '@/lib/utils';
+import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/utils';
 import { Icons } from '@/components/icons';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { DropdownMenuTrigger } from '@/components/compat/react19-compat';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSearchStore } from '@/stores/search';
-// import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
-import { DebouncedInput } from '@/components/debounced-input';
-import MovieService from '@/services/MovieService';
-import SearchService from '@/services/SearchService';
+import { SearchField } from '@/components/ui/SearchField';
+import { DropdownMenuBase } from '@/components/ui/DropdownMenuBase';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
-import { ServerRecommendationSwitch } from '@/components/server-recommendation-switch';
+import { useWindowListeners } from '@/hooks/use-window-listeners';
+import SearchService from '@/services/SearchService';
 
 interface MainNavProps {
   items?: NavItem[];
-}
-
-interface SearchResult {
-  results: Show[];
 }
 
 export function MainNav({ items }: MainNavProps) {
@@ -47,13 +29,6 @@ export function MainNav({ items }: MainNavProps) {
 
   // Get showHelp function from keyboard shortcuts hook
   const { showHelp } = useKeyboardShortcuts();
-
-  React.useEffect(() => {
-    window.addEventListener('popstate', handlePopstateEvent, false);
-    return () => {
-      window.removeEventListener('popstate', handlePopstateEvent, false);
-    };
-  }, []);
 
   const handlePopstateEvent = () => {
     const pathname = window.location.pathname;
@@ -84,6 +59,8 @@ export function MainNav({ items }: MainNavProps) {
         .finally(() => searchStore.setLoading(false));
     }
   };
+
+  useWindowListeners({ onPopState: handlePopstateEvent });
 
   async function searchShowsByQuery(value: string) {
     if (!value?.trim()?.length) {
@@ -185,12 +162,14 @@ export function MainNav({ items }: MainNavProps) {
           </nav>
         ) : null}
         <div className="block md:hidden">
-          <DropdownMenu onOpenChange={handleMobileMenuOpenChange}>
-            <DropdownMenuTrigger asChild>
+          <DropdownMenuBase
+            items={items || []}
+            onOpenChange={handleMobileMenuOpenChange}
+            onItemClick={() => searchStore.reset()}
+            trigger={
               <Button
                 variant="ghost"
                 className="flex items-center space-x-2 px-0 hover:bg-transparent focus:ring-0"
-                // className="h-auto px-2 py-1.5 text-base hover:bg-neutral-800 focus:ring-0 dark:hover:bg-neutral-800 lg:hidden"
               >
                 <Icons.logo className="h-6 w-6" />
                 {isMobileMenuOpen ? (
@@ -200,43 +179,14 @@ export function MainNav({ items }: MainNavProps) {
                 )}
                 <span className="text-base font-bold">Menu</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              sideOffset={5}
-              // className="w-52 overflow-y-auto overflow-x-hidden rounded-sm bg-neutral-800 text-slate-200 dark:bg-neutral-800 dark:text-slate-200"
-              className="w-52 overflow-x-hidden overflow-y-auto rounded-xl">
-              <DropdownMenuLabel>
-                <Link
-                  href="/"
-                  className="flex items-center justify-center"></Link>
-              </DropdownMenuLabel>
-              {/* <DropdownMenuSeparator /> */}
-              {items?.map((item, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  asChild
-                  className="items-center justify-center">
-                  {item.href && (
-                    <Link
-                      href={item.href}>
-                      <span
-                        className={cn(
-                          'text-foreground/60 hover:text-foreground/80 line-clamp-1',
-                          path === item.href && 'text-foreground font-bold',
-                        )}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            }
+            className="w-52 overflow-x-hidden overflow-y-auto rounded-xl"
+            sideOffset={5}
+          />
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <DebouncedInput
+        <SearchField
           id="search-input"
           value={searchStore.query}
           onChange={searchShowsByQuery}
