@@ -1,8 +1,8 @@
 import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
+import { MediaType } from '@/types';
 import type {
   ISeason,
   KeyWordResponse,
-  MediaType,
   Show,
   ShowWithGenreAndVideo,
 } from '@/types';
@@ -420,15 +420,17 @@ class MovieService extends BaseService {
             req: requests[reqIndex].req,
           });
         } else if (this.isFulfilled(res)) {
-          if (
-            requestTypesNeedUpdateMediaType.indexOf(
-              requests[reqIndex].req.requestType,
-            ) > -1
-          ) {
-            res.value.data.results.forEach(
-              (f) => (f.media_type = requests[reqIndex].req.mediaType),
-            );
-          }
+          const reqMediaType = requests[reqIndex].req.mediaType;
+          res.value.data.results.forEach((f) => {
+            if (
+              requestTypesNeedUpdateMediaType.indexOf(
+                requests[reqIndex].req.requestType,
+              ) > -1 ||
+              (!f.media_type && reqMediaType && reqMediaType !== MediaType.ALL)
+            ) {
+              f.media_type = reqMediaType;
+            }
+          });
           shows.push({
             title: requests[reqIndex].title,
             shows: res.value.data.results,
@@ -557,8 +559,11 @@ class MovieService extends BaseService {
 
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(discoverUrl);
 
-    // Filter out results without images
-    const filteredResults = data.results.filter((item) => hasValidImage(item));
+    // Filter out results without images, and ensure media_type is set
+    const filteredResults = data.results.filter((item) => {
+      item.media_type = mediaType === 'movie' ? MediaType.MOVIE : MediaType.TV;
+      return hasValidImage(item);
+    });
 
     // If query has additional keywords (not just language/region), filter by relevance
     const cleanQuery = query
@@ -607,6 +612,11 @@ class MovieService extends BaseService {
       const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
         `/movie/${mediaId}/recommendations?language=en-US&page=${page ?? 1}`,
       );
+      if (data?.results) {
+        data.results.forEach((show) => {
+          show.media_type = MediaType.MOVIE;
+        });
+      }
       return data;
     },
   );
@@ -619,6 +629,11 @@ class MovieService extends BaseService {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/tv/${tvId}/recommendations?language=en-US&page=${page ?? 1}`,
     );
+    if (data?.results) {
+      data.results.forEach((show) => {
+        show.media_type = MediaType.TV;
+      });
+    }
     return data;
   });
 
@@ -630,6 +645,11 @@ class MovieService extends BaseService {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/movie/${mediaId}/similar?language=en-US&page=${page ?? 1}`,
     );
+    if (data?.results) {
+      data.results.forEach((show) => {
+        show.media_type = MediaType.MOVIE;
+      });
+    }
     return data;
   });
 
@@ -641,6 +661,11 @@ class MovieService extends BaseService {
     const { data } = await this.axios(baseUrl).get<TmdbPagingResponse>(
       `/tv/${tvId}/similar?language=en-US&page=${page ?? 1}`,
     );
+    if (data?.results) {
+      data.results.forEach((show) => {
+        show.media_type = MediaType.TV;
+      });
+    }
     return data;
   });
 

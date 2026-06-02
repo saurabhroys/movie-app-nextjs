@@ -62,6 +62,18 @@ export const useHoverModalStore = create<PreviewModalState>()((set) => ({
         // If 404, try the other media type
         if (error?.response?.status === 404) {
           currentType = currentType === 'tv' ? 'movie' : 'tv';
+          
+          // Update the show's media_type in the store
+          const currentShow = useHoverModalStore.getState().show;
+          if (currentShow) {
+            set({
+              show: {
+                ...currentShow,
+                media_type: currentType === 'tv' ? MediaType.TV : MediaType.MOVIE,
+              },
+            });
+          }
+
           data = (await MovieService.findMovieByIdAndType(
             id,
             currentType,
