@@ -8,8 +8,7 @@ import { Show } from '@/types';
 import TvWatchPage from './tv-watch-page';
 import NotFound from '../../../../components/watch/not-found-redirect';
 import { siteConfig } from '@/configs/site';
-
-import { cacheLife } from 'next/cache'; // siteConfig
+import { redirect } from 'next/navigation';
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -22,13 +21,11 @@ export default async function Page(props: {
 }
 
 async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) {
-  'use cache';
-  cacheLife('hours');
-
   // Fetch TV show details and recommended TV shows
   let tvShow: Show | null = null;
   let recommendedShows: Show[] = [];
   let seasons: any[] = [];
+  let shouldRedirect = false;
 
   try {
     if (tvId > 0) {
@@ -62,6 +59,21 @@ async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) 
     }
   } catch (error) {
     console.error('Failed to fetch TV show data:', error);
+  }
+
+  if (!tvShow && tvId > 0) {
+    try {
+      const movieResponse = await MovieService.findMovie(tvId);
+      if (movieResponse?.data) {
+        shouldRedirect = true;
+      }
+    } catch (e) {
+      // not a movie
+    }
+  }
+
+  if (shouldRedirect) {
+    redirect(`/watch/movie/${slugId}`);
   }
 
   return (

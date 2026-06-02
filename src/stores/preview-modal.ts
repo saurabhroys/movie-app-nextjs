@@ -72,6 +72,12 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
           // Update mediaType for subsequent logic in this function
           mediaType = currentType === 'tv' ? MediaType.TV : MediaType.MOVIE;
           
+          // Update the show's media_type in the store
+          const currentShow = get().show;
+          if (currentShow) {
+            set({ show: { ...currentShow, media_type: mediaType } });
+          }
+
           data = (await MovieService.findMovieByIdAndType(
             id,
             currentType,

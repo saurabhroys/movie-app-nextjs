@@ -5,8 +5,7 @@ import { Show } from '@/types';
 import AnimeWatchPage from './anime-watch-page';
 import NotFound from '@/components/watch/not-found-redirect';
 import { siteConfig } from '@/configs/site';
-
-import { cacheLife } from 'next/cache'; // siteConfig
+import { redirect } from 'next/navigation';
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -25,13 +24,12 @@ async function CachedAnimePage({
   animeId: number;
   slugId: string;
 }) {
-  'use cache';
-  cacheLife('hours');
-
   // Fetch anime (tv) show details, seasons and recommendations
   let tvShow: Show | null = null;
   let recommendedShows: Show[] = [];
   let seasons: any[] = [];
+  let shouldRedirect = false;
+
   try {
     if (animeId > 0) {
       const [tvShowResponse, recommendations] = await Promise.allSettled([
@@ -60,6 +58,21 @@ async function CachedAnimePage({
     }
   } catch (error) {
     console.error('Failed to fetch recommended anime:', error);
+  }
+
+  if (!tvShow && animeId > 0) {
+    try {
+      const movieResponse = await MovieService.findMovie(animeId);
+      if (movieResponse?.data) {
+        shouldRedirect = true;
+      }
+    } catch (e) {
+      // not a movie
+    }
+  }
+
+  if (shouldRedirect) {
+    redirect(`/watch/movie/${slugId}`);
   }
 
   return (
