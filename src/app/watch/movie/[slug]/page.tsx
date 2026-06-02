@@ -8,8 +8,10 @@ import MovieService from '@/services/MovieService';
 import { Show } from '@/types';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useRouter } from 'next/navigation';
 
 export default function Page(props: { params: Promise<{ slug: string }> }) {
+  const router = useRouter();
   const [showScrollHint, setShowScrollHint] = React.useState(true);
   const [showScrollHintBackdrop, setShowScrollHintBackdrop] =
     React.useState(true);
@@ -152,7 +154,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     return () => clearTimeout(timer);
   }, [serverRecommendationEnabled]);
 
-  // Fetch recommended movies
+  // Fetch recommended movies with safety redirection check
   React.useEffect(() => {
     if (!params) return;
     const id = params.slug.split('-').pop();
@@ -160,18 +162,34 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
 
     if (mediaId > 0) {
       setIsRecommendationsLoading(true);
-      MovieService.getMovieRecommendations(mediaId)
+      MovieService.findMovie(mediaId)
+        .then(() => {
+          // Movie exists, fetch recommendations
+          return MovieService.getMovieRecommendations(mediaId);
+        })
         .then((recommendations) => {
           setRecommendedMovies(recommendations.results || []);
         })
         .catch((error) => {
-          console.error('Failed to fetch recommended movies:', error);
+          if (error?.response?.status === 404) {
+            // Check if it's a TV show
+            MovieService.findTvSeries(mediaId)
+              .then(() => {
+                // It is a TV show! Redirect to TV watch page
+                router.replace(`/watch/tv/${params.slug}`);
+              })
+              .catch(() => {
+                console.error('Show not found on either movie or TV endpoints');
+              });
+          } else {
+            console.error('Failed to fetch movie data:', error);
+          }
         })
         .finally(() => {
           setIsRecommendationsLoading(false);
         });
     }
-  }, [params]);
+  }, [params, router]);
 
   if (!params) return null;
 
