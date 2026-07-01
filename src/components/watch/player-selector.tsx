@@ -43,6 +43,31 @@ const PlayerSelector = ({
   const [activePlayer, setActivePlayer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [zxcOnline, setZxcOnline] = useState<boolean | null>(null);
+  const [activeUrl, setActiveUrl] = useState<string>('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const getHindiServers = () => {
+    if (mediaType === 'anime') return [];
+    const s = season || 1;
+    const e = episode || 1;
+
+    if (mediaType === 'movie') {
+      return [
+        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/movie/${mediaId}?dubLang=hi` },
+        { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/movie/${mediaId}?src=1` },
+        { name: 'VidEasy', url: `https://player.videasy.net/movie/${mediaId}` },
+      ];
+    } else {
+      return [
+        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/tv/${mediaId}/${s}/${e}?dubLang=hi` },
+        { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/tv/${mediaId}/${s}/${e}?src=1` },
+        { name: 'VidEasy', url: `https://player.videasy.net/tv/${mediaId}/${s}/${e}` },
+      ];
+    }
+  };
+
+  const hindiServers = React.useMemo(() => getHindiServers(), [mediaId, mediaType, season, episode]);
+
 
   React.useEffect(() => {
     fetch('https://zxcstream.xyz', { mode: 'no-cors', cache: 'no-store' })
@@ -314,6 +339,15 @@ const PlayerSelector = ({
     zxcOnline,
   ]);
 
+  const currentServer = hindiServers.find(s => s.url === activeUrl);
+  const currentServerName = currentServer ? currentServer.name : 'Select Hindi Server';
+
+  React.useEffect(() => {
+    if (playerOptions[activePlayer]) {
+      setActiveUrl(playerOptions[activePlayer].url || '');
+    }
+  }, [activePlayer, playerOptions]);
+
   React.useEffect(() => {
     if (onPlayerChange && playerOptions[activePlayer]) {
       onPlayerChange(playerOptions[activePlayer].id);
@@ -339,8 +373,8 @@ const PlayerSelector = ({
           </div>
         )}
         <EmbedPlayer
-          key={`${activePlayer}-${playerOptions[activePlayer]?.id}`}
-          url={playerOptions[activePlayer]?.url || ''}
+          key={`${activePlayer}-${activeUrl}`}
+          url={activeUrl}
           mediaId={mediaId}
           mediaType={
             mediaType === 'anime'
@@ -351,6 +385,42 @@ const PlayerSelector = ({
           }
           playerClass={playerClass}
         />
+
+        {mediaType !== 'anime' && (
+          <div 
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center"
+            onMouseLeave={() => setIsOpen(false)}
+          >
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-4 py-2 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:bg-zinc-900 cursor-pointer md:text-xs"
+            >
+              <span>{currentServerName}</span>
+              <Icons.chevronDown className={`h-3 w-3 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+              <div className="absolute top-full mt-1.5 w-48 rounded-xl border border-white/10 bg-zinc-950/95 p-1 shadow-2xl backdrop-blur-lg">
+                {hindiServers.map((server) => (
+                  <button
+                    key={server.name}
+                    onClick={() => {
+                      setActiveUrl(server.url);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full rounded-lg px-3 py-1.5 text-left text-[10px] font-medium transition-colors cursor-pointer hover:bg-neutral-800 md:text-xs ${
+                      activeUrl === server.url
+                        ? 'bg-blue-600/20 text-blue-400 font-bold'
+                        : 'text-neutral-300 hover:text-white'
+                    }`}
+                  >
+                    {server.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {zxcOnline !== false && mediaType !== 'anime' && (
