@@ -33,6 +33,7 @@ const TvWatchPage = ({
   
   const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(initialEpisode);
+  const [activePlayerId, setActivePlayerId] = useState<string>('');
 
   // Sync state when URL params change (e.g. back button)
   React.useEffect(() => {
@@ -61,36 +62,41 @@ const TvWatchPage = ({
     router.push(`?${params.toString()}`, { scroll: false } as any);
   };
 
+  const showEpisodes = !activePlayerId.includes('zxcstream') || activePlayerId === 'vidify-fallback';
+
   return (
     <div className="">
       {/* Player Selector with Multiple Options */}
       <div className="flex w-full grid-cols-17 flex-col gap-3 md:grid">
-        <div className="w-full md:col-span-12 md:ml-2">
+        <div className={`w-full ${showEpisodes ? 'md:col-span-12 md:ml-2' : 'md:col-span-17'}`}>
           <PlayerSelector
             mediaId={mediaId}
             mediaType="tv"
-            playerClass="border border-neutral-700 rounded-xl p-px"
-            selectorClass="h-80 md:h-160"
+            playerClass={showEpisodes ? "border border-neutral-700 rounded-xl p-px" : ""}
+            selectorClass={showEpisodes ? "h-80 md:h-160" : "h-80 md:h-screen"}
             season={selectedSeason}
             episode={selectedEpisode}
             title={tvShow.name || tvShow.title || ''}
+            onPlayerChange={setActivePlayerId}
           />
         </div>
 
-        <div className="mt-3 h-140 w-full rounded-xl border border-neutral-700 p-1 pt-2 md:col-span-5 md:mt-0 md:mr-2 md:h-160">
-          {/* Seasons and Episodes Selector */}
-          <div className="flex h-full flex-col">
-            {/* <h3 className="text-lg font-semibold text-white mb-0 p-0.5 text-center">Seasons & Episodes</h3> */}
-            <SeasonsEpisodesSelector
-              tvShow={tvShow}
-              seasons={seasons}
-              tvId={tvId}
-              onSeasonEpisodeChange={handleSeasonEpisodeChange}
-              selectedSeason={selectedSeason}
-              selectedEpisode={selectedEpisode}
-            />
+        {showEpisodes && (
+          <div className="mt-3 h-140 w-full rounded-xl border border-neutral-700 p-1 pt-2 md:col-span-5 md:mt-0 md:mr-2 md:h-160">
+            {/* Seasons and Episodes Selector */}
+            <div className="flex h-full flex-col">
+              {/* <h3 className="text-lg font-semibold text-white mb-0 p-0.5 text-center">Seasons & Episodes</h3> */}
+              <SeasonsEpisodesSelector
+                tvShow={tvShow}
+                seasons={seasons}
+                tvId={tvId}
+                onSeasonEpisodeChange={handleSeasonEpisodeChange}
+                selectedSeason={selectedSeason}
+                selectedEpisode={selectedEpisode}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Recommended Movies */}

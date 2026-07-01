@@ -76,7 +76,7 @@ async function CachedAnimePage({
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black pt-5">
+    <div className="min-h-screen w-screen bg-black">
       <ModalCloser />
       {tvShow && seasons.length > 0 ? (
         <AnimeWatchPage

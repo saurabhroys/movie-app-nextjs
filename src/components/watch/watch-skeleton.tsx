@@ -3,7 +3,7 @@ import ShowsSkeleton from '@/components/shows-skeleton';
 
 export default function WatchSkeleton() {
   return (
-    <div className="min-h-screen w-screen bg-black pt-5">
+    <div className="min-h-screen w-screen bg-black">
       <div className="flex w-full grid-cols-17 flex-col gap-3 md:grid">
         {/* Player Skeleton */}
         <div className="w-full md:col-span-12 md:ml-2">

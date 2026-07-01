@@ -77,7 +77,7 @@ async function CachedTvPage({ tvId, slugId }: { tvId: number; slugId: string }) 
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black pt-5">
+    <div className="min-h-screen w-screen bg-black">
       <ModalCloser />
       {tvShow ? (
         <TvWatchPage
