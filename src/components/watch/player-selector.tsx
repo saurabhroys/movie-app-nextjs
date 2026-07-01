@@ -357,7 +357,7 @@ const PlayerSelector = ({
               setUrlOverride(`https://zxcstream.xyz/download/${mediaType}/${mediaId}`);
             }
           }}
-          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full bg-zinc-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-zinc-500/30 transition-all duration-300 hover:scale-105 hover:bg-zinc-500 hover:shadow-zinc-500/40 active:scale-95 cursor-pointer"
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900/60 px-5 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),_0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-lg transition-all duration-300 hover:scale-105 hover:border-white/25 hover:bg-zinc-800/80 active:scale-95 cursor-pointer"
           title={urlOverride ? "Back to Video Player" : "Download Movie/Show"}
         >
           {urlOverride ? (
