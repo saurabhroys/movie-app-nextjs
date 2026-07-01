@@ -12,8 +12,13 @@ export default function DownloadPage() {
   const mediaId = params.mediaId as string;
 
   const [isLoading, setIsLoading] = React.useState(true);
+  const [mounted, setMounted] = React.useState(false);
 
-  if (!mediaType || !mediaId) {
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !mediaType || !mediaId) {
     return null;
   }
 
@@ -51,7 +56,7 @@ export default function DownloadPage() {
           allowFullScreen
           onLoad={() => setIsLoading(false)}
           referrerPolicy="no-referrer-when-downgrade"
-          // sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
         />
       </div>
     </div>
