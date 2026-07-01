@@ -21,6 +21,7 @@ import {
   RotateCcw,
   Menu,
   Coffee,
+  Download,
 } from 'lucide-react';
 import { Logo, LogoLong } from './logo';
 
@@ -36,6 +37,7 @@ export const Icons = {
   search: Search,
   // logo: PlayIcon,
   play: PlayIcon,
+  download: Download,
   pause: Pause,
   volume: Volume2,
   volumeMute: VolumeX,
