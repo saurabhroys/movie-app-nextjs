@@ -334,7 +334,7 @@ const PlayerSelector = ({
   }
 
   return (
-    <div className={`relative w-full ${selectorClass}`}>
+    <div className={`relative w-full ${urlOverride ? '' : selectorClass}`}>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
           <div className="text-white">Loading player...</div>
