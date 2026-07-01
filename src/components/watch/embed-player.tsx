@@ -43,16 +43,13 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     }
   };
 
-  const isDownload = props.url.includes('/download/');
-
   return (
     <div
       className={props.playerClass?.includes('rounded') ? 'rounded-xl' : ''}
       style={{
         width: '100%',
-        height: isDownload ? 'auto' : '100%',
-        position: isDownload ? 'relative' : 'absolute',
-        minHeight: isDownload ? '85vh' : undefined,
+        height: '100%',
+        position: 'absolute',
         backgroundColor: '#000',
       }}>
       <div className="group header-top absolute top-20 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14">
@@ -81,7 +78,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
       <iframe
         width="100%"
         className={`${props.playerClass}`}
-        height={isDownload ? '1000px' : '100%'}
+        height="100%"
         allowFullScreen
         ref={iframeRef}
         style={{ opacity: 0 }}

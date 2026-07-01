@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import EmbedPlayer from './embed-player';
 import { MediaType } from '@/types';
 import { Icons } from '@/components/icons';
@@ -38,14 +39,10 @@ const PlayerSelector = ({
   title,
   onPlayerChange,
 }: PlayerSelectorProps) => {
+  const router = useRouter();
   const [activePlayer, setActivePlayer] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [zxcOnline, setZxcOnline] = useState<boolean | null>(null);
-  const [urlOverride, setUrlOverride] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    setUrlOverride(null);
-  }, [activePlayer, season, episode, mediaId]);
 
   React.useEffect(() => {
     fetch('https://zxcstream.xyz', { mode: 'no-cors', cache: 'no-store' })
@@ -334,44 +331,39 @@ const PlayerSelector = ({
   }
 
   return (
-    <div className={`relative w-full ${urlOverride ? '' : selectorClass}`}>
-      {isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
-          <div className="text-white">Loading player...</div>
-        </div>
-      )}
-      <EmbedPlayer
-        key={`${activePlayer}-${urlOverride || playerOptions[activePlayer]?.id}`}
-        url={urlOverride || playerOptions[activePlayer]?.url || ''}
-        mediaId={mediaType === 'anime' ? mediaId : undefined}
-        mediaType={mediaType === 'anime' ? MediaType.ANIME : undefined}
-        playerClass={playerClass}
-      />
+    <div className="w-full flex flex-col items-center">
+      <div className={`relative w-full ${selectorClass}`}>
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+            <div className="text-white">Loading player...</div>
+          </div>
+        )}
+        <EmbedPlayer
+          key={`${activePlayer}-${playerOptions[activePlayer]?.id}`}
+          url={playerOptions[activePlayer]?.url || ''}
+          mediaId={mediaId}
+          mediaType={
+            mediaType === 'anime'
+              ? MediaType.ANIME
+              : mediaType === 'tv'
+                ? MediaType.TV
+                : MediaType.MOVIE
+          }
+          playerClass={playerClass}
+        />
+      </div>
 
       {zxcOnline !== false && mediaType !== 'anime' && (
-        <button
-          onClick={() => {
-            if (urlOverride) {
-              setUrlOverride(null);
-            } else {
-              setUrlOverride(`https://zxcstream.xyz/download/${mediaType}/${mediaId}`);
-            }
-          }}
-          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900/60 px-5 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),_0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-lg transition-all duration-300 hover:scale-105 hover:border-white/25 hover:bg-zinc-800/80 active:scale-95 cursor-pointer"
-          title={urlOverride ? "Back to Video Player" : "Download Movie/Show"}
-        >
-          {urlOverride ? (
-            <>
-              <Icons.play className="h-5 w-5" />
-              <span>Back to Stream</span>
-            </>
-          ) : (
-            <>
-              <Icons.download className="h-5 w-5" />
-              <span>Download HD</span>
-            </>
-          )}
-        </button>
+        <div className="relative mt-4 mb-2 flex justify-center">
+          <button
+            onClick={() => router.push(`/download/${mediaType}/${mediaId}`)}
+            className="flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900/60 px-5 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),_0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-lg transition-all duration-300 hover:scale-105 hover:border-white/25 hover:bg-zinc-800/80 active:scale-95 cursor-pointer"
+            title="Download Movie/Show"
+          >
+            <Icons.download className="h-5 w-5" />
+            <span>Download HD</span>
+          </button>
+        </div>
       )}
     </div>
   );
