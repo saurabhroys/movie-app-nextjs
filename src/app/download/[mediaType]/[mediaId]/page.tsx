@@ -17,7 +17,7 @@ export default function DownloadPage() {
     return null;
   }
 
-  const downloadUrl = `https://zxcstream.xyz/download/${mediaType}/${mediaId}`;
+  const downloadUrl = `https://z.zxcstream.xyz/download/${mediaType}/${mediaId}`;
 
   return (
     <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center">
@@ -51,6 +51,7 @@ export default function DownloadPage() {
           allowFullScreen
           onLoad={() => setIsLoading(false)}
           referrerPolicy="no-referrer-when-downgrade"
+          // sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
         />
       </div>
     </div>
