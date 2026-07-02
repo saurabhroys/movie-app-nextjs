@@ -7,6 +7,7 @@ import ModalCloser from '@/components/modal-closer';
 import MovieService from '@/services/MovieService';
 import { Show } from '@/types';
 import { useRouter } from 'next/navigation';
+import WatchSkeleton from '@/components/watch/watch-skeleton';
 
 export default function Page(props: { params: Promise<{ slug: string }> }) {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
     }
   }, [params, router]);
 
-  if (!params) return null;
+  if (!params || !movie) return <WatchSkeleton />;
 
   const id = params.slug.split('-').pop();
   const mediaId = id ? parseInt(id) : 0;

@@ -78,7 +78,7 @@ export default function RootLayout({
           'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]'
         )}>
         <TrpcProvider>
-          <Suspense fallback={<div className="h-16" />}>
+          <Suspense fallback={<div className="absolute top-0 left-0 right-0 h-16 pointer-events-none" />}>
             <SiteHeader />
           </Suspense>
           <GlobalShortcutsWrapper />
