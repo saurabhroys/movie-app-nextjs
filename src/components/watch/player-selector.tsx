@@ -417,23 +417,15 @@ const PlayerSelector = ({
           </div>
         )}
 
-        {/* Top hover zone to reveal controls */}
-        <div
-          className={`absolute top-0 left-0 right-0 h-28 z-10 bg-transparent ${
-            showControls ? 'pointer-events-none' : 'pointer-events-auto'
-          }`}
-          onMouseMove={resetTimer}
-          onTouchStart={resetTimer}
-        />
-
-        {/* Bottom hover zone to reveal controls */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 h-28 z-10 bg-transparent ${
-            showControls ? 'pointer-events-none' : 'pointer-events-auto'
-          }`}
-          onMouseMove={resetTimer}
-          onTouchStart={resetTimer}
-        />
+        {/* Transparent full-screen overlay to catch mouse & tap events when controls are hidden */}
+        {!showControls && (
+          <div
+            className="absolute inset-0 z-30 bg-transparent cursor-default"
+            onMouseMove={resetTimer}
+            onClick={resetTimer}
+            onTouchStart={resetTimer}
+          />
+        )}
 
         <EmbedPlayer
           key={`${activePlayer}-${activeUrl}`}
