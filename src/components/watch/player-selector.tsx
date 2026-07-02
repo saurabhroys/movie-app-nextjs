@@ -91,13 +91,13 @@ const PlayerSelector = ({
 
     if (mediaType === 'movie') {
       return [
-        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/movie/${mediaId}?dubLang=hi` },
+        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/movie/${mediaId}?dubLang=hi?autoplay=true` },
         { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/movie/${mediaId}?src=1` },
         { name: 'VidEasy', url: `https://player.videasy.net/movie/${mediaId}` },
       ];
     } else {
       return [
-        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/tv/${mediaId}/${s}/${e}?dubLang=hi` },
+        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/tv/${mediaId}/${s}/${e}?dubLang=hi?autoplay=true` },
         { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/tv/${mediaId}/${s}/${e}?src=1` },
         { name: 'VidEasy', url: `https://player.videasy.net/tv/${mediaId}/${s}/${e}` },
       ];
