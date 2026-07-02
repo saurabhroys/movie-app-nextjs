@@ -73,6 +73,14 @@ const TvWatchPage = ({
     <div className="">
       {/* Player Selector with Multiple Options */}
       <div className="flex w-full grid-cols-17 flex-col gap-3 md:grid relative">
+        {/* Backdrop for closing drawer on click outside */}
+        {isDrawerOpen && (
+          <div
+            className="hidden md:block fixed inset-0 z-20 cursor-default"
+            onClick={() => setIsDrawerOpen(false)}
+          />
+        )}
+
         <div className="w-full md:col-span-17">
           <PlayerSelector
             mediaId={mediaId}
