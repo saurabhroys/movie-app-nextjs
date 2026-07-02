@@ -377,8 +377,26 @@ const PlayerSelector = ({
     zxcOnline,
   ]);
 
-  const currentServer = hindiServers.find(s => s.url === activeUrl);
-  const currentServerName = currentServer ? currentServer.name : 'Select Hindi Server';
+  const getDomain = (urlStr: string): string => {
+    try {
+      const url = new URL(urlStr);
+      return url.hostname.replace(/^(www\.|embed\.|player\.)/, '');
+    } catch {
+      const match = urlStr.match(/(?:\/\/(?:www\.|embed\.|player\.)?)([^\/:]+)/);
+      return match ? match[1] : urlStr;
+    }
+  };
+
+  const getActivePlayerName = () => {
+    if (!activeUrl) return 'Select Server';
+    const activeDomain = getDomain(activeUrl);
+    const matchingHindi = hindiServers.find(s => getDomain(s.url) === activeDomain);
+    if (matchingHindi) return matchingHindi.name;
+    const matchingOption = playerOptions.find(p => getDomain(p.url) === activeDomain);
+    if (matchingOption) return matchingOption.name;
+    return 'Select Server';
+  };
+  const currentServerName = getActivePlayerName();
 
   React.useEffect(() => {
     if (playerOptions[activePlayer]) {
@@ -463,7 +481,7 @@ const PlayerSelector = ({
                         setIsOpen(false);
                       }}
                       className={`w-full rounded-lg px-3 py-1.5 text-left text-[10px] font-medium transition-colors cursor-pointer hover:bg-neutral-800 md:text-xs ${
-                        activeUrl === server.url
+                        server.name === currentServerName
                           ? 'bg-red-600/20 text-red-500 font-bold'
                           : 'text-neutral-300 hover:text-white'
                       }`}
