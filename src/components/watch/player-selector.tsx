@@ -81,13 +81,7 @@ const PlayerSelector = ({
     };
   }, [resetTimer]);
 
-  React.useEffect(() => {
-    if (!showControls) {
-      try {
-        window.focus();
-      } catch {}
-    }
-  }, [showControls]);
+
 
 
   const getHindiServers = () => {
