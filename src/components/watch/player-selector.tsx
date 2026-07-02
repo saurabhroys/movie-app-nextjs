@@ -44,6 +44,50 @@ const PlayerSelector = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(true);
+  const [showControls, setShowControls] = useState(true);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const resetTimer = React.useCallback(() => {
+    setShowControls(true);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 4000);
+  }, []);
+
+  React.useEffect(() => {
+    // Initial timer
+    timeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 4000);
+
+    const handleActivity = () => {
+      resetTimer();
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('blur', handleActivity);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('blur', handleActivity);
+    };
+  }, [resetTimer]);
+
+  React.useEffect(() => {
+    if (!showControls) {
+      try {
+        window.focus();
+      } catch {}
+    }
+  }, [showControls]);
 
 
   const getHindiServers = () => {
@@ -366,12 +410,30 @@ const PlayerSelector = ({
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className={`relative w-full ${selectorClass} group`}>
+      <div className={`relative w-full ${selectorClass}`}>
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
             <div className="text-white">Loading player...</div>
           </div>
         )}
+
+        {/* Top hover zone to reveal controls */}
+        <div
+          className={`absolute top-0 left-0 right-0 h-28 z-10 bg-transparent ${
+            showControls ? 'pointer-events-none' : 'pointer-events-auto'
+          }`}
+          onMouseMove={resetTimer}
+          onTouchStart={resetTimer}
+        />
+
+        {/* Bottom hover zone to reveal controls */}
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-28 z-10 bg-transparent ${
+            showControls ? 'pointer-events-none' : 'pointer-events-auto'
+          }`}
+          onMouseMove={resetTimer}
+          onTouchStart={resetTimer}
+        />
 
         <EmbedPlayer
           key={`${activePlayer}-${activeUrl}`}
@@ -385,11 +447,14 @@ const PlayerSelector = ({
                 : MediaType.MOVIE
           }
           playerClass={playerClass}
+          showControls={showControls}
         />
 
         {mediaType !== 'anime' && (
           <div 
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
+            className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center transition-opacity duration-500 ${
+              showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >

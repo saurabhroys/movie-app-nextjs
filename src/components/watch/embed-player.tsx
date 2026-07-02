@@ -10,6 +10,7 @@ interface EmbedPlayerProps {
   playerClass?: string;
   mediaType?: MediaType;
   episode?: number;
+  showControls?: boolean;
 }
 
 function EmbedPlayer(props: EmbedPlayerProps) {
@@ -45,14 +46,16 @@ function EmbedPlayer(props: EmbedPlayerProps) {
 
   return (
     <div
-      className={`group ${props.playerClass?.includes('rounded') ? 'rounded-xl' : ''}`}
+      className={props.playerClass?.includes('rounded') ? 'rounded-xl' : ''}
       style={{
         width: '100%',
         height: '100%',
         position: 'absolute',
         backgroundColor: '#000',
       }}>
-      <div className="header-top absolute top-20 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14 transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
+      <div className={`header-top absolute top-20 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14 transition-opacity duration-500 ${
+        (props.showControls ?? true) ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}>
         <div className="flex flex-1 items-center gap-x-5 md:gap-x-8">
           <svg
             className="h-10 w-10 shrink-0 cursor-pointer transition hover:scale-125"
