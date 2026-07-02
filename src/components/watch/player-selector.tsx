@@ -95,7 +95,7 @@ const PlayerSelector = ({
     return [
       { name: 'ZxcStream', url: `https://z.zxcstream.xyz/player/${path}?dubLang=hi&autoplay=true` },
       { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/${path}?src=1` },
-      { name: 'VidEasy', url: `https://player.videasy.net/${path}` },
+      // { name: 'VidEasy', url: `https://player.videasy.net/${path}` },
     ];
   };
 
