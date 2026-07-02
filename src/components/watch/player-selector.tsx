@@ -88,20 +88,15 @@ const PlayerSelector = ({
     if (mediaType === 'anime') return [];
     const s = season || 1;
     const e = episode || 1;
+    const path = mediaType === 'movie' 
+      ? `movie/${mediaId}` 
+      : `tv/${mediaId}/${s}/${e}`;
 
-    if (mediaType === 'movie') {
-      return [
-        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/movie/${mediaId}?dubLang=hi?autoplay=true` },
-        { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/movie/${mediaId}?src=1` },
-        { name: 'VidEasy', url: `https://player.videasy.net/movie/${mediaId}` },
-      ];
-    } else {
-      return [
-        { name: 'ZxcStream', url: `https://zxcstream.xyz/player/tv/${mediaId}/${s}/${e}?dubLang=hi?autoplay=true` },
-        { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/tv/${mediaId}/${s}/${e}?src=1` },
-        { name: 'VidEasy', url: `https://player.videasy.net/tv/${mediaId}/${s}/${e}` },
-      ];
-    }
+    return [
+      { name: 'ZxcStream', url: `https://zxcstream.xyz/player/${path}?dubLang=hi&autoplay=true` },
+      { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/${path}?src=1` },
+      { name: 'VidEasy', url: `https://player.videasy.net/${path}` },
+    ];
   };
 
   const hindiServers = React.useMemo(() => getHindiServers(), [mediaId, mediaType, season, episode]);
