@@ -402,23 +402,25 @@ const PlayerSelector = ({
             </button>
 
             {isOpen && (
-              <div className="absolute top-full mt-1.5 w-48 rounded-xl border border-white/10 bg-zinc-950/95 p-1 shadow-2xl backdrop-blur-lg">
-                {hindiServers.map((server) => (
-                  <button
-                    key={server.name}
-                    onClick={() => {
-                      setActiveUrl(server.url);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full rounded-lg px-3 py-1.5 text-left text-[10px] font-medium transition-colors cursor-pointer hover:bg-neutral-800 md:text-xs ${
-                      activeUrl === server.url
-                        ? 'bg-red-600/20 text-red-500 font-bold'
-                        : 'text-neutral-300 hover:text-white'
-                    }`}
-                  >
-                    {server.name}
-                  </button>
-                ))}
+              <div className="absolute top-full pt-1.5 w-48 z-50">
+                <div className="rounded-xl border border-white/10 bg-zinc-950/95 p-1 shadow-2xl backdrop-blur-lg">
+                  {hindiServers.map((server) => (
+                    <button
+                      key={server.name}
+                      onClick={() => {
+                        setActiveUrl(server.url);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full rounded-lg px-3 py-1.5 text-left text-[10px] font-medium transition-colors cursor-pointer hover:bg-neutral-800 md:text-xs ${
+                        activeUrl === server.url
+                          ? 'bg-red-600/20 text-red-500 font-bold'
+                          : 'text-neutral-300 hover:text-white'
+                      }`}
+                    >
+                      {server.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
