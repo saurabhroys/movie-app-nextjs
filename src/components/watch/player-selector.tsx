@@ -101,7 +101,7 @@ const PlayerSelector = ({
       : `tv/${mediaId}/${s}/${e}`;
 
     return [
-      { name: 'Netflix Stream', url: `https://z.zxcstream.xyz/player/${path}?dubLang=hi&autoplay=true` },
+      { name: 'Netflix Live', url: `https://z.zxcstream.xyz/player/${path}?dubLang=hi&autoplay=true` },
       { name: 'VidSrc', url: `https://embed.vidsrc.pk/${path}?src=1` },
       // { name: 'VidEasy', url: `https://player.videasy.net/${path}` },
     ];
@@ -221,7 +221,7 @@ const PlayerSelector = ({
         baseOptions.push(
           {
             id: 'zxcstream',
-            name: 'Netflix Stream',
+            name: 'Netflix Live',
             url: `https://zxcstream.xyz/player/${mediaType}/${mediaId}?dubLang=hi`,
             description: 'Default streaming server',
             language: 'Hindi',
@@ -250,7 +250,7 @@ const PlayerSelector = ({
         baseOptions.push(
           {
             id: 'zxcstream',
-            name: 'Netflix Stream',
+            name: 'Netflix Live',
             url: `https://zxcstream.xyz/player/${mediaType}/${mediaId}/${season || 1}/${episode || 1}?dubLang=hi`,
             description: 'Default streaming server',
             language: 'Hindi',
