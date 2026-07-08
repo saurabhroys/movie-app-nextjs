@@ -5,6 +5,7 @@ import EmbedPlayer from './embed-player';
 import { MediaType } from '@/types';
 import { Icons } from '@/components/icons';
 import { siteConfig } from '@/configs/site';
+import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 
 interface PlayerOption {
   id: string;
@@ -46,6 +47,9 @@ const PlayerSelector = ({
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
   const resetTimer = React.useCallback(() => {
     setShowControls(true);
@@ -451,11 +455,20 @@ const PlayerSelector = ({
 
         {mediaType !== 'anime' && (
           <div 
+            ref={dropdownRef}
             className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center transition-opacity duration-500 ${
               showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-            onMouseEnter={() => setIsOpen(true)}
-            onMouseLeave={() => setIsOpen(false)}
+            onMouseEnter={() => {
+              if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                setIsOpen(true);
+              }
+            }}
+            onMouseLeave={() => {
+              if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+                setIsOpen(false);
+              }
+            }}
           >
             <button
               onClick={() => setIsOpen(!isOpen)}
