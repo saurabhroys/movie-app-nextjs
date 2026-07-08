@@ -34,6 +34,7 @@ export enum RequestType {
   HBO_TV = 'hbo_tv',
   // Indian Movies
   INDIAN_MOVIES = 'indian_movies',
+  SOUTH_INDIAN = 'south_indian',
   // Indian TV Shows by platform
   INDIAN_TV_NETFLIX = 'indian_tv_netflix',
   INDIAN_TV_AMAZON_PRIME = 'indian_tv_amazon_prime',
