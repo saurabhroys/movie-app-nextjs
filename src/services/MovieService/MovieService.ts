@@ -19,6 +19,15 @@ import {
 import { Genre } from '@/enums/genre';
 import { cache } from 'react';
 
+interface ReleaseDatesResponse {
+  results?: Record<string, unknown>[];
+}
+
+interface CreditsResponse {
+  cast?: Record<string, unknown>[];
+  crew?: Record<string, unknown>[];
+}
+
 /**
  * Caching Strategy:
  * - React's `cache()` is used for request-level memoization (deduplication within a single render)
@@ -46,6 +55,7 @@ const requestTypesNeedUpdateMediaType = [
   RequestType.AMAZON_PRIME_TV,
   RequestType.HBO_TV,
   RequestType.INDIAN_MOVIES,
+  RequestType.SOUTH_INDIAN,
   RequestType.INDIAN_TV_NETFLIX,
   RequestType.INDIAN_TV_AMAZON_PRIME,
   RequestType.INDIAN_TV_DISNEY_HOTSTAR,
@@ -127,7 +137,11 @@ class MovieService extends BaseService {
 
       const isRetryable = (error: unknown): boolean => {
         if (!error || typeof error !== 'object') return false;
-        const anyErr = error as any;
+        const anyErr = error as {
+          code?: string;
+          message?: string;
+          response?: { status?: number };
+        };
         const code: string | undefined = anyErr?.code;
         const message: string | undefined = anyErr?.message?.toLowerCase();
         const status: number | undefined = anyErr?.response?.status;
@@ -185,8 +199,8 @@ class MovieService extends BaseService {
    * Deduplicates requests within the same render cycle.
    */
   static getMovieReleaseDates = cache(
-    async (movieId: number): Promise<AxiosResponse<any>> => {
-      return this.axios(baseUrl).get<any>(`/movie/${movieId}/release_dates`);
+    async (movieId: number): Promise<AxiosResponse<ReleaseDatesResponse>> => {
+      return this.axios(baseUrl).get<ReleaseDatesResponse>(`/movie/${movieId}/release_dates`);
     },
   );
 
@@ -195,8 +209,8 @@ class MovieService extends BaseService {
    * Deduplicates requests within the same render cycle.
    */
   static getCredits = cache(
-    async (mediaType: string, id: number): Promise<AxiosResponse<any>> => {
-      return this.axios(baseUrl).get<any>(`/${mediaType}/${id}/credits`);
+    async (mediaType: string, id: number): Promise<AxiosResponse<CreditsResponse>> => {
+      return this.axios(baseUrl).get<CreditsResponse>(`/${mediaType}/${id}/credits`);
     },
   );
 
@@ -218,7 +232,11 @@ class MovieService extends BaseService {
       const isRetryable = (error: unknown): boolean => {
         // Network/transient errors we want to retry
         if (!error || typeof error !== 'object') return false;
-        const anyErr = error as any;
+        const anyErr = error as {
+          code?: string;
+          message?: string;
+          response?: { status?: number };
+        };
         const code: string | undefined = anyErr?.code;
         const message: string | undefined = anyErr?.message?.toLowerCase();
         const status: number | undefined = anyErr?.response?.status;
@@ -333,6 +351,8 @@ class MovieService extends BaseService {
       // Indian Movies
       case RequestType.INDIAN_MOVIES:
         return `/discover/${req.mediaType}?with_original_language=hi&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=primary_release_date.desc&vote_count.gte=100'}`;
+      case RequestType.SOUTH_INDIAN:
+        return `/discover/${req.mediaType}?with_original_language=te|ta|ml|kn&language=en-US&page=${req.page ?? 1}${req.isLatest ? latestFilter : '&sort_by=popularity.desc&vote_count.gte=10'}`;
 
       // Indian TV Shows by platform
       case RequestType.INDIAN_TV_NETFLIX:
@@ -409,7 +429,10 @@ class MovieService extends BaseService {
     const isRetryable = (error: unknown): boolean => {
       // Network/transient errors we want to retry
       if (!error || typeof error !== 'object') return false;
-      const anyErr = error as any;
+      const anyErr = error as {
+        code?: string;
+        response?: { status?: number };
+      };
       const code: string | undefined = anyErr?.code;
       const status: number | undefined = anyErr?.response?.status;
       return (
@@ -425,7 +448,6 @@ class MovieService extends BaseService {
 
     let attempt = 0;
     let backoff = initialBackoffMs;
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         return await this.executeRequest(req);
@@ -725,7 +747,7 @@ class MovieService extends BaseService {
    * Deduplicates requests within the same render cycle.
    */
   static getMovieCollection = cache(async (collectionId: number) => {
-    const { data } = await this.axios(baseUrl).get<any>(
+    const { data } = await this.axios(baseUrl).get<unknown>(
       `/collection/${collectionId}?language=en-US`,
     );
     return data;
@@ -736,7 +758,7 @@ class MovieService extends BaseService {
    * Deduplicates requests within the same render cycle.
    */
   static getTvSeasons = cache(async (tvId: number) => {
-    const { data } = await this.axios(baseUrl).get<any>(
+    const { data } = await this.axios(baseUrl).get<unknown>(
       `/tv/${tvId}?language=en-US`,
     );
     return data;

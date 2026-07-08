@@ -1,6 +1,5 @@
 'use client';
 
-import { usePreviewModalStore } from '@/stores/preview-modal';
 import type { Show } from '@/types';
 // import PreviewModal from './preview-modal';
 import { ShowCard } from './shows-cards';
@@ -16,8 +15,6 @@ interface SearchedShowsProps {
 
 const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
   const pathname = usePathname();
-  // modal store
-  const modalStore = usePreviewModalStore();
   const searchStore = useSearchStore();
 
   return (
