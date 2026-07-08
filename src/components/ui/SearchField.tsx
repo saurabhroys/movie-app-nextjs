@@ -177,7 +177,7 @@ export function SearchField({
           type="text"
           placeholder={placeholder}
           className={cn(
-            'h-10 w-28 rounded-xl border border-white/10 bg-neutral-900/50 py-1.5 pl-9 pr-9 text-sm text-white backdrop-blur-md transition-colors placeholder:text-neutral-500 focus:border-white/30 focus:bg-neutral-800/80 focus:ring-0 md:w-40 lg:w-64',
+            'h-10 w-32 rounded-xl border border-white/10 bg-neutral-900/50 py-1.5 pl-9 pr-9 text-sm text-white backdrop-blur-md transition-all duration-300 placeholder:text-neutral-500 focus:border-white/30 focus:bg-neutral-800/80 focus:ring-0 focus:w-44 sm:w-36 sm:focus:w-48 md:w-40 md:focus:w-52 lg:w-64 lg:focus:w-80',
             className
           )}
           value={localValue}
