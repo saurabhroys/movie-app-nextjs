@@ -5,7 +5,8 @@ import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import ModalCloser from '@/components/modal-closer';
 import MovieService from '@/services/MovieService';
-import { Show } from '@/types';
+import { Show, MediaType } from '@/types';
+import { RequestType } from '@/enums/request-type';
 import { useRouter } from 'next/navigation';
 import WatchSkeleton from '@/components/watch/watch-skeleton';
 
@@ -32,12 +33,50 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       setIsRecommendationsLoading(true);
       MovieService.findMovie(mediaId)
         .then((res) => {
-          setMovie(res.data);
+          const currentMovie = res.data;
+          setMovie(currentMovie);
           // Movie exists, fetch recommendations
-          return MovieService.getMovieRecommendations(mediaId);
+          return Promise.all([
+            currentMovie,
+            MovieService.getMovieRecommendations(mediaId)
+          ]);
         })
-        .then((recommendations) => {
-          setRecommendedMovies(recommendations.results || []);
+        .then(async ([currentMovie, recommendations]) => {
+          let recs = recommendations.results || [];
+          const isSouthIndian = ['te', 'ta', 'ml', 'kn'].includes(currentMovie.original_language || '');
+          
+          if (recs.length === 0 || isSouthIndian) {
+            try {
+              const southIndianData = await MovieService.getShows([
+                {
+                  title: 'South Indian Movies',
+                  req: {
+                    requestType: RequestType.SOUTH_INDIAN,
+                    mediaType: MediaType.MOVIE,
+                    isLatest: true,
+                  },
+                  visible: true,
+                }
+              ]);
+              const southIndianShows = southIndianData[0]?.shows || [];
+              const filteredShows = southIndianShows.filter((show) => show.id !== mediaId);
+              
+              if (recs.length === 0) {
+                recs = filteredShows;
+              } else {
+                const combined = [...filteredShows, ...recs];
+                const seenIds = new Set();
+                recs = combined.filter((show) => {
+                  if (seenIds.has(show.id)) return false;
+                  seenIds.add(show.id);
+                  return true;
+                });
+              }
+            } catch (err) {
+              console.error('Failed to fetch South Indian movie suggestions:', err);
+            }
+          }
+          setRecommendedMovies(recs);
         })
         .catch((error) => {
           if (error?.response?.status === 404) {
