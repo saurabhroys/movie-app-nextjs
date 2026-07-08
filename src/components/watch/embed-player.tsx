@@ -29,6 +29,71 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     };
   }, [props.url]);
 
+  // remove it if not in use, as its not working 
+  React.useEffect(() => {
+    interface CustomDocument {
+      webkitFullscreenElement?: Element;
+      mozFullScreenElement?: Element;
+      msFullscreenElement?: Element;
+    }
+
+    interface ScreenOrientationWithLock {
+      lock?: (orientation: string) => Promise<void>;
+      unlock?: () => void;
+    }
+
+    const handleFullscreenChange = () => {
+      const doc = document as unknown as CustomDocument;
+      const isFullscreen = !!(
+        document.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+
+      try {
+        const orientation = (window.screen?.orientation as unknown) as ScreenOrientationWithLock;
+        if (isFullscreen) {
+          if (orientation?.lock) {
+            orientation.lock('landscape').catch((err: unknown) => {
+              console.warn('Failed to lock screen orientation to landscape:', err);
+            });
+          }
+        } else {
+          if (orientation?.lock) {
+            orientation.lock('portrait')
+              .then(() => {
+                if (orientation?.unlock) {
+                  orientation.unlock();
+                }
+              })
+              .catch(() => {
+                if (orientation?.unlock) {
+                  orientation.unlock();
+                }
+              });
+          } else if (orientation?.unlock) {
+            orientation.unlock();
+          }
+        }
+      } catch (error) {
+        console.warn('Orientation control error:', error);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   const loadingRef = React.useRef<HTMLDivElement>(null);
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
