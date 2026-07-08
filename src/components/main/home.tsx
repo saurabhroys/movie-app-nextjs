@@ -78,6 +78,15 @@ async function getHomeData() {
       visible: true,
     },
     {
+      title: 'South Indian Movies',
+      req: {
+        requestType: RequestType.SOUTH_INDIAN,
+        mediaType: MediaType.MOVIE,
+        isLatest: true,
+      },
+      visible: true,
+    },
+    {
       title: 'Indian TV Shows - Amazon Prime Video',
       req: {
         requestType: RequestType.INDIAN_TV_AMAZON_PRIME,

@@ -143,6 +143,15 @@ async function getMovieData() {
       },
       visible: true,
     },
+    {
+      title: 'South Indian Movies',
+      req: {
+        requestType: RequestType.SOUTH_INDIAN,
+        mediaType: MediaType.MOVIE,
+        isLatest: true,
+      },
+      visible: true,
+    },
   ];
 
   return await MovieService.getShows(requests);
