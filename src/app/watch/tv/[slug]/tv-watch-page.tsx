@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import SeasonsEpisodesSelector from '@/components/season';
-import { Show, ISeason } from '@/types';
+import type { Show, ISeason } from '@/types';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Icons } from '@/components/icons';
 
@@ -65,8 +65,7 @@ const TvWatchPage = ({
     params.set('episode', episode.toString());
     
     // Use scroll: false to prevent jumping to top
-    // casting to any because nextjs types might strictly require string url
-    router.push(`?${params.toString()}`, { scroll: false } as any);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (
