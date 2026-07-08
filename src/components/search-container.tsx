@@ -52,7 +52,7 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
     });
   }, [searchStore.shows, activeFilter]);
 
-  const filters = [
+  const filters: { label: string; value: MediaType | 'all' }[] = [
     { label: 'All', value: 'all' },
     { label: 'Movies', value: MediaType.MOVIE },
     { label: 'TV Shows', value: MediaType.TV },
@@ -61,25 +61,27 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="container mt-20 flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-neutral-400">Filter by:</span>
-        {filters.map((filter) => (
-          <Button
-            key={filter.value}
-            variant={activeFilter === filter.value ? 'default' : 'outline'}
-            size="sm"
-            className={cn(
-              'rounded-full px-4 transition-all duration-300',
-              activeFilter === filter.value
-                ? 'bg-white text-black hover:bg-neutral-200'
-                : 'border-neutral-700 bg-transparent text-white hover:bg-neutral-800',
-            )}
-            onClick={() => setActiveFilter(filter.value as any)}>
-            {filter.label}
-          </Button>
-        ))}
+      <div className="container mt-2 md:mt-20 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-1 w-full sm:w-auto">
+          <span className="text-sm hidden sm:block font-medium text-neutral-400 shrink-0">Filter by:</span>
+          {filters.map((filter) => (
+            <Button
+              key={filter.value}
+              variant={activeFilter === filter.value ? 'default' : 'outline'}
+              size="sm"
+              className={cn(
+                'rounded-full px-4 transition-all duration-300 shrink-0',
+                activeFilter === filter.value
+                  ? 'bg-white text-black hover:bg-neutral-200'
+                  : 'border-neutral-700 bg-transparent text-white hover:bg-neutral-800',
+              )}
+              onClick={() => setActiveFilter(filter.value)}>
+                {filter.label}
+            </Button>
+          ))}
+        </div>
         {filteredShows.length > 0 && (
-          <span className="ml-auto text-xs text-neutral-500">
+          <span className="text-xs text-neutral-500 shrink-0 sm:ml-auto">
             {filteredShows.length} results found
           </span>
         )}
