@@ -75,7 +75,7 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
         <PlayerSelector
           mediaId={id || ''}
           mediaType="movie"
-          selectorClass="h-screen"
+          selectorClass="h-80 md:h-screen"
           playerClass=""
           title={movie?.title || movie?.name || ''}
         />
