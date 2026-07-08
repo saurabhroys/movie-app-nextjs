@@ -73,6 +73,8 @@ const PlayerSelector = ({
 
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('pointermove', handleActivity);
+    window.addEventListener('pointerdown', handleActivity);
     window.addEventListener('blur', handleActivity);
 
     return () => {
@@ -81,6 +83,8 @@ const PlayerSelector = ({
       }
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('pointermove', handleActivity);
+      window.removeEventListener('pointerdown', handleActivity);
       window.removeEventListener('blur', handleActivity);
     };
   }, [resetTimer]);
@@ -435,6 +439,8 @@ const PlayerSelector = ({
             onMouseMove={resetTimer}
             onClick={resetTimer}
             onTouchStart={resetTimer}
+            onPointerMove={resetTimer}
+            onPointerDown={resetTimer}
           />
         )}
 
