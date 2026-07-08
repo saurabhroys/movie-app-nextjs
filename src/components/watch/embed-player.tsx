@@ -53,7 +53,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         position: 'absolute',
         backgroundColor: '#000',
       }}>
-      <div className={`header-top absolute top-20 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14 transition-opacity duration-500 ${
+      <div className={`header-top absolute top-4 md:top-10 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14 transition-opacity duration-500 ${
         (props.showControls ?? true) ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}>
         <div className="flex flex-1 items-center gap-x-5 md:gap-x-8">
