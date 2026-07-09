@@ -1,11 +1,10 @@
 'use client';
 import React from 'react';
-import EmbedPlayer from '@/components/watch/embed-player';
 import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import ModalCloser from '@/components/modal-closer';
 import MovieService from '@/services/MovieService';
-import { Show, MediaType } from '@/types';
+import { type Show, MediaType } from '@/types';
 import { RequestType } from '@/enums/request-type';
 import { useRouter } from 'next/navigation';
 import WatchSkeleton from '@/components/watch/watch-skeleton';
@@ -102,7 +101,6 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
   if (!params || !movie) return <WatchSkeleton />;
 
   const id = params.slug.split('-').pop();
-  const mediaId = id ? parseInt(id) : 0;
 
   return (
     <div className="relative min-h-screen bg-black">
