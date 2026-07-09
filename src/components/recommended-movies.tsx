@@ -1,11 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Show } from '@/types';
+import { type Show } from '@/types';
 import { ShowCard } from './shows-cards';
 import { usePathname } from 'next/navigation';
-import { usePreviewModalStore } from '@/stores/preview-modal';
-// import PreviewModal from './preview-modal';
 import ShowsSkeleton from './shows-skeleton';
 
 interface RecommendedMoviesProps {
@@ -20,7 +18,6 @@ const RecommendedMovies = ({
   loading = false,
 }: RecommendedMoviesProps) => {
   const pathname = usePathname();
-  const modalStore = usePreviewModalStore();
 
   if (loading) {
     return (

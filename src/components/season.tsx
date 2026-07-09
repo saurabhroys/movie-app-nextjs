@@ -1,23 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Show, ISeason, IEpisode } from '@/types';
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
+import { type Show, type ISeason } from '@/types';
+import CustomImage from './custom-image';
 
 interface SeasonsEpisodesSelectorProps {
-  tvShow: Show;
+  _tvShow?: Show;
   seasons: ISeason[];
-  tvId: number;
+  tvId?: number;
   onSeasonEpisodeChange?: (season: number, episode: number) => void;
   selectedSeason?: number;
   selectedEpisode?: number;
 }
 
 const SeasonsEpisodesSelector = ({
-  tvShow,
+  _tvShow,
   seasons,
-  tvId,
+  tvId: _tvId,
   onSeasonEpisodeChange,
   selectedSeason: propSelectedSeason,
   selectedEpisode: propSelectedEpisode,
@@ -33,11 +32,6 @@ const SeasonsEpisodesSelector = ({
   const currentSeason = seasons.find(
     (season) => season.season_number === selectedSeason,
   );
-  const currentEpisode = currentSeason?.episodes?.find(
-    (episode) => episode.episode_number === selectedEpisode,
-  );
-
-  const showName = tvShow.name || tvShow.title || tvShow.original_name || '-';
 
   const handleSeasonChange = (seasonNumber: number) => {
     if (onSeasonEpisodeChange) {
@@ -99,11 +93,12 @@ const SeasonsEpisodesSelector = ({
                     {/* Episode image */}
                     {episode.still_path && (
                       <div className="relative -m-1.5 mr-0 h-12 w-16 shrink-0 overflow-hidden rounded-l-md border border-neutral-800 bg-neutral-900 md:-m-2 md:mr-0 md:h-17 md:w-23">
-                        <img
+                        <CustomImage
                           src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
                           alt={episode.name}
                           className="h-full w-full object-cover"
-                          loading="lazy"
+                          fill
+                          sizes="(max-width: 768px) 64px, 92px"
                         />
                       </div>
                     )}

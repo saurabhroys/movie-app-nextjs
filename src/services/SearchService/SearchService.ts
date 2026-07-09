@@ -1,16 +1,13 @@
-import { AxiosResponse } from 'axios';
 import MovieService from '../MovieService';
 import type { Show } from '@/types';
 import { filterShowsWithImages } from '@/lib/utils';
 import { rankSearchResults, normalizeQuery, filterAdultContent } from '@/lib/search-intelligence';
 
-
-
 interface PendingRequest {
   requestId: string;
   query: string;
   abortController: AbortController;
-  promise: Promise<any>;
+  promise: Promise<unknown>;
 }
 
 class SearchService {

@@ -30,7 +30,6 @@ export function DebouncedInput({
 }: DebouncedInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
-  const [isScrolled, setIsScrolled] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
   const [isFocused, setIsFocused] = React.useState(false);
   const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
@@ -45,7 +44,7 @@ export function DebouncedInput({
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved));
-      } catch (e) {
+      } catch {
         setRecentSearches([]);
       }
     }
@@ -114,14 +113,7 @@ export function DebouncedInput({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // change background color on scroll
-  React.useEffect(() => {
-    const changeBgColor = () => {
-      window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
-    };
-    window.addEventListener('scroll', changeBgColor);
-    return () => window.removeEventListener('scroll', changeBgColor);
-  }, []);
+
 
   const handleSearch = React.useCallback(
     async (val: string) => {

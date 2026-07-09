@@ -1,17 +1,34 @@
-import type { Show, ShowWithGenreAndVideo, KeyWord, Genre, VideoResult, Logo } from '@/types';
+import type { Show, ShowWithGenreAndVideo, KeyWord, Logo } from '@/types';
 import { create } from 'zustand';
 import MovieService from '@/services/MovieService';
 import { MediaType } from '@/types';
 
+interface CastMember {
+  id: number;
+  name: string;
+}
+
+interface MovieCollection {
+  id: number;
+  name: string;
+  parts?: {
+    id: number;
+    title: string;
+    overview: string | null;
+    poster_path: string | null;
+    release_date: string | null;
+  }[];
+}
+
 interface DetailedShowInfo extends Omit<ShowWithGenreAndVideo, 'keywords'> {
-  cast?: any[];
+  cast?: CastMember[];
   directors?: string[];
   writers?: string[];
   recommendations?: Show[];
   contentRating?: string | null;
   logoPath?: string | null;
   keywords?: KeyWord[];
-  collection?: any;
+  collection?: MovieCollection;
   recommendedLogos?: Record<number, string | null>;
   recommendedDetails?: Record<number, { runtime: number | null; number_of_seasons: number | null }>;
 }
@@ -61,13 +78,14 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
           id,
           currentType,
           'hi-IN',
-        )) as any;
+        )) as unknown as DetailedShowInfo;
         if (!data.videos?.results?.length) {
-          data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as any;
+          data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as unknown as DetailedShowInfo;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as { response?: { status?: number } };
         // If 404, try the other media type
-        if (error?.response?.status === 404) {
+        if (err?.response?.status === 404) {
           currentType = currentType === 'tv' ? 'movie' : 'tv';
           // Update mediaType for subsequent logic in this function
           mediaType = currentType === 'tv' ? MediaType.TV : MediaType.MOVIE;
@@ -82,9 +100,9 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
             id,
             currentType,
             'hi-IN',
-          )) as any;
+          )) as unknown as DetailedShowInfo;
           if (!data.videos?.results?.length) {
-            data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as any;
+            data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as unknown as DetailedShowInfo;
           }
         } else {
           throw error;
@@ -97,72 +115,98 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
       let rating: string | null = null;
       try {
         if (mediaType === MediaType.TV) {
-          const { data: ratingData }: any = await MovieService.getContentRating('tv', id);
+          interface RatingResult {
+            iso_3166_1: string;
+            rating?: string;
+            certification?: string;
+          }
+          const response = await MovieService.getContentRating('tv', id);
+          const ratingData = response.data as unknown as { results?: RatingResult[] };
           const results = ratingData?.results ?? [];
           const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           for (const cc of prefOrder) {
-            const match = results.find((r: any) => r?.iso_3166_1 === cc);
+            const match = results.find((r) => r?.iso_3166_1 === cc);
             if (match?.rating || match?.certification) {
               rating = String(match.rating ?? match.certification).trim();
               break;
             }
           }
         } else {
-          const { data: ratingData }: any = await MovieService.getMovieReleaseDates(id);
+          interface ReleaseDate {
+            certification?: string;
+          }
+          interface CountryRelease {
+            iso_3166_1: string;
+            release_dates?: ReleaseDate[];
+          }
+          const response = await MovieService.getMovieReleaseDates(id);
+          const ratingData = response.data as unknown as { results?: CountryRelease[] };
           const countries = ratingData?.results ?? [];
           const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           for (const cc of prefOrder) {
-            const country = countries.find((c: any) => c?.iso_3166_1 === cc);
+            const country = countries.find((c) => c?.iso_3166_1 === cc);
             const releases = country?.release_dates ?? [];
-            const match = releases.find((rd: any) => rd.certification?.trim());
-            if (match) {
+            const match = releases.find((rd) => rd.certification?.trim());
+            if (match && match.certification) {
               rating = match.certification.trim();
               break;
             }
           }
         }
-      } catch (e) {}
+      } catch {}
       data.contentRating = rating;
 
       // Fetch logo
       try {
-        const { data: imageData } = await MovieService.getImages(type as any, id);
+        const { data: imageData } = await MovieService.getImages(type as 'movie' | 'tv', id);
         const preferred = imageData.logos?.find((l: Logo) => l.iso_639_1 === 'en') ?? imageData.logos?.[0];
         data.logoPath = preferred ? preferred.file_path : null;
-      } catch (e) {}
+      } catch {}
 
       // Fetch credits
       try {
+        interface CrewMember {
+          job?: string;
+          name?: string;
+        }
         const { data: credits } = await MovieService.getCredits(type, id);
-        data.cast = credits?.cast?.slice(0, 10);
-        data.directors = credits?.crew?.filter((c: any) => c?.job === 'Director').map((c: any) => String(c.name));
-        data.writers = credits?.crew?.filter((c: any) => ['Writer', 'Screenplay', 'Story', 'Teleplay'].includes(c?.job)).map((c: any) => String(c.name));
-      } catch (e) {}
+        if (credits?.cast) {
+          const cast = credits.cast as { id: number; name: string }[];
+          data.cast = cast.slice(0, 10).map((actor) => ({
+            id: Number(actor.id),
+            name: String(actor.name),
+          }));
+        }
+        const crew = credits?.crew as CrewMember[] | undefined;
+        data.directors = crew?.filter((c) => c?.job === 'Director').map((c) => String(c.name));
+        data.writers = crew?.filter((c) => ['Writer', 'Screenplay', 'Story', 'Teleplay'].includes(c?.job || '')).map((c) => String(c.name));
+      } catch {}
 
       // Fetch recommendations
       try {
         const primary = mediaType === MediaType.TV
           ? await MovieService.getTvRecommendations(id)
           : await MovieService.getMovieRecommendations(id);
-        let results = (primary as any)?.results ?? (primary as any)?.data?.results ?? [];
+        let results = primary?.results ?? [];
         if (!results?.length) {
           const fallback = mediaType === MediaType.TV
             ? await MovieService.getSimilarTvShows(id)
             : await MovieService.getSimilarMovies(id);
-          results = (fallback as any)?.results ?? (fallback as any)?.data?.results ?? [];
+          results = fallback?.results ?? [];
         }
         data.recommendations = results;
-      } catch (e) {}
+      } catch {}
 
-      const keywordsData: any = (data as any)?.keywords?.results || (data as any)?.keywords?.keywords;
+      const rawShow = data as unknown as Show;
+      const keywordsData = rawShow?.keywords?.results || rawShow?.keywords?.keywords;
       data.keywords = keywordsData;
 
       // Fetch collection
       if (mediaType === MediaType.MOVIE && data.belongs_to_collection) {
         try {
           const collectionData = await MovieService.getMovieCollection(data.belongs_to_collection.id);
-          data.collection = collectionData;
-        } catch (e) {}
+          data.collection = collectionData as MovieCollection;
+        } catch {}
       }
 
       // Fetch logos and details for recommendations
@@ -192,15 +236,15 @@ export const usePreviewModalStore = create<ModalState>()((set, get) => ({
             return [s.id, {
               runtime: res.runtime,
               number_of_seasons: res.number_of_seasons
-            }] as [number, any];
-          } catch { return [s.id, { runtime: null, number_of_seasons: null }] as [number, any]; }
+            }] as [number, { runtime: number | null; number_of_seasons: number | null }];
+          } catch { return [s.id, { runtime: null, number_of_seasons: null }] as [number, { runtime: number | null; number_of_seasons: number | null }]; }
         });
 
         const logos = await Promise.all(logoPromises);
         const details = await Promise.all(detailPromises);
 
-        data.recommendedLogos = Object.fromEntries(logos.filter(([, l]) => l)) as any;
-        data.recommendedDetails = Object.fromEntries(details) as any;
+        data.recommendedLogos = Object.fromEntries(logos.filter(([, l]) => l)) as Record<number, string | null>;
+        data.recommendedDetails = Object.fromEntries(details) as Record<number, { runtime: number | null; number_of_seasons: number | null }>;
       }
 
       data.media_type = mediaType;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useSearchStore } from '@/stores/search';
 
@@ -19,7 +19,6 @@ interface ShortcutConfig {
 export function useKeyboardShortcuts() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
   const modalStore = usePreviewModalStore();
   const searchStore = useSearchStore();
 
@@ -33,7 +32,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/');
-    } catch (error) {
+    } catch {
       // Router not ready, fallback to window.location
       if (typeof window !== 'undefined') {
         window.location.href = '/';
@@ -45,7 +44,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/movies');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/movies';
       }
@@ -56,7 +55,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/tv-shows');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/tv-shows';
       }
@@ -67,7 +66,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/anime');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/anime';
       }
@@ -78,20 +77,9 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/new-and-popular');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/new-and-popular';
-      }
-    }
-  }, [router, isMounted]);
-
-  const navigateToSearch = useCallback(() => {
-    if (!isMounted) return;
-    try {
-      router.push('/search');
-    } catch (error) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/search';
       }
     }
   }, [router, isMounted]);

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import type React from 'react';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 const GlobalShortcuts: React.FC = () => {

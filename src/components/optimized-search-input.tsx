@@ -33,9 +33,7 @@ export function OptimizedSearchInput({
   ...props
 }: OptimizedSearchInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [isScrolled, setIsScrolled] = React.useState(false);
-
-  const { search, clearSearch, loading, shows, query, cancelCurrentRequest } =
+  const { search, clearSearch, loading, shows, query } =
     useSearch({
       debounceTimeout,
       minQueryLength,
@@ -72,14 +70,7 @@ export function OptimizedSearchInput({
     };
   }, [onChange, onChangeStatusOpen, clearSearch]);
 
-  // Change background color on scroll
-  React.useEffect(() => {
-    const changeBgColor = () => {
-      window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
-    };
-    window.addEventListener('scroll', changeBgColor);
-    return () => window.removeEventListener('scroll', changeBgColor);
-  }, [isScrolled]);
+
 
   const handleSearch = React.useCallback(
     async (value: string) => {

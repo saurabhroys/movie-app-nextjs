@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { type Show, type NavItem } from '@/types';
+import { type NavItem } from '@/types';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/utils';
@@ -67,7 +67,7 @@ export function MainNav({ items }: MainNavProps) {
       if (path === '/search') {
         try {
           router.push('/');
-        } catch (error) {
+        } catch {
           if (typeof window !== 'undefined') {
             window.location.href = '/';
           }
@@ -75,7 +75,7 @@ export function MainNav({ items }: MainNavProps) {
       } else {
         try {
           router.replace(path);
-        } catch (error) {
+        } catch {
           // Router not ready, silently fail
         }
       }
@@ -89,7 +89,7 @@ export function MainNav({ items }: MainNavProps) {
       } else {
         router.push(`/search?q=${value}`);
       }
-    } catch (error) {
+    } catch {
       // Router not ready, fallback to window.location
       if (typeof window !== 'undefined') {
         window.location.href = `/search?q=${value}`;
@@ -100,11 +100,11 @@ export function MainNav({ items }: MainNavProps) {
   // change background color on scroll
   React.useEffect(() => {
     const changeBgColor = () => {
-      window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
+      setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener('scroll', changeBgColor);
     return () => window.removeEventListener('scroll', changeBgColor);
-  }, [isScrolled]);
+  }, []);
 
   // Clear search on navigation away from search page
   React.useEffect(() => {
@@ -120,7 +120,7 @@ export function MainNav({ items }: MainNavProps) {
     setIsMobileMenuOpen(open);
   };
 
-  const isMovieWatchPage = path.startsWith('/movie');
+
 
   return (
     <nav

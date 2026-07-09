@@ -1,8 +1,6 @@
 import { type Metadata } from 'next';
 import { handleMetadata } from '@/lib/utils';
 import MoviePage from '../page';
-import { siteConfig } from '@/configs/site';
-import { cacheLife } from 'next/cache';
 
 type Props = {
   params: Promise<{ slug: string }>;
