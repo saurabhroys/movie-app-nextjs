@@ -4,9 +4,7 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { getMobileDetect, getYear } from '@/lib/utils';
@@ -15,18 +13,15 @@ import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useLockBody } from '@/hooks/use-lock-body';
 import {
   type KeyWord,
-  MediaType,
-  type Genre,
-  type ShowWithGenreAndVideo,
   type VideoResult,
   type Show,
+  type IEpisode,
 } from '@/types';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import Youtube from 'react-youtube';
 import CustomImage from './custom-image';
-import { ShowCard } from './shows-cards';
 import ShowsSkeleton from './shows-skeleton';
 
 type YouTubePlayer = {
@@ -80,7 +75,7 @@ const PreviewModal = () => {
     'initial' | 'trailer-playing' | 'trailer-ended'
   >('initial');
   const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
-  const [seasonEpisodes, setSeasonEpisodes] = React.useState<any[]>([]);
+  const [seasonEpisodes, setSeasonEpisodes] = React.useState<IEpisode[]>([]);
   const isClosingRef = React.useRef(false);
 
   const detailedShow = modalStore.detailedShow;
@@ -136,7 +131,7 @@ const PreviewModal = () => {
     }, 100);
   }, [modalStore]);
 
-  const onEnd = (event: YouTubeEvent) => {
+  const onEnd = () => {
     setTrailerFinished(true);
     setLogoTransition('trailer-ended');
     if (imageRef.current) {
@@ -160,7 +155,7 @@ const PreviewModal = () => {
   const onReady = (event: YouTubeEvent) => {
     try {
       if (event?.target && typeof event.target.playVideo === 'function') {
-        (event.target as any).playVideo()?.catch?.(() => {});
+        event.target.playVideo();
       }
     } catch { }
   };
@@ -168,10 +163,15 @@ const PreviewModal = () => {
   const handleChangeMute = () => {
     setIsMuted((state: boolean) => !state);
     if (!youtubeRef.current) return;
-    const videoRef: any = youtubeRef.current;
-    if (isMuted && videoRef.internalPlayer) {
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        mute?: () => Promise<void>;
+        unMute?: () => Promise<void>;
+      };
+    } | null;
+    if (isMuted && videoRef?.internalPlayer) {
       videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
-    } else if (videoRef.internalPlayer) {
+    } else if (videoRef?.internalPlayer) {
       videoRef.internalPlayer.mute?.()?.catch?.(() => {});
     }
   };
@@ -180,13 +180,18 @@ const PreviewModal = () => {
     setTrailerFinished(false);
     setLogoTransition('trailer-playing');
     if (!youtubeRef.current) return;
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        seekTo?: (seconds: number) => Promise<void>;
+        playVideo?: () => Promise<void>;
+      };
+    } | null;
     try {
-      if (videoRef.internalPlayer) {
+      if (videoRef?.internalPlayer) {
         videoRef.internalPlayer.seekTo?.(0)?.catch?.(() => {});
         videoRef.internalPlayer.playVideo?.()?.catch?.(() => {});
       }
-    } catch (e) {
+    } catch {
       // noop
     }
     if (imageRef.current) {
@@ -284,7 +289,7 @@ const PreviewModal = () => {
               id="content"
               className="relative w-full overflow-y-auto rounded-md border-none bg-neutral-900 p-0 text-left align-middle ring-0 sm:max-w-3xl lg:max-w-4xl">
               <div
-                className="relative z-10 aspect-video"
+                className="relative z-10 aspect-video overflow-hidden"
               // style={{
               //   background: 'linear-gradient(0deg, #181818, transparent 100%)',
               //   opacity: 1,
@@ -490,7 +495,7 @@ const PreviewModal = () => {
                       <span className="text-neutral-50">Cast: </span>
                       <span>
                         {detailedShow?.cast && detailedShow.cast.length > 0
-                          ? `${detailedShow.cast.map((actor: any) => actor.name).slice(0, 5).join(', ')}, more`
+                          ? `${detailedShow.cast.map((actor) => actor.name).slice(0, 5).join(', ')}, more`
                           : '-'}
                       </span>
                     </div>
@@ -520,7 +525,7 @@ const PreviewModal = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       {detailedShow?.collection.parts?.map(
-                        (movie: any, index: number) => (
+                        (movie) => (
                           <div
                             key={movie.id}
                             className="group flex cursor-pointer gap-3 rounded-lg bg-neutral-800 p-3 transition hover:bg-neutral-700/60"
@@ -542,7 +547,7 @@ const PreviewModal = () => {
                                 {movie.title}
                               </h4>
                               <p className="mt-1 text-xs text-neutral-400">
-                                {getYear(movie.release_date)}
+                                {movie.release_date ? getYear(movie.release_date) : ''}
                               </p>
                               <p className="mt-1 line-clamp-2 text-xs text-neutral-500">
                                 {movie.overview}
@@ -569,7 +574,7 @@ const PreviewModal = () => {
                           handleSeasonChange(Number(e.target.value))
                         }
                         className="rounded border border-neutral-600 bg-neutral-800 px-3 py-1 text-white">
-                        {detailedShow.seasons.map((season: any) => (
+                        {detailedShow.seasons.map((season) => (
                           <option
                             key={season.season_number}
                             value={season.season_number}>
@@ -582,7 +587,7 @@ const PreviewModal = () => {
 
                   {seasonEpisodes.length > 0 && (
                     <div className="space-y-3">
-                      {seasonEpisodes.map((episode: any, index: number) => (
+                      {seasonEpisodes.map((episode) => (
                         <div
                           key={episode.id}
                           className="group flex cursor-pointer gap-4 rounded-lg bg-neutral-800 p-4 transition hover:bg-neutral-700/60"
@@ -643,7 +648,7 @@ const PreviewModal = () => {
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                     {recommendedShows.slice(0, 12).map((show) => {
                       const isTv = (show.media_type as string) === 'tv';
-                      const detail = (detailedShow?.recommendedDetails as any)?.[show.id];
+                      const detail = detailedShow?.recommendedDetails?.[show.id];
                       const seasons = isTv
                         ? (detail?.number_of_seasons ??
                           show.number_of_seasons ??
@@ -674,7 +679,7 @@ const PreviewModal = () => {
                           <div
                             className="relative aspect-video cursor-pointer"
                             onClick={() => navigateToShow(show)}>
-                            <img
+                            <CustomImage
                               src={
                                 (show.backdrop_path ?? show.poster_path)
                                   ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path}`
@@ -682,28 +687,29 @@ const PreviewModal = () => {
                               }
                               alt={show.title ?? show.name ?? 'poster'}
                               className="h-full w-full object-cover"
+                              fill
+                              sizes="(max-width: 768px) 50vw, 33vw"
                               onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src =
                                   '/images/grey-thumbnail.jpg';
                               }}
                             />
                             {/* Centered logo overlay */}
-                            {(detailedShow?.recommendedLogos as any)?.[show.id] && (
+                            {detailedShow?.recommendedLogos?.[show.id] && (
                               <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-2">
-                                <img
-                                  src={`https://image.tmdb.org/t/p/w500${(detailedShow?.recommendedLogos as any)?.[show.id]}`}
-                                  alt={
-                                    (show.title ??
-                                      show.name ??
-                                      'logo') as string
-                                  }
-                                  className="h-auto max-h-10 w-auto max-w-[85%] object-contain drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)] sm:max-h-12"
-                                  onError={(e) => {
-                                    (
-                                      e.currentTarget as HTMLImageElement
-                                    ).style.display = 'none';
-                                  }}
-                                />
+                                <div className="relative h-10 w-full max-w-[85%] sm:h-12">
+                                  <CustomImage
+                                    src={`https://image.tmdb.org/t/p/w500${detailedShow?.recommendedLogos?.[show.id]}`}
+                                    alt={(show.title ?? show.name ?? 'logo') as string}
+                                    style={{
+                                      objectFit: 'contain',
+                                    }}
+                                    fill
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                </div>
                               </div>
                             )}
                             {/* Hover play icon */}
@@ -767,7 +773,7 @@ const PreviewModal = () => {
                       <span className="text-neutral-400">Cast: </span>
                       <span className="text-neutral-200">
                         {detailedShow.cast
-                          .map((a: any) => a.name)
+                          .map((a) => a.name)
                           .slice(0, 12)
                           .join(', ')}
                       </span>

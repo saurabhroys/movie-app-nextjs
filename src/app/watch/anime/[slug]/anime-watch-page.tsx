@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import RecommendedMovies from '@/components/recommended-movies';
 import PlayerSelector from '@/components/watch/player-selector';
 import SeasonsEpisodesSelector from '@/components/season';
-import { Show, ISeason } from '@/types';
+import { type Show, type ISeason } from '@/types';
 import { useSearchParams } from 'next/navigation';
 
 interface AnimeWatchPageProps {

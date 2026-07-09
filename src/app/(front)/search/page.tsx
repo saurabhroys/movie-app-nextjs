@@ -1,8 +1,6 @@
 import SearchContainer from '@/components/search-container';
-import { siteConfig } from '@/configs/site';
 import SearchService from '@/services/SearchService';
 import { redirect } from 'next/navigation';
-import { cacheLife } from 'next/cache';
 
 export default async function SearchPage({
   searchParams,

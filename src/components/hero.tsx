@@ -5,7 +5,6 @@ import {
   getIdFromSlug,
   getNameFromShow,
   getSlug,
-  getMobileDetect,
 } from '@/lib/utils';
 import MovieService from '@/services/MovieService';
 import { useSearchStore } from '@/stores/search';
@@ -28,10 +27,6 @@ interface HeroProps {
   randomShow: Show | null;
 }
 
-const userAgent =
-  typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
-const { isMobile } = getMobileDetect(userAgent);
-
 const count = 1;
 const Hero = ({ randomShow }: HeroProps) => {
   const path = usePathname();
@@ -40,7 +35,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   const [trailerFinished, setTrailerFinished] = React.useState(false);
   const [countdown, setCountdown] = React.useState(count);
   const [isCountdownActive, setIsCountdownActive] = React.useState(false);
-  const [isMuted, setIsMuted] = React.useState(isMobile() ? true : false);
+  const [isMuted, setIsMuted] = React.useState(true);
   const [showControls, setShowControls] = React.useState(false);
   const [isPaused, setIsPaused] = React.useState(false);
   const [showLogo, setShowLogo] = React.useState(false);
@@ -51,7 +46,7 @@ const Hero = ({ randomShow }: HeroProps) => {
   const imageRef = React.useRef<HTMLImageElement>(null);
   const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
   const textHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const prevMutedRef = React.useRef<boolean>(isMuted);
+
   const modalStore = usePreviewModalStore();
   const previewModalStore = useHoverModalStore();
 
@@ -110,15 +105,15 @@ const Hero = ({ randomShow }: HeroProps) => {
       try {
         const isTv = randomShow.media_type === MediaType.TV;
         if (isTv) {
-          const { data }: any = await MovieService.getContentRating(
+          const { data } = (await MovieService.getContentRating(
             'tv',
             randomShow.id,
-          );
-          const results: any[] = data?.results ?? [];
+          )) as unknown as AxiosResponse<{ results: { iso_3166_1: string; rating?: string; certification?: string }[] }>;
+          const results = data?.results ?? [];
           const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           let rating: string | null = null;
           for (const cc of prefOrder) {
-            const match = results.find((r: any) => r?.iso_3166_1 === cc);
+            const match = results.find((r) => r?.iso_3166_1 === cc);
             const candidate = match?.rating ?? match?.certification ?? '';
             if (candidate && String(candidate).trim().length > 0) {
               rating = String(candidate).trim();
@@ -127,7 +122,7 @@ const Hero = ({ randomShow }: HeroProps) => {
           }
           if (!rating) {
             const firstNonEmpty = results.find(
-              (r: any) =>
+              (r) =>
                 (r?.rating ?? r?.certification ?? '').toString().trim().length >
                 0,
             );
@@ -142,28 +137,28 @@ const Hero = ({ randomShow }: HeroProps) => {
         }
 
         // Movies use release_dates endpoint
-        const { data }: any = await MovieService.getMovieReleaseDates(
+        const { data } = (await MovieService.getMovieReleaseDates(
           randomShow.id,
-        );
-        const countries: any[] = data?.results ?? [];
+        )) as unknown as AxiosResponse<{ results: { iso_3166_1: string; release_dates?: { certification?: string; release_date?: string }[] }[] }>;
+        const countries = data?.results ?? [];
         const prefOrder = ['RU', 'UA', 'LV', 'TW'];
-        const getFirstNonEmpty = (c: any): string | null => {
+        const getFirstNonEmpty = (c: { release_dates?: { certification?: string; release_date?: string }[] } | undefined): string | null => {
           const arr = (c?.release_dates ?? [])
-            .filter((rd: any) => rd && typeof rd.certification === 'string')
-            .map((rd: any) => ({
+            .filter((rd) => rd && typeof rd.certification === 'string')
+            .map((rd) => ({
               cert: rd.certification?.trim?.() ?? '',
-              date: rd.release_date,
+              date: rd.release_date || '',
             }))
-            .filter((x: any) => x.cert.length > 0)
+            .filter((x) => x.cert.length > 0)
             .sort(
-              (a: any, b: any) =>
+              (a, b) =>
                 new Date(b.date).getTime() - new Date(a.date).getTime(),
             );
           return arr.length ? arr[0].cert : null;
         };
         let cert: string | null = null;
         for (const cc of prefOrder) {
-          const country = countries.find((c: any) => c?.iso_3166_1 === cc);
+          const country = countries.find((c) => c?.iso_3166_1 === cc);
           cert = getFirstNonEmpty(country);
           if (cert) break;
         }
@@ -204,7 +199,12 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   // Pause hero trailer when any modal (detail or preview) is open, and resume when closed
   React.useEffect(() => {
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        pauseVideo?: () => Promise<void>;
+        playVideo?: () => Promise<void>;
+      };
+    } | null;
     const isAnyModalOpen = modalStore.isOpen || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
@@ -314,7 +314,7 @@ const Hero = ({ randomShow }: HeroProps) => {
     }, 10000);
   };
 
-  const handleTrailerEnd = (e: any) => {
+  const handleTrailerEnd = () => {
     setTrailerFinished(true);
     setShowTrailer(false);
     setShowTextElements(true); // Show text elements again when trailer ends
@@ -323,7 +323,7 @@ const Hero = ({ randomShow }: HeroProps) => {
     }
   };
 
-  const handleTrailerReady = (e: any) => {
+  const handleTrailerReady = (e: { target?: { playVideo?: () => Promise<void> } }) => {
     try {
       if (e?.target && typeof e.target.playVideo === 'function') {
         e.target.playVideo()?.catch?.(() => {});
@@ -333,7 +333,12 @@ const Hero = ({ randomShow }: HeroProps) => {
 
   const handleChangeMute = () => {
     setIsMuted((m) => !m);
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        mute?: () => Promise<void>;
+        unMute?: () => Promise<void>;
+      };
+    } | null;
     if (!videoRef?.internalPlayer) return;
     if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
     else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
@@ -414,7 +419,7 @@ const Hero = ({ randomShow }: HeroProps) => {
             {/* player or poster */}
             <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full">
               {/* Background Image - Base Layer */}
-              <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full mask-t-from-60% mask-t-to-100% mask-b-from-50% mask-b-to-95% bg-neutral-950">
+              <div className="absolute inset-0 h-[100vw] sm:h-[56.25vw] w-full mask-t-from-60% mask-t-to-100% mask-b-from-50% mask-b-to-95% bg-neutral-950 overflow-hidden">
                 <CustomImage
                   ref={imageRef}
                   src={`https://image.tmdb.org/t/p/original${randomShow?.backdrop_path ?? randomShow?.poster_path ?? ''
@@ -437,9 +442,9 @@ const Hero = ({ randomShow }: HeroProps) => {
                     title={
                       randomShow?.title ?? randomShow?.name ?? 'hero-trailer'
                     }
-                    className="absolute inset-0 z-0 h-full w-full"
+                    className="absolute inset-0 z-0 h-full w-full scale-[1.35] origin-center"
                     style={{ width: '100%', height: '100%' }}
-                    iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10"
+                    iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10 pointer-events-none"
                   />
                 )}
                 {/* shadows */}

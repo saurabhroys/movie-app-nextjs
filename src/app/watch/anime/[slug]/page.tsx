@@ -1,11 +1,11 @@
 import React from 'react';
 import ModalCloser from '@/components/modal-closer';
 import MovieService from '@/services/MovieService';
-import { Show } from '@/types';
+import { type Show, type ISeason } from '@/types';
 import AnimeWatchPage from './anime-watch-page';
 import NotFound from '@/components/watch/not-found-redirect';
-import { siteConfig } from '@/configs/site';
 import { redirect } from 'next/navigation';
+import { type AxiosResponse } from 'axios';
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -27,7 +27,7 @@ async function CachedAnimePage({
   // Fetch anime (tv) show details, seasons and recommendations
   let tvShow: Show | null = null;
   let recommendedShows: Show[] = [];
-  let seasons: any[] = [];
+  let seasons: ISeason[] = [];
   let shouldRedirect = false;
 
   try {
@@ -45,14 +45,14 @@ async function CachedAnimePage({
             : [];
 
         if (tvShow.number_of_seasons) {
-          const seasonPromises = [] as Promise<any>[];
+          const seasonPromises = [] as Promise<AxiosResponse<ISeason>>[];
           for (let i = 1; i <= Math.min(tvShow.number_of_seasons, 10); i++) {
             seasonPromises.push(MovieService.getSeasons(animeId, i));
           }
           const seasonResponses = await Promise.allSettled(seasonPromises);
           seasons = seasonResponses
-            .filter((r) => r.status === 'fulfilled')
-            .map((r) => (r as PromiseFulfilledResult<any>).value.data);
+            .filter((r): r is PromiseFulfilledResult<AxiosResponse<ISeason>> => r.status === 'fulfilled')
+            .map((r) => r.value.data);
         }
       }
     }
@@ -66,7 +66,7 @@ async function CachedAnimePage({
       if (movieResponse?.data) {
         shouldRedirect = true;
       }
-    } catch (e) {
+    } catch {
       // not a movie
     }
   }

@@ -1,7 +1,7 @@
 'use client';
 
-import SiteFooter from '@/components/main/site-footer';
-import SiteHeader from '@/components/main/site-header';
+// import SiteFooter from '@/components/main/site-footer';
+// import SiteHeader from '@/components/main/site-header';
 
 const FrontLayout = ({ children }: { children: React.ReactNode }) => {
   // shortcuts are registered globally in RootLayout

@@ -2,15 +2,10 @@
 import { useHoverModalStore } from '@/stores/hover-modal';
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import {
-  MediaType,
-  type Show,
-  type Genre,
   type KeyWord,
-  type ShowWithGenreAndVideo,
   type VideoResult,
 } from '@/types';
 import { getMobileDetect } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
 import CustomImage from './custom-image';
 import Youtube from 'react-youtube';
 import { Icons } from '@/components/icons';
@@ -43,7 +38,6 @@ const PreviewModal = () => {
   const modal = usePreviewModalStore();
   const IS_MOBILE = isMobile();
   const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
-  const [options, setOptions] = React.useState(defaultOptions);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
 
@@ -58,9 +52,10 @@ const PreviewModal = () => {
   }, [detailedShow]);
 
   const isAnime = React.useMemo(() => {
-    const keywords: KeyWord[] =
-      (detailedShow as any)?.keywords?.results ||
-      (detailedShow as any)?.keywords?.keywords;
+    const keywords = (
+      (detailedShow as unknown as { keywords?: { results?: KeyWord[]; keywords?: KeyWord[] } })?.keywords?.results ||
+      (detailedShow as unknown as { keywords?: { results?: KeyWord[]; keywords?: KeyWord[] } })?.keywords?.keywords
+    );
     return !!keywords?.find((k) => k.name === 'anime');
   }, [detailedShow]);
 
@@ -83,7 +78,12 @@ const PreviewModal = () => {
 
   const handleChangeMute = () => {
     setIsMuted((m) => !m);
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        mute?: () => Promise<void>;
+        unMute?: () => Promise<void>;
+      };
+    } | null;
     if (!videoRef?.internalPlayer) return;
     if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
     else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
@@ -131,7 +131,12 @@ const PreviewModal = () => {
 
   // Stop trailer when preview closes
   React.useEffect(() => {
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        stopVideo?: () => Promise<void>;
+        seekTo?: (seconds: number) => Promise<void>;
+      };
+    } | null;
     if (!videoRef?.internalPlayer) return;
     if (!p.isOpen) {
       try {
@@ -247,7 +252,12 @@ const PreviewModal = () => {
     const name = getNameFromShow(current);
     const path: string =
       (current.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
-    const videoRef: any = youtubeRef.current;
+    const videoRef = youtubeRef.current as {
+      internalPlayer?: {
+        pauseVideo?: () => Promise<void>;
+        stopVideo?: () => Promise<void>;
+      };
+    } | null;
     try {
       videoRef?.internalPlayer?.pauseVideo?.()?.catch?.(() => {});
       videoRef?.internalPlayer?.stopVideo?.()?.catch?.(() => {});
@@ -269,7 +279,7 @@ const PreviewModal = () => {
     }
   };
 
-  const handleTrailerEnd = (e: any) => {
+  const handleTrailerEnd = (e: { target?: { seekTo?: (seconds: number) => Promise<void> } }) => {
     try {
       if (e?.target && typeof e.target.seekTo === 'function') {
         e.target.seekTo(0);
@@ -277,7 +287,7 @@ const PreviewModal = () => {
     } catch { }
   };
 
-  const handleTrailerReady = (e: any) => {
+  const handleTrailerReady = (e: { target?: { playVideo?: () => Promise<void> } }) => {
     try {
       if (e?.target && typeof e.target.playVideo === 'function') {
         e.target.playVideo()?.catch?.(() => {});
@@ -311,7 +321,7 @@ const PreviewModal = () => {
           p.reset();
         }}>
         <div className="overflow-hidden rounded-xl bg-neutral-900 shadow-lg shadow-black">
-          <div className="group relative aspect-video">
+          <div className="group relative aspect-video overflow-hidden">
             <CustomImage
               fill
               preload
@@ -333,16 +343,22 @@ const PreviewModal = () => {
                 title={p.show?.title ?? p.show?.name ?? 'hero-trailer'}
                 className="z-0 h-full w-full"
                 style={{ width: '100%', height: '100%' }}
-                iframeClassName="w-full h-full z-10"
+                iframeClassName="w-full h-full z-10 pointer-events-none"
               />
             )}
             {detailedShow?.logoPath && (
-              <div className="pointer-events-none absolute bottom-2 left-2 z-20 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
-                <img
-                  src={`https://image.tmdb.org/t/p/w500${detailedShow.logoPath}`}
-                  alt={p.show.title ?? p.show.name ?? 'logo'}
-                  className="h-auto max-h-12 w-auto max-w-[80%] object-contain"
-                />
+              <div className="pointer-events-none absolute bottom-2 left-2 z-20 w-full max-w-[80%] opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+                <div className="relative h-12 w-full">
+                  <CustomImage
+                    className='h-auto max-h-12 w-auto max-w-[80%]'
+                    src={`https://image.tmdb.org/t/p/w500${detailedShow.logoPath}`}
+                    alt={p.show.title ?? p.show.name ?? 'logo'}
+                    style={{
+                      objectFit: 'contain',
+                    }}
+                    fill
+                  />
+                </div>
               </div>
             )}
 
@@ -438,12 +454,16 @@ const PreviewModal = () => {
                   {detailedShow?.networks.map(
                     (network, index) =>
                       network.logo_path && (
-                        <img
-                          key={index}
-                          src={`https://image.tmdb.org/t/p/w92${network.logo_path}`}
-                          alt={network.name || 'Network logo'}
-                          className="h-4 w-auto object-contain"
-                        />
+                        <div key={index} className="relative h-4 w-8">
+                          <CustomImage
+                            src={`https://image.tmdb.org/t/p/w92${network.logo_path}`}
+                            alt={network.name || 'Network logo'}
+                            style={{
+                              objectFit: 'contain',
+                            }}
+                            fill
+                          />
+                        </div>
                       ),
                   )}
                 </div>
