@@ -2,7 +2,7 @@ import { getNameFromShow, getSlug, hasValidImage } from '@/lib/utils';
 import type {
   ISeason,
   KeyWordResponse,
-  MediaType,
+  // MediaType,
   Show,
   ShowWithGenreAndVideo,
 } from '@/types';

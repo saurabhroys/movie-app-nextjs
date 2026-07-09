@@ -54,13 +54,14 @@ export const useHoverModalStore = create<PreviewModalState>()((set) => ({
           id,
           currentType,
           'hi-IN',
-        )) as any;
+        )) as unknown as DetailedPreviewShow;
         if (!data.videos?.results?.length) {
-          data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as any;
+          data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as unknown as DetailedPreviewShow;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as { response?: { status?: number } };
         // If 404, try the other media type
-        if (error?.response?.status === 404) {
+        if (err?.response?.status === 404) {
           currentType = currentType === 'tv' ? 'movie' : 'tv';
           
           // Update the show's media_type in the store
@@ -78,9 +79,9 @@ export const useHoverModalStore = create<PreviewModalState>()((set) => ({
             id,
             currentType,
             'hi-IN',
-          )) as any;
+          )) as unknown as DetailedPreviewShow;
           if (!data.videos?.results?.length) {
-            data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as any;
+            data = (await MovieService.findMovieByIdAndType(id, currentType, 'en-US')) as unknown as DetailedPreviewShow;
           }
         } else {
           throw error;
@@ -93,39 +94,53 @@ export const useHoverModalStore = create<PreviewModalState>()((set) => ({
       let rating: string | null = null;
       try {
         if (effectiveType === 'tv') {
-          const { data: ratingData }: any = await MovieService.getContentRating('tv', id);
+          interface RatingResult {
+            iso_3166_1: string;
+            rating?: string;
+            certification?: string;
+          }
+          const response = await MovieService.getContentRating('tv', id);
+          const ratingData = response.data as unknown as { results?: RatingResult[] };
           const results = ratingData?.results ?? [];
           const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           for (const cc of prefOrder) {
-            const match = results.find((r: any) => r?.iso_3166_1 === cc);
+            const match = results.find((r) => r?.iso_3166_1 === cc);
             if (match?.rating || match?.certification) {
               rating = String(match.rating ?? match.certification).trim();
               break;
             }
           }
         } else {
-          const { data: ratingData }: any = await MovieService.getMovieReleaseDates(id);
+          interface ReleaseDate {
+            certification?: string;
+          }
+          interface CountryRelease {
+            iso_3166_1: string;
+            release_dates?: ReleaseDate[];
+          }
+          const response = await MovieService.getMovieReleaseDates(id);
+          const ratingData = response.data as unknown as { results?: CountryRelease[] };
           const countries = ratingData?.results ?? [];
           const prefOrder = ['RU', 'UA', 'LV', 'TW'];
           for (const cc of prefOrder) {
-            const country = countries.find((c: any) => c?.iso_3166_1 === cc);
+            const country = countries.find((c) => c?.iso_3166_1 === cc);
             const releases = country?.release_dates ?? [];
-            const match = releases.find((rd: any) => rd.certification?.trim());
-            if (match) {
+            const match = releases.find((rd) => rd.certification?.trim());
+            if (match && match.certification) {
               rating = match.certification.trim();
               break;
             }
           }
         }
-      } catch (e) {}
+      } catch {}
       data.contentRating = rating;
 
       // Fetch logo
       try {
-        const { data: imageData } = await MovieService.getImages(effectiveType as any, id);
-        const preferred = imageData.logos?.find((l: any) => l.iso_639_1 === 'en') ?? imageData.logos?.[0];
+        const { data: imageData } = await MovieService.getImages(effectiveType as 'movie' | 'tv', id);
+        const preferred = imageData.logos?.find((l) => l.iso_639_1 === 'en') ?? imageData.logos?.[0];
         data.logoPath = preferred ? preferred.file_path : null;
-      } catch (e) {}
+      } catch {}
 
       data.media_type = effectiveType === 'tv' ? MediaType.TV : MediaType.MOVIE;
       set({ detailedShow: data, isLoading: false });

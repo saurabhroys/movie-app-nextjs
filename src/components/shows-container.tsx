@@ -57,7 +57,9 @@ const ShowsContainer = ({ shows }: ShowsContainerProps) => {
           play: true,
           firstLoad: true,
         });
-    } catch (error) { }
+    } catch {
+      //swallow the error
+    }
   };
 
   // if (!mounted) {

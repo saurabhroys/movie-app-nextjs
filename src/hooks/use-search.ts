@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useSearchStore } from '@/stores/search';
 import SearchService from '@/services/SearchService';
-import type { Show } from '@/types';
 
 interface UseSearchOptions {
   debounceTimeout?: number;

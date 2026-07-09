@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect } from 'react';
 
 export interface WindowListenerOptions {
   /** Called on any scroll event. No event argument needed. */

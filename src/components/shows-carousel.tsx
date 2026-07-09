@@ -45,7 +45,6 @@ const ShowsCarousel = ({ title, initialShows, req }: ShowsCarouselProps) => {
 
   const allShows = data?.pages.flatMap((page) => page.items) ?? initialShows;
 
-  const [isScrollable, setIsScrollable] = React.useState(false);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
@@ -71,8 +70,6 @@ const ShowsCarousel = ({ title, initialShows, req }: ShowsCarouselProps) => {
     if (!element) return;
 
     const timer = setTimeout(() => {
-      const isScrollable = element.scrollWidth > element.offsetWidth || hasNextPage;
-      setIsScrollable(isScrollable);
       checkScrollPosition();
     }, 100);
 

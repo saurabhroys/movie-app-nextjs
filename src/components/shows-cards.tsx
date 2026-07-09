@@ -1,52 +1,26 @@
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useHoverModalStore } from '@/stores/hover-modal';
-import { Genre, MediaType, type Show } from '@/types';
+import { type Show } from '@/types';
 import * as React from 'react';
 import MovieService from '@/services/MovieService';
 
 import { getMobileDetect, getNameFromShow, getSlug } from '@/lib/utils';
 import CustomImage from './custom-image';
-import YouTube from 'react-youtube';
-import { Button } from './ui/button';
-import { Icons } from './icons';
 
 const userAgent =
   typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
 const { isMobile } = getMobileDetect(userAgent);
-const defaultOptions = {
-  playerVars: {
-    rel: 0,
-    mute: isMobile() ? 1 : 0,
-    loop: 1,
-    autoplay: 1,
-    controls: 0,
-    showinfo: 0,
-    disablekb: 1,
-    enablejsapi: 1,
-    playsinline: 1,
-    cc_load_policy: 0,
-    modestbranding: 3,
-  },
-};
 
 interface ShowCardProps {
   show: Show;
-  pathname: string;
+  pathname?: string;
 }
 
-export const ShowCard = ({ show, pathname }: ShowCardProps) => {
+export const ShowCard = ({ show, pathname: _pathname }: ShowCardProps) => {
   const previewModalStore = useHoverModalStore();
-  const [isHovered, setIsHovered] = React.useState(false);
   const openTimerRef = React.useRef<number | null>(null);
   const closeTimerRef = React.useRef<number | null>(null);
   const IS_MOBILE = isMobile();
-  const [trailer, setTrailer] = React.useState('');
-  const [genres, setGenres] = React.useState<Genre[]>([]);
-  const [isAnime, setIsAnime] = React.useState(false);
-  const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
-  const [options, setOptions] = React.useState(defaultOptions);
-  const youtubeRef = React.useRef(null);
-  const imageRef = React.useRef<HTMLImageElement>(null);
   const [logoPath, setLogoPath] = React.useState<string | null>(null);
   const imageOnErrorHandler = (
     event: React.SyntheticEvent<HTMLImageElement, Event>,
@@ -58,7 +32,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     // Don't show preview modal on mobile devices
     if (IS_MOBILE) return;
 
-    setIsHovered(true);
     if (closeTimerRef.current) {
       window.clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -83,7 +56,6 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     // Don't handle mouse leave on mobile devices
     if (IS_MOBILE) return;
 
-    setIsHovered(false);
     if (openTimerRef.current) {
       window.clearTimeout(openTimerRef.current);
       openTimerRef.current = null;
@@ -118,42 +90,7 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
     };
   }, [show.id, show.media_type]);
 
-  const handleHref = () => {
-    const type = isAnime
-      ? 'anime'
-      : (show?.media_type as string) === 'movie'
-        ? 'movie'
-        : 'tv';
-    let id = `${show?.id}`;
-    if (isAnime)
-      id = `${(show?.media_type as string) === 'movie' ? 'm' : 't'}-${id}`;
-    return `/watch/${type}/${id}`;
-  };
 
-  const getRuntime = () =>
-    (show?.media_type as string) === 'tv'
-      ? show.number_of_seasons
-        ? `${show.number_of_seasons} Seasons`
-        : null
-      : show?.runtime
-        ? `${show.runtime} min`
-        : null;
-
-  const getQuality = () => ((show?.vote_average || 0) >= 8 ? 'HD' : 'SD');
-
-  const getGenres = () =>
-    genres
-      .slice(0, 3)
-      .map((g) => g.name)
-      .join(' • ');
-
-  const handleChangeMute = () => {
-    setIsMuted((m) => !m);
-    const videoRef: any = youtubeRef.current;
-    if (!videoRef?.internalPlayer) return;
-    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
-    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
-  };
 
   const handleMoreDetails = () => {
     const name = getNameFromShow(show);
@@ -187,29 +124,37 @@ export const ShowCard = ({ show, pathname }: ShowCardProps) => {
         aria-label={getNameFromShow(show)}
         href={`/${show.media_type}/${getSlug(show.id, getNameFromShow(show))}`}
       />
-      <img
-        src={
-          (show.backdrop_path ?? show.poster_path)
-            ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path
-            }`
-            : '/images/grey-thumbnail.jpg'
-        }
-        alt={show.title ?? show.name ?? 'poster'}
-        className="h-full w-full cursor-pointer rounded-lg px-1 transition-all"
-        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
-        style={{
-          objectFit: 'cover',
-        }}
-        onError={imageOnErrorHandler}
-      />
+      <div className="relative h-full w-full">
+        <CustomImage
+          src={
+            (show.backdrop_path ?? show.poster_path)
+              ? `https://image.tmdb.org/t/p/w780${show.backdrop_path ?? show.poster_path
+              }`
+              : '/images/grey-thumbnail.jpg'
+          }
+          alt={show.title ?? show.name ?? 'poster'}
+          className="h-full w-full cursor-pointer rounded-lg px-1 transition-all"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
+          style={{
+            objectFit: 'cover',
+          }}
+          fill
+          onError={imageOnErrorHandler}
+        />
+      </div>
       {logoPath && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden px-2">
-          <img
-            src={`https://image.tmdb.org/t/p/w500${logoPath}`}
-            alt={show.title ?? show.name ?? 'logo'}
-            className="h-auto max-h-12 w-auto max-w-[85%] object-contain"
-            onError={imageOnErrorHandler}
-          />
+          <div className="relative h-12 w-full max-w-[85%]">
+            <CustomImage
+              src={`https://image.tmdb.org/t/p/w500${logoPath}`}
+              alt={show.title ?? show.name ?? 'logo'}
+              style={{
+                objectFit: 'contain',
+              }}
+              fill
+              onError={imageOnErrorHandler}
+            />
+          </div>
         </div>
       )}
 
