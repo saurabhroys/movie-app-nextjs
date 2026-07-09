@@ -5,7 +5,7 @@ import { type Show, type ISeason } from '@/types';
 import CustomImage from './custom-image';
 
 interface SeasonsEpisodesSelectorProps {
-  _tvShow?: Show;
+  tvShow?: Show;
   seasons: ISeason[];
   tvId?: number;
   onSeasonEpisodeChange?: (season: number, episode: number) => void;
@@ -14,7 +14,6 @@ interface SeasonsEpisodesSelectorProps {
 }
 
 const SeasonsEpisodesSelector = ({
-  _tvShow,
   seasons,
   tvId: _tvId,
   onSeasonEpisodeChange,
