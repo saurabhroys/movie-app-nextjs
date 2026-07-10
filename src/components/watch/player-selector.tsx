@@ -102,8 +102,9 @@ const PlayerSelector = ({
 
     return [
       { name: 'Netflix Live', url: `https://z.zxcstream.xyz/player/${path}?dubLang=hi&autoplay=true` },
-      { name: 'VidSrc', url: `https://embed.vidsrc.pk/${path}?src=1` },
+      { name: 'Vidsrc.to', url: `https://vidsrc.to/embed/${path}` },
       // { name: 'VidEasy', url: `https://player.videasy.net/${path}` },
+      { name: 'VidSrc.pk', url: `https://embed.vidsrc.pk/${path}?src=1` },
     ];
   };
 

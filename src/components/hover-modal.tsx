@@ -85,8 +85,10 @@ const PreviewModal = () => {
       };
     } | null;
     if (!videoRef?.internalPlayer) return;
-    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
-    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
+    try {
+      if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+      else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
+    } catch { }
   };
 
   const handleHref = () => {
