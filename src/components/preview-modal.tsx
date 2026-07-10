@@ -169,11 +169,13 @@ const PreviewModal = () => {
         unMute?: () => Promise<void>;
       };
     } | null;
-    if (isMuted && videoRef?.internalPlayer) {
-      videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
-    } else if (videoRef?.internalPlayer) {
-      videoRef.internalPlayer.mute?.()?.catch?.(() => {});
-    }
+    try {
+      if (isMuted && videoRef?.internalPlayer) {
+        videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+      } else if (videoRef?.internalPlayer) {
+        videoRef.internalPlayer.mute?.()?.catch?.(() => {});
+      }
+    } catch { }
   };
 
   const handleReplay = () => {
