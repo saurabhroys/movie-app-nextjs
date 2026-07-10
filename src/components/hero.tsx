@@ -208,7 +208,9 @@ const Hero = ({ randomShow }: HeroProps) => {
     const isAnyModalOpen = modalStore.isOpen || previewModalStore.isOpen;
     if (isAnyModalOpen) {
       if (videoRef?.internalPlayer && showTrailer && !trailerFinished) {
-        videoRef.internalPlayer.pauseVideo?.()?.catch?.(() => {});
+        try {
+          videoRef.internalPlayer.pauseVideo?.()?.catch?.(() => {});
+        } catch { }
         setIsPaused(true);
       }
       return;
@@ -220,7 +222,9 @@ const Hero = ({ randomShow }: HeroProps) => {
       !trailerFinished &&
       isPaused
     ) {
-      videoRef.internalPlayer.playVideo?.()?.catch?.(() => {});
+      try {
+        videoRef.internalPlayer.playVideo?.()?.catch?.(() => {});
+      } catch { }
       setIsPaused(false);
     }
   }, [modalStore.isOpen, previewModalStore.isOpen, showTrailer, trailerFinished]);
@@ -340,8 +344,10 @@ const Hero = ({ randomShow }: HeroProps) => {
       };
     } | null;
     if (!videoRef?.internalPlayer) return;
-    if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
-    else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
+    try {
+      if (isMuted) videoRef.internalPlayer.unMute?.()?.catch?.(() => {});
+      else videoRef.internalPlayer.mute?.()?.catch?.(() => {});
+    } catch { }
   };
 
   const handleReplayTrailer = () => {
