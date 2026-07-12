@@ -16,6 +16,7 @@ interface PlayerOption {
 interface PlayerSelectorProps {
   mediaId: string;
   mediaType: 'movie' | 'tv' | 'anime';
+  imdbId?: string;
   playerClass: string;
   selectorClass: string;
   season?: number;
@@ -48,9 +49,11 @@ const buildPlayerUrl = (
   mediaId: string,
   season: number,
   episode: number,
+  imdbId?: string,
 ): string => {
   const s = season || 1;
   const e = episode || 1;
+  const idOrImdb = imdbId || mediaId;
 
   switch (playerId) {
     // TV/Movie Players
@@ -60,19 +63,22 @@ const buildPlayerUrl = (
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
+    case 'test':
+      const testPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
+      return `https://vidsrc-embed.ru/embed/${testPath}`;
     case 'vidsrc-to':
-      const toPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
+      const toPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
       return `https://vidsrc.to/embed/${toPath}`;
     case 'vsembed':
-      const vsembedPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}-${e}`;
+      const vsembedPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}-${e}`;
       return `https://vsembed.ru/embed/${vsembedPath}`;
     case 'vidsrc-pk':
-      const pkPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}-${e}`;
+      const pkPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}-${e}`;
       return `https://embed.vidsrc.pk/${pkPath}?src=1`;
 
     // Anime Players
     case 'vidsrc-anime':
-      return `https://embed.vidsrc.pk/tv/${mediaId}/${s}-${e}`;
+      return `https://embed.vidsrc.pk/tv/${idOrImdb}/${s}-${e}`;
     case 'vidnest-anime':
       return `https://vidnest.fun/anime/${mediaId}/${s}/${e}`;
     case 'vidnest-delta-anime':
@@ -84,7 +90,7 @@ const buildPlayerUrl = (
     case 'autoembed-anime':
       return `https://player.autoembed.cc/embed/anime/${mediaId}/${s}/${e}?server=2`;
     case 'vidsrc-to-tv-anime':
-      return `https://vidsrc.to/embed/tv/${mediaId}/${s}/${e}`;
+      return `https://vidsrc.to/embed/tv/${idOrImdb}/${s}/${e}`;
 
     default:
       return '';
@@ -94,6 +100,7 @@ const buildPlayerUrl = (
 const PlayerSelector = ({
   mediaId,
   mediaType,
+  imdbId,
   playerClass,
   selectorClass,
   season,
@@ -176,8 +183,8 @@ const PlayerSelector = ({
 
   const activeUrl = React.useMemo(() => {
     if (!activePlayerId) return '';
-    return buildPlayerUrl(activePlayerId, mediaType, mediaId, season || 1, episode || 1);
-  }, [activePlayerId, mediaType, mediaId, season, episode]);
+    return buildPlayerUrl(activePlayerId, mediaType, mediaId, season || 1, episode || 1, imdbId);
+  }, [activePlayerId, mediaType, mediaId, season, episode, imdbId]);
 
   React.useEffect(() => {
     if (onPlayerChange && activePlayerId) {

@@ -98,7 +98,7 @@ class MovieService extends BaseService {
    */
   static findTvSeries = cache(async (id: number) => {
     return this.axios(baseUrl).get<Show>(
-      `/tv/${id}?append_to_response=keywords`,
+      `/tv/${id}?append_to_response=keywords,external_ids`,
     );
   });
 
