@@ -86,7 +86,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         ref={iframeRef}
         style={{ opacity: 0 }}
         referrerPolicy="no-referrer-when-downgrade"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
+        // sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
       />
     </div>
   );
