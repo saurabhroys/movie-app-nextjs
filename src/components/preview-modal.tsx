@@ -230,7 +230,7 @@ const PreviewModal = () => {
         (modalStore.show?.media_type as string) === 'movie' ? 'm' : 't';
       id = `${prefix}-${id}`;
     }
-    return `/watch/${type}/${id}`;
+    return `/watch/${id}?type=${type}`;
   };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -246,7 +246,7 @@ const PreviewModal = () => {
   const navigateToMovie = (movieId: number) => {
     // Avoid history.back() to ensure navigation happens
     modalStore.reset();
-    router.push(`/watch/movie/${movieId}`);
+    router.push(`/watch/${movieId}?type=movie`);
   };
 
   const navigateToEpisode = (seasonNumber: number, episodeNumber: number) => {
@@ -255,14 +255,14 @@ const PreviewModal = () => {
     if (!showId) return;
     modalStore.reset();
     router.push(
-      `/watch/tv/${showId}?season=${seasonNumber}&episode=${episodeNumber}`,
+      `/watch/${showId}?type=tv&season=${seasonNumber}&episode=${episodeNumber}`,
     );
   };
 
   const navigateToShow = (show: Show) => {
     modalStore.reset();
     const type = (show.media_type as string) === 'movie' ? 'movie' : 'tv';
-    router.push(`/watch/${type}/${show.id}`);
+    router.push(`/watch/${show.id}?type=${type}`);
   };
 
   const BodyScrollLock = () => {
