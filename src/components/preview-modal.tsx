@@ -27,7 +27,7 @@ import ShowsSkeleton from './shows-skeleton';
 type YouTubePlayer = {
   mute: () => void;
   unMute: () => void;
-  playVideo: () => void;
+  playVideo: () => Promise<void>;
   seekTo: (value: number) => void;
   container: HTMLDivElement;
   internalPlayer: YouTubePlayer;
@@ -155,7 +155,7 @@ const PreviewModal = () => {
   const onReady = (event: YouTubeEvent) => {
     try {
       if (event?.target && typeof event.target.playVideo === 'function') {
-        event.target.playVideo();
+        event.target.playVideo()?.catch?.(() => {});
       }
     } catch { }
   };
