@@ -409,12 +409,12 @@ const Hero = ({ randomShow }: HeroProps) => {
     }
     if (!path.includes('/anime')) {
       const type = randomShow.media_type === MediaType.MOVIE ? 'movie' : 'tv';
-      return `/watch/${type}/${randomShow.id}`;
+      return `/watch/${randomShow.id}?type=${type}`;
     }
     const prefix: string =
       randomShow?.media_type === MediaType.MOVIE ? 'm' : 't';
     const id = `${prefix}-${randomShow.id}`;
-    return `/watch/anime/${id}`;
+    return `/watch/${id}?type=anime`;
   };
 
   return (

@@ -28,6 +28,9 @@ export type Show = {
   showId: string;
   id: number;
   imdb_id: string | null;
+  external_ids?: {
+    imdb_id?: string | null;
+  };
   original_language: string;
   original_title: string | null;
   overview: string | null;

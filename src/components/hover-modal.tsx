@@ -101,7 +101,7 @@ const PreviewModal = () => {
     let id = `${p.show.id}`;
     if (isAnime)
       id = `${(p.show?.media_type as string) === 'movie' ? 'm' : 't'}-${id}`;
-    return `/watch/${type}/${id}`;
+    return `/watch/${id}?type=${type}`;
   };
 
   const getRuntime = () => {

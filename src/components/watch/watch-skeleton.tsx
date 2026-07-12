@@ -2,11 +2,11 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import ShowsSkeleton from '@/components/shows-skeleton';
-import { usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function WatchSkeleton() {
-  const pathname = usePathname();
-  const isTv = pathname?.includes('/watch/tv/');
+  const searchParams = useSearchParams();
+  const isTv = searchParams.get('type') === 'tv' || searchParams.get('type') === 'anime';
 
   return (
     <div className="min-h-screen w-full bg-black overflow-x-hidden flex flex-col">
