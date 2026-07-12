@@ -116,6 +116,23 @@ const PlayerSelector = ({
 
   useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
+  // Load player preference from localStorage on mount
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('activePlayerId');
+      if (saved) {
+        setActivePlayerId(saved);
+      }
+    }
+  }, []);
+
+  const selectPlayer = (id: string) => {
+    setActivePlayerId(id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('activePlayerId', id);
+    }
+  };
+
   const resetTimer = React.useCallback(() => {
     setShowControls(true);
     if (timeoutRef.current) {
@@ -176,7 +193,13 @@ const PlayerSelector = ({
     if (players.length > 0) {
       const exists = players.some((p) => p.id === activePlayerId);
       if (!exists) {
-        setActivePlayerId(players[0].id);
+        const saved = typeof window !== 'undefined' ? localStorage.getItem('activePlayerId') : null;
+        const savedExists = saved ? players.some((p) => p.id === saved) : false;
+        if (savedExists && saved) {
+          setActivePlayerId(saved);
+        } else {
+          setActivePlayerId(players[0].id);
+        }
       }
     }
   }, [players, activePlayerId]);
@@ -267,7 +290,7 @@ const PlayerSelector = ({
                   <button
                     key={player.id}
                     onClick={() => {
-                      setActivePlayerId(player.id);
+                      selectPlayer(player.id);
                       setIsOpen(false);
                     }}
                     className={`w-full rounded-lg px-3 py-1.5 text-left text-[10px] font-medium transition-colors cursor-pointer hover:bg-neutral-800 md:text-xs ${
