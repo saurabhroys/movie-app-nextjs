@@ -357,6 +357,7 @@ const PreviewModal = () => {
                     alt={p.show.title ?? p.show.name ?? 'logo'}
                     style={{
                       objectFit: 'contain',
+                      objectPosition: 'left',
                     }}
                     fill
                   />
