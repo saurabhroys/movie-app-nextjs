@@ -28,6 +28,7 @@ interface PlayerSelectorProps {
 const TV_MOVIE_PLAYERS: PlayerOption[] = [
   { id: 'netflix-live', name: 'Netflix Live' },
   { id: 'vidify', name: 'Vidify' },
+  { id: 'gemma', name: 'Gemma' },
   { id: 'vidsrc-to', name: 'Vidsrc.to' },
   { id: 'vsembed', name: 'VsEmbed' },
   { id: 'vidsrc-pk', name: 'VidSrc.pk' },
@@ -63,6 +64,11 @@ const buildPlayerUrl = (
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
+    case 'gemma':
+      if (!imdbId) return '';
+      const gemmaPath = mediaType === 'movie' ? imdbId : `${imdbId}/${s}/${e}`;
+      // return `https://gemma416okl.com/play/${gemmaPath}`;
+      return `https://gemma416okl.com/play/${imdbId}`;
     case 'test':
       const testPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
       return `https://vidsrc-embed.ru/embed/${testPath}`;
@@ -184,9 +190,10 @@ const PlayerSelector = ({
     return TV_MOVIE_PLAYERS.filter((player) => {
       if (player.id === 'netflix-live') return zxcOnline !== false;
       if (player.id === 'vidify') return zxcOnline === false;
+      if (player.id === 'gemma') return !!imdbId;
       return true;
     });
-  }, [mediaType, zxcOnline]);
+  }, [mediaType, zxcOnline, imdbId]);
 
   // Set default/first player on initialization or change in list
   React.useEffect(() => {
