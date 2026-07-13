@@ -9,14 +9,17 @@ interface EmbedPlayerProps {
   mediaId?: string;
   playerClass?: string;
   mediaType?: MediaType;
+  season?: number;
   episode?: number;
   showControls?: boolean;
 }
 
 function EmbedPlayer(props: EmbedPlayerProps) {
   const router = useRouter();
+  const [iframeLoaded, setIframeLoaded] = React.useState(false);
 
   React.useEffect(() => {
+    setIframeLoaded(false);
     if (iframeRef.current) {
       iframeRef.current.src = props.url;
     }
@@ -39,10 +42,34 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     const iframe: HTMLIFrameElement = iframeRef.current;
     if (iframe) {
       iframe.style.opacity = '1';
+      setIframeLoaded(true);
       iframe.removeEventListener('load', handleIframeLoaded);
       if (loadingRef.current) loadingRef.current.style.display = 'none';
     }
   };
+
+  const isGemma = props.url.includes('gemma416okl.com');
+
+  React.useEffect(() => {
+    if (isGemma && iframeLoaded && iframeRef.current?.contentWindow) {
+      const s = props.season || 1;
+      const e = props.episode || 1;
+      const seasonIndex = s - 1;
+      const episodeIndex = e - 1;
+      const episodeId = `xx-${seasonIndex}-${s}-${episodeIndex}-${s}-${e}`;
+      
+      const payload = {
+        api: "play",
+        set: `id:${episodeId}`
+      };
+
+      try {
+        iframeRef.current.contentWindow.postMessage(payload, "*");
+      } catch (err) {
+        console.error('Failed to postMessage to Gemma player:', err);
+      }
+    }
+  }, [isGemma, iframeLoaded, props.season, props.episode]);
 
   return (
     <div

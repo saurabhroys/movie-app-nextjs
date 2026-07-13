@@ -30,7 +30,6 @@ const TV_MOVIE_PLAYERS: PlayerOption[] = [
   { id: 'vidify', name: 'Vidify' },
   { id: 'gemma', name: 'Gemma' },
   { id: 'vidsrc-to', name: 'Vidsrc.to' },
-  { id: 'vsembed', name: 'VsEmbed' },
   { id: 'vidsrc-pk', name: 'VidSrc.pk' },
 ];
 
@@ -66,8 +65,6 @@ const buildPlayerUrl = (
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
     case 'gemma':
       if (!imdbId) return '';
-      const gemmaPath = mediaType === 'movie' ? imdbId : `${imdbId}/${s}/${e}`;
-      // return `https://gemma416okl.com/play/${gemmaPath}`;
       return `https://gemma416okl.com/play/${imdbId}`;
     case 'test':
       const testPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
@@ -75,9 +72,6 @@ const buildPlayerUrl = (
     case 'vidsrc-to':
       const toPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
       return `https://vidsrc.to/embed/${toPath}`;
-    case 'vsembed':
-      const vsembedPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}-${e}`;
-      return `https://vsembed.ru/embed/${vsembedPath}`;
     case 'vidsrc-pk':
       const pkPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}-${e}`;
       return `https://embed.vidsrc.pk/${pkPath}?src=1`;
@@ -258,6 +252,8 @@ const PlayerSelector = ({
                 ? MediaType.TV
                 : MediaType.MOVIE
           }
+          season={season}
+          episode={episode}
           playerClass={playerClass}
           showControls={showControls}
         />
