@@ -59,7 +59,7 @@ const buildPlayerUrl = (
     // TV/Movie Players
     case 'netflix-live':
       const netflixPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
-      return `https://z.zxcstream.xyz/player/${netflixPath}?dubLang=hi&autoplay=true`;
+      return `https://z.zxcstream.xyz/player/${netflixPath}?dubLang=hi&server=3`;
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
