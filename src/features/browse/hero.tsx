@@ -133,6 +133,7 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   const youtubeRef = React.useRef<Youtube | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
+  const countdownValueRef = React.useRef<number>(count);
   const textHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const reduxDispatch = useAppDispatch();
@@ -205,13 +206,10 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     }
   }, [trailer, trailerFinished]);
 
-  // Clear countdown interval once the countdown deactivates
+  // Keep a ref of the live countdown so the interval can self-clean
   React.useEffect(() => {
-    if (!isCountdownActive && countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
-  }, [isCountdownActive]);
+    countdownValueRef.current = countdown;
+  }, [countdown]);
 
   // Cleanup timers on unmount
   React.useEffect(() => {
@@ -263,6 +261,12 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
       clearInterval(countdownRef.current);
     }
     countdownRef.current = setInterval(() => {
+      if (countdownValueRef.current <= 1) {
+        if (countdownRef.current) {
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+        }
+      }
       dispatch({ type: 'TICK' });
     }, 1000);
   }, []);
