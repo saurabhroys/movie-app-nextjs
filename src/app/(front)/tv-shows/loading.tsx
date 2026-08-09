@@ -1,7 +1,7 @@
 'use client';
 
-import HeroSkeleton from '@/components/hero-skeleton';
-import ShowsSkeleton from '@/components/shows-skeleton';
+import HeroSkeleton from '@/features/browse/hero-skeleton';
+import ShowsSkeleton from '@/features/browse/shows-skeleton';
 
 export default function Loading() {
   return (

@@ -1,10 +1,13 @@
 'use client';
 
 import React from 'react';
-import { MediaType, type Show } from '@/types';
-import ShowsGrid from '@/components/shows-grid';
-import { useSearchStore } from '@/stores/search';
-import { handleDefaultSearchBtn, handleDefaultSearchInp, cn } from '@/lib/utils';
+import { MediaType, type Show } from '@/services/tmdb/types';
+import ShowsGrid from '@/features/browse/shows-grid';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { searchApi } from '@/redux/features/search/searchApi';
+import { setQuery, setIsOpen } from '@/redux/features/search/searchSlice';
+import { cn } from '@/lib/utils';
+import { handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/dom';
 import { Button } from '@/components/ui/button';
 
 interface SearchContainerProps {
@@ -13,15 +16,16 @@ interface SearchContainerProps {
 }
 
 function SearchContainer({ shows, query }: SearchContainerProps) {
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const searchQuery = useAppSelector((state) => state.search.query);
   const [activeFilter, setActiveFilter] = React.useState<MediaType | 'all'>(
     'all',
   );
 
   React.useEffect(() => {
-    searchStore.setIsOpen(true);
-    searchStore.setQuery(query);
-    searchStore.setShows(shows);
+    dispatch(setIsOpen(true));
+    dispatch(setQuery(query));
+    dispatch(searchApi.util.upsertQueryData('search', query, shows));
     const timer1: NodeJS.Timeout = setTimeout(() => {
       handleDefaultSearchBtn();
     }, 5);
@@ -33,11 +37,11 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [query, shows]);
+  }, [dispatch, query, shows]);
 
   const filteredShows = React.useMemo(() => {
-    if (activeFilter === 'all') return searchStore.shows;
-    return searchStore.shows.filter((show) => {
+    if (activeFilter === 'all') return shows;
+    return shows.filter((show) => {
       // In some cases, media_type might be anime if it's determined by the query or source
       if (activeFilter === MediaType.ANIME) {
         // Simple heuristic: check if genres contain animation (though not perfect)
@@ -50,7 +54,7 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
       }
       return show.media_type === activeFilter;
     });
-  }, [searchStore.shows, activeFilter]);
+  }, [shows, activeFilter]);
 
   const filters: { label: string; value: MediaType | 'all' }[] = [
     { label: 'All', value: 'all' },
@@ -87,12 +91,12 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
         )}
       </div>
 
-      <ShowsGrid 
-        shows={filteredShows} 
-        query={searchStore.query} 
+      <ShowsGrid
+        shows={filteredShows}
+        query={searchQuery}
       />
-      
-      {filteredShows.length === 0 && searchStore.shows.length > 0 && (
+
+      {filteredShows.length === 0 && shows.length > 0 && (
         <div className="container -mt-10 flex flex-col items-center justify-center py-20 text-center">
           <p className="mb-4 text-neutral-400">
             No {activeFilter === MediaType.ANIME ? 'anime' : activeFilter === MediaType.MOVIE ? 'movies' : 'TV shows'} found for this search.

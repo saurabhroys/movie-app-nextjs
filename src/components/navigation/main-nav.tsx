@@ -4,16 +4,21 @@ import React from 'react';
 import { type NavItem } from '@/types';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/utils';
-import { Icons } from '@/components/icons';
+import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/dom';
+import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSearchStore } from '@/stores/search';
-import { SearchField } from '@/components/ui/SearchField';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { searchApi } from '@/redux/features/search/searchApi';
+import {
+  setQuery as searchSetQuery,
+  setIsOpen as searchSetIsOpen,
+  reset as searchReset,
+} from '@/redux/features/search/searchSlice';
+import { SearchField } from '@/features/search/search-field';
 import { DropdownMenuBase } from '@/components/ui/DropdownMenuBase';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useWindowListeners } from '@/hooks/use-window-listeners';
-import SearchService from '@/services/SearchService';
 
 interface MainNavProps {
   items?: NavItem[];
@@ -22,8 +27,8 @@ interface MainNavProps {
 export function MainNav({ items }: MainNavProps) {
   const path = usePathname();
   const router = useRouter();
-  // search store
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const searchQuery = useAppSelector((state) => state.search.query);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -35,28 +40,18 @@ export function MainNav({ items }: MainNavProps) {
     const search: string = getSearchValue('q');
 
     if (!search?.length || !pathname.includes('/search')) {
-      searchStore.reset();
-      searchStore.setIsOpen(false);
+      dispatch(searchReset());
+      dispatch(searchSetIsOpen(false));
     } else if (search?.length) {
-      searchStore.setIsOpen(true);
-      searchStore.setLoading(true);
-      searchStore.setQuery(search);
+      dispatch(searchSetIsOpen(true));
+      dispatch(searchSetQuery(search));
       setTimeout(() => {
         handleDefaultSearchBtn();
       }, 10);
       setTimeout(() => {
         handleDefaultSearchInp();
       }, 20);
-      SearchService.searchMovies(search)
-        .then(({ results }) => {
-          void searchStore.setShows(results);
-        })
-        .catch((e) => {
-          if (e.name !== 'AbortError') {
-            console.error(e);
-          }
-        })
-        .finally(() => searchStore.setLoading(false));
+      void dispatch(searchApi.endpoints.search.initiate(search));
     }
   };
 
@@ -109,10 +104,10 @@ export function MainNav({ items }: MainNavProps) {
   // Clear search on navigation away from search page
   React.useEffect(() => {
     if (path !== '/search') {
-      searchStore.reset();
-      searchStore.setIsOpen(false);
+      dispatch(searchReset());
+      dispatch(searchSetIsOpen(false));
     }
-  }, [path]);
+  }, [path, dispatch]);
 
 
 
@@ -154,7 +149,7 @@ export function MainNav({ items }: MainNavProps) {
                         ? 'text-white'
                         : 'text-neutral-950 dark:text-white',
                     )}
-                    onClick={() => searchStore.reset()}>
+                    onClick={() => dispatch(searchReset())}>
                     {item.title}
                   </Link>
                 ),
@@ -165,7 +160,7 @@ export function MainNav({ items }: MainNavProps) {
           <DropdownMenuBase
             items={items || []}
             onOpenChange={handleMobileMenuOpenChange}
-            onItemClick={() => searchStore.reset()}
+            onItemClick={() => dispatch(searchReset())}
             trigger={
               <Button
                 variant="ghost"
@@ -188,7 +183,7 @@ export function MainNav({ items }: MainNavProps) {
       <div className="flex items-center gap-1">
         <SearchField
           id="search-input"
-          value={searchStore.query}
+          value={searchQuery}
           onChange={searchShowsByQuery}
           debounceTimeout={2000}
           className={cn('flex')}

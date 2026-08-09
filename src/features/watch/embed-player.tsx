@@ -1,8 +1,8 @@
 'use client';
 import React from 'react';
-import Loading from '../ui/loading';
+import Loading from '@/components/ui/loading';
 import { useRouter } from 'next/navigation';
-import type { MediaType } from '@/types';
+import type { MediaType } from '@/services/tmdb/types';
 
 interface EmbedPlayerProps {
   url: string;

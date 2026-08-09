@@ -1,11 +1,10 @@
-import Hero from '@/components/hero';
-import ShowsContainer from '@/components/shows-container';
+import Hero from '@/features/browse/hero';
+import ShowsContainer from '@/features/browse/shows-container';
 import { siteConfig } from '@/configs/site';
-import { Genre } from '@/enums/genre';
-import { RequestType, type ShowRequest } from '@/enums/request-type';
+import { GENRES, RequestType, type ShowRequest } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import { MediaType, type Show } from '@/types';
+import { getShows } from '@/services/tmdb/shows';
+import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
 import { cacheLife } from 'next/cache';
@@ -59,7 +58,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.COMEDY,
+        genre: GENRES.COMEDY,
         isLatest: true,
       },
       visible: true,
@@ -69,7 +68,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ACTION,
+        genre: GENRES.ACTION,
         isLatest: true,
       },
       visible: true,
@@ -79,7 +78,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ANIMATION,
+        genre: GENRES.ANIMATION,
         isLatest: true,
       },
       visible: true,
@@ -89,7 +88,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.SCIENCE_FICTION,
+        genre: GENRES.SCIENCE_FICTION,
         isLatest: true,
       },
       visible: true,
@@ -99,7 +98,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.HORROR,
+        genre: GENRES.HORROR,
         isLatest: true,
       },
       visible: true,
@@ -109,7 +108,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ROMANCE,
+        genre: GENRES.ROMANCE,
         isLatest: true,
       },
       visible: true,
@@ -119,7 +118,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.THRILLER,
+        genre: GENRES.THRILLER,
         isLatest: true,
       },
       visible: true,
@@ -129,7 +128,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.DOCUMENTARY,
+        genre: GENRES.DOCUMENTARY,
         isLatest: true,
       },
       visible: true,
@@ -154,5 +153,5 @@ async function getMovieData() {
     },
   ];
 
-  return await MovieService.getShows(requests);
+  return await getShows(requests);
 }

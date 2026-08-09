@@ -1,5 +1,5 @@
 import React from 'react';
-import Home from '../../components/main/home';
+import Home from '@/features/browse/home';
 
 
 const Page = async () => {

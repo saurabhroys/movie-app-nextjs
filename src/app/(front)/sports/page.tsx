@@ -1,10 +1,10 @@
-import Hero from '@/components/hero';
-import ShowsContainer from '@/components/shows-container';
+import Hero from '@/features/browse/hero';
+import ShowsContainer from '@/features/browse/shows-container';
 import { siteConfig } from '@/configs/site';
-import { RequestType, type ShowRequest } from '@/enums/request-type';
+import { RequestType, type ShowRequest } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import { MediaType, type Show } from '@/types';
+import { getShows } from '@/services/tmdb/shows';
+import { MediaType, type Show } from '@/services/tmdb/types';
 
 import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
@@ -43,5 +43,5 @@ async function getSportsData() {
       visible: true,
     },
   ];
-  return await MovieService.getShows(requests);
+  return await getShows(requests);
 }

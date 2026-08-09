@@ -1,10 +1,10 @@
-import Hero from '@/components/hero';
-import ShowsContainer from '@/components/shows-container';
+import Hero from '@/features/browse/hero';
+import ShowsContainer from '@/features/browse/shows-container';
 import { siteConfig } from '@/configs/site';
-import { RequestType, type ShowRequest } from '@/enums/request-type';
+import { RequestType, type ShowRequest } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import { MediaType, type Show } from '@/types';
+import { getShows } from '@/services/tmdb/shows';
+import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
 import { cacheLife } from 'next/cache';
@@ -77,7 +77,7 @@ async function getAnimeData() {
       visible: true,
     },
   ];
-  const fetchedShows = await MovieService.getShows(requests);
+  const fetchedShows = await getShows(requests);
   return fetchedShows.map((category, idx) => {
     return {
       ...category,

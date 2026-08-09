@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 type LoadingProps = React.HTMLProps<HTMLDivElement>;

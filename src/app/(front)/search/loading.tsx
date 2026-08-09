@@ -1,6 +1,6 @@
 'use client';
 
-import ShowsSkeleton from '@/components/shows-skeleton';
+import ShowsSkeleton from '@/features/browse/shows-skeleton';
 
 export default function Loading() {
   return (

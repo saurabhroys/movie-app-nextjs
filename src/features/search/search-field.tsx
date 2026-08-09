@@ -1,10 +1,12 @@
+'use client';
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import { Input, type InputProps } from '@/components/ui/input';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
-import { useSearch } from '@/hooks/use-search';
+import { useSearch } from './use-search';
 import { X, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

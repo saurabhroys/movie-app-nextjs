@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Icons } from '../icons';
+import { Icons } from '@/components/shared/icons';
 
 export default function NotFound() {
   const router = useRouter();
