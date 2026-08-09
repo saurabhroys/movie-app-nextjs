@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/shared/icons';
 
 interface DownloadButtonProps {
   mediaId: string;

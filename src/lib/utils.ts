@@ -1,16 +1,6 @@
-import { siteConfig } from '@/configs/site';
 import { env } from '@/env';
-import MovieService from '@/services/MovieService';
-import {
-  MediaType,
-  type KeyWord,
-  type KeyWordResponse,
-  type Show,
-} from '@/types';
-import { type CategorizedShows } from '@/enums/request-type';
-import { type AxiosResponse } from 'axios';
+import { type CategorizedShows, type Show } from '@/services/tmdb/types';
 import { clsx, type ClassValue } from 'clsx';
-import { cache } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -43,44 +33,6 @@ export function formatEnum(input: string): string {
   return capitalizedWords.join(' ');
 }
 
-export function getSearchValue(input: string): string {
-  const search = window.location.search;
-  if (!search) return '';
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(input) ?? '';
-}
-
-export function getSlug(id: number, name: string): string {
-  // build slug from name and id
-  const regex = /([^\x00-\x7F]|[&$\+,:;=\?@#\s<>\[\]\{\}|\\\^%])+/gm;
-  return `${name.toLowerCase().replace(regex, '-')}-${id}`;
-}
-
-export function buildMovieUrl(show: Show): string {
-  const name = getNameFromShow(show);
-  const id = show.id;
-  return `${env.NEXT_PUBLIC_APP_URL}/${show.media_type === MediaType.MOVIE ? 'movies' : 'tv-shows'
-    }/${getSlug(id, name)}`;
-}
-
-export function getIdFromSlug(slug: string): number {
-  // get id from slug
-  const id: string | undefined = slug.split('-').pop();
-  return id ? parseInt(id) : 0;
-}
-
-export function clearSearch(): void {
-  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
-  if (!searchInput) return;
-  searchInput.blur();
-  searchInput.value = '';
-  searchInput.defaultValue = '';
-}
-
-export function getNameFromShow(show: Show | null): string {
-  return show?.name ?? show?.title ?? '';
-}
-
 export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
   timeout: number,
@@ -108,83 +60,6 @@ export function getMobileDetect(userAgent: NavigatorID['userAgent']) {
     isIos,
     isSSR,
   };
-}
-
-export function handleDefaultSearchBtn(): void {
-  const seachBtn: HTMLElement | null = document.getElementById('search-btn');
-  if (seachBtn != null) seachBtn.focus();
-}
-
-export function handleDefaultSearchInp(): void {
-  const searchInput: HTMLInputElement | null = document.getElementById(
-    'search-input',
-  ) as HTMLInputElement;
-  if (searchInput != null) {
-    const value: string = getSearchValue('q');
-    searchInput.value = value;
-    searchInput.defaultValue = value;
-    searchInput.setSelectionRange(value.length, value.length);
-    searchInput.focus();
-  }
-}
-
-export const handleMetadata = cache(
-  async (slug: string, page: string, type: 'tv' | 'movie') => {
-    const mediaId: number = getIdFromSlug(slug);
-    let keywords: string[] = [];
-    let data: Show | null = null;
-    try {
-      const response: AxiosResponse<Show> =
-        'tv' === type
-          ? await MovieService.findTvSeries(mediaId)
-          : await MovieService.findMovie(mediaId);
-      data = response.data;
-      const keywordResponse: AxiosResponse<KeyWordResponse> =
-        await MovieService.getKeywords(mediaId, type);
-      const res =
-        type === 'tv'
-          ? keywordResponse.data.results
-          : keywordResponse.data.keywords;
-      keywords = res.map((item: KeyWord) => item.name).filter(Boolean);
-    } catch (error) {
-      console.error(error);
-    }
-
-    return {
-      description: data?.overview,
-      title: getNameFromShow(data),
-      keywords: [
-        ...keywords,
-        slug.replace(`-${mediaId}`, ''),
-        env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
-      ].filter(Boolean),
-      openGraph: {
-        type: 'website',
-        locale: 'en_US',
-        url: `${siteConfig.url}/${page}/${slug}`,
-        images: `https://image.tmdb.org/t/p/original${data?.backdrop_path ?? data?.poster_path ?? ''
-          }`,
-        title: getNameFromShow(data),
-        description: data?.overview ?? '',
-        siteName: siteConfig.name || 'TuneBox',
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: getNameFromShow(data),
-        description: data?.overview ?? '',
-        images: `https://image.tmdb.org/t/p/original${data?.backdrop_path ?? data?.poster_path ?? ''
-          }`,
-        creator: siteConfig.author,
-      },
-    };
-  },
-);
-
-export async function handleModal(slug: string): Promise<Show | null> {
-  if (!slug) return null;
-  const mediaId: number = getIdFromSlug(slug);
-  if (!mediaId) return null;
-  return MovieService.findCurrentMovie(mediaId, slug);
 }
 
 export function getRandomShow(allShows: CategorizedShows[]): Show | null {

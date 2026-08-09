@@ -1,70 +1,54 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useSearchStore } from '@/stores/search';
-import SearchService from '@/services/SearchService';
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { searchApi, useSearchQuery } from '@/redux/features/search/searchApi';
+import {
+  setQuery as searchSetQuery,
+  setIsOpen as searchSetIsOpen,
+  reset as searchReset,
+} from '@/redux/features/search/searchSlice';
+import { clearSearch as clearSearchDom } from '@/lib/dom';
 
 interface UseSearchOptions {
   debounceTimeout?: number;
   minQueryLength?: number;
-  onError?: (error: Error) => void;
 }
 
 export function useSearch(options: UseSearchOptions = {}) {
-  const { debounceTimeout = 500, minQueryLength = 2, onError } = options;
+  const { debounceTimeout = 500, minQueryLength = 2 } = options;
 
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const query = useAppSelector((state) => state.search.query);
+  const isOpen = useAppSelector((state) => state.search.isOpen);
+  const [activeQuery, setActiveQuery] = useState('');
+  const { data: shows = [], isFetching: loading } = useSearchQuery(activeQuery, {
+    skip: activeQuery.trim().length < minQueryLength,
+  });
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const search = useCallback(
-    async (query: string) => {
+  const searchImmediate = useCallback(
+    (value: string) => {
       // Clear existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
 
-      // Cancel existing request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      // Clear results if query is too short
-      if (query.trim().length < minQueryLength) {
-        searchStore.setShows([]);
-        searchStore.setLoading(false);
-        searchStore.setQuery(query);
+      dispatch(searchSetQuery(value));
+      const trimmed = value.trim();
+      if (trimmed.length < minQueryLength) {
+        setActiveQuery('');
         return;
       }
-
-      // Set loading state
-      searchStore.setLoading(true);
-      searchStore.setQuery(query);
-
-      try {
-        const { results, requestId } = await SearchService.searchMovies(query);
-
-        // Get fresh state at resolution time to avoid stale closure race conditions
-        const currentRequestId = useSearchStore.getState().currentRequestId;
-        if (requestId === currentRequestId || !currentRequestId) {
-          searchStore.setShows(results);
-          searchStore.setCurrentRequestId(requestId);
-        }
-      } catch (error) {
-        // Ignore abort errors; surface others via onError callback
-        const errorName = (error as { name?: string } | null)?.name;
-        if (errorName !== 'AbortError') {
-          console.error('Search error:', error);
-          searchStore.setShows([]);
-          onError?.(error instanceof Error ? error : new Error(String(error)));
-        }
-      } finally {
-        searchStore.setLoading(false);
-      }
+      setActiveQuery(trimmed);
+      void dispatch(searchApi.endpoints.search.initiate(trimmed));
     },
-    [minQueryLength, onError],
+    [minQueryLength, dispatch],
   );
 
-  const debouncedSearch = useCallback(
-    (query: string) => {
+  const search = useCallback(
+    (value: string) => {
       // Clear existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -72,33 +56,24 @@ export function useSearch(options: UseSearchOptions = {}) {
 
       // Set timeout for debounced search
       timeoutRef.current = setTimeout(() => {
-        void search(query);
+        searchImmediate(value);
       }, debounceTimeout);
     },
-    [search, debounceTimeout],
+    [searchImmediate, debounceTimeout],
   );
 
   const clearSearch = useCallback(() => {
     // Clear timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
-    }
-
-    // Cancel request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+      timeoutRef.current = null;
     }
 
     // Reset store
-    searchStore.reset();
-  }, [searchStore]);
-
-  const cancelCurrentRequest = useCallback(() => {
-    if (searchStore.currentRequestId) {
-      SearchService.cancelRequest(searchStore.currentRequestId);
-      searchStore.setCurrentRequestId(null);
-    }
-  }, [searchStore]);
+    setActiveQuery('');
+    dispatch(searchReset());
+    clearSearchDom();
+  }, [dispatch]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -106,22 +81,17 @@ export function useSearch(options: UseSearchOptions = {}) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      cancelCurrentRequest();
     };
-  }, [cancelCurrentRequest]);
+  }, []);
 
   return {
-    search: debouncedSearch,
-    searchImmediate: search,
+    search,
+    searchImmediate,
     clearSearch,
-    cancelCurrentRequest,
-    query: searchStore.query,
-    shows: searchStore.shows,
-    loading: searchStore.loading,
-    isOpen: searchStore.isOpen,
-    setIsOpen: searchStore.setIsOpen,
+    query,
+    shows,
+    loading,
+    isOpen,
+    setIsOpen: (value: boolean) => dispatch(searchSetIsOpen(value)),
   };
 }

@@ -12,7 +12,7 @@
 //   AccordionItem,
 //   AccordionTrigger,
 // } from "@/components/ui/accordion";
-// import { Icons } from "@/components/icons";
+// import { Icons } from "@/components/shared/icons";
 // import { useLockBody } from "@/hooks/use-lock-body";
 //
 // type MobileNavProps = {

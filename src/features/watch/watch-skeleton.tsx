@@ -1,7 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import ShowsSkeleton from '@/components/shows-skeleton';
+import ShowsSkeleton from '@/features/browse/shows-skeleton';
 import { useSearchParams } from 'next/navigation';
 
 export default function WatchSkeleton() {
@@ -57,7 +57,7 @@ export default function WatchSkeleton() {
                 </div>
 
                 {/* Show Title */}
-                <Skeleton className="h-8 w-56 md:h-12 md:w-[420px] bg-neutral-800 rounded-lg" />
+                <Skeleton className="h-8 w-56 md:h-12 md:w-105 bg-neutral-800 rounded-lg" />
 
                 {/* Badges metadata list */}
                 <div className="flex items-center gap-2 mt-1">

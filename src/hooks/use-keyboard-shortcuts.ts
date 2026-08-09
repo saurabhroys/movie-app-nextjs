@@ -2,8 +2,17 @@
 
 import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePreviewModalStore } from '@/stores/preview-modal';
-import { useSearchStore } from '@/stores/search';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import {
+  setIsOpen as previewSetIsOpen,
+  setPlay as previewSetPlay,
+  reset as previewReset,
+} from '@/features/modals/previewModalSlice';
+import {
+  setIsOpen as searchSetIsOpen,
+  reset as searchReset,
+} from '@/redux/features/search/searchSlice';
+import { clearSearch } from '@/lib/dom';
 
 interface ShortcutConfig {
   key: string;
@@ -19,8 +28,8 @@ interface ShortcutConfig {
 export function useKeyboardShortcuts() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const modalStore = usePreviewModalStore();
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const play = useAppSelector((state) => state.previewModal.play);
 
   // Ensure router is only used after mount
   useEffect(() => {
@@ -86,7 +95,7 @@ export function useKeyboardShortcuts() {
 
   // Search shortcuts
   const openSearch = useCallback(() => {
-    searchStore.setIsOpen(true);
+    dispatch(searchSetIsOpen(true));
     // Focus search input after a short delay to ensure it's rendered
     setTimeout(() => {
       const searchInput = document.getElementById(
@@ -96,24 +105,25 @@ export function useKeyboardShortcuts() {
         searchInput.focus();
       }
     }, 100);
-  }, [searchStore]);
+  }, [dispatch]);
 
   const closeSearch = useCallback(() => {
-    searchStore.setIsOpen(false);
-    searchStore.reset();
-  }, [searchStore]);
+    dispatch(searchSetIsOpen(false));
+    dispatch(searchReset());
+    clearSearch();
+  }, [dispatch]);
 
   // Modal shortcuts
   const closeModal = useCallback(() => {
-    modalStore.setIsOpen(false);
-    modalStore.reset();
-  }, [modalStore]);
+    dispatch(previewSetIsOpen(false));
+    dispatch(previewReset());
+  }, [dispatch]);
 
   const togglePlayPause = useCallback(() => {
     // This would need to be implemented based on your video player
     // For now, we'll just toggle the play state
-    modalStore.setPlay(!modalStore.play);
-  }, [modalStore]);
+    dispatch(previewSetPlay(!play));
+  }, [play, dispatch]);
 
   // Carousel shortcuts
   const scrollCarouselLeft = useCallback(() => {

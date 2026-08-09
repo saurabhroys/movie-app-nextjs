@@ -1,11 +1,10 @@
-import Hero from '@/components/hero';
-import ShowsContainer from '@/components/shows-container';
+import Hero from '@/features/browse/hero';
+import ShowsContainer from '@/features/browse/shows-container';
 import { siteConfig } from '@/configs/site';
-import { Genre } from '@/enums/genre';
-import { RequestType, type ShowRequest } from '@/enums/request-type';
+import { GENRES, RequestType, type ShowRequest } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import { MediaType, type Show } from '@/types';
+import { getShows } from '@/services/tmdb/shows';
+import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
 import { cacheLife } from 'next/cache';
@@ -68,7 +67,7 @@ async function getTvShowData() {
       req: {
         requestType: RequestType.TOP_RATED,
         mediaType: MediaType.TV,
-        genre: Genre.FAMILY,
+        genre: GENRES.FAMILY,
       },
       visible: true,
     },
@@ -77,7 +76,7 @@ async function getTvShowData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.TV,
-        genre: Genre.COMEDY,
+        genre: GENRES.COMEDY,
       },
       visible: true,
     },
@@ -86,7 +85,7 @@ async function getTvShowData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.TV,
-        genre: Genre.ACTION_ADVENTURE,
+        genre: GENRES.ACTION_ADVENTURE,
       },
       visible: true,
     },
@@ -95,7 +94,7 @@ async function getTvShowData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.TV,
-        genre: Genre.DRAMA,
+        genre: GENRES.DRAMA,
       },
       visible: true,
     },
@@ -104,7 +103,7 @@ async function getTvShowData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.TV,
-        genre: Genre.THRILLER,
+        genre: GENRES.THRILLER,
       },
       visible: true,
     },
@@ -133,5 +132,5 @@ async function getTvShowData() {
       visible: true,
     },
   ];
-  return await MovieService.getShows(requests);
+  return await getShows(requests);
 }

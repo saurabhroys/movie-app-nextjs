@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import EmbedPlayer from './embed-player';
 import DownloadButton from './download-button';
-import { MediaType } from '@/types';
-import { Icons } from '@/components/icons';
+import { MediaType } from '@/services/tmdb/types';
+import { Icons } from '@/components/shared/icons';
 import { siteConfig } from '@/configs/site';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 
@@ -42,6 +42,27 @@ const ANIME_PLAYERS: PlayerOption[] = [
   { id: 'autoembed-anime', name: 'AutoEmbed' },
   { id: 'vidsrc-to-tv-anime', name: 'VidSrc.to' },
 ];
+
+const ZXC_PROBE_TTL = 5 * 60 * 1000; // 5 minutes
+const ZXC_PROBE_TIMEOUT = 3000; // 3 seconds
+let zxcProbePromise: Promise<boolean> | null = null;
+let zxcProbeTimestamp = 0;
+
+const probeZxcStream = (): Promise<boolean> => {
+  const now = Date.now();
+  if (zxcProbePromise && now - zxcProbeTimestamp < ZXC_PROBE_TTL) {
+    return zxcProbePromise;
+  }
+  const timeout = new Promise<boolean>((resolve) => {
+    setTimeout(() => resolve(false), ZXC_PROBE_TIMEOUT);
+  });
+  const probe = fetch('https://zxcstream.xyz', { mode: 'no-cors', cache: 'no-store' })
+    .then(() => true)
+    .catch(() => false);
+  zxcProbePromise = Promise.race([probe, timeout]);
+  zxcProbeTimestamp = now;
+  return zxcProbePromise;
+};
 
 const buildPlayerUrl = (
   playerId: string,
@@ -172,9 +193,13 @@ const PlayerSelector = ({
   }, [resetTimer]);
 
   React.useEffect(() => {
-    fetch('https://zxcstream.xyz', { mode: 'no-cors', cache: 'no-store' })
-      .then(() => setZxcOnline(true))
-      .catch(() => setZxcOnline(false));
+    let mounted = true;
+    probeZxcStream().then((online) => {
+      if (mounted) setZxcOnline(online);
+    });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const players = React.useMemo(() => {

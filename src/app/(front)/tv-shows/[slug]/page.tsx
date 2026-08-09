@@ -1,5 +1,5 @@
 import { type Metadata } from 'next';
-import { handleMetadata } from '@/lib/utils';
+import { handleMetadata } from '@/lib/metadata';
 import TvShowPage from '../page';
 
 type Props = {

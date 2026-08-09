@@ -1,6 +1,7 @@
-import SearchContainer from '@/components/search-container';
-import SearchService from '@/services/SearchService';
+import SearchContainer from '@/features/search/search-container';
+import SearchService from '@/services/tmdb/search.service';
 import { redirect } from 'next/navigation';
+import { cacheLife } from 'next/cache';
 
 export default async function SearchPage({
   searchParams,
@@ -18,6 +19,8 @@ export default async function SearchPage({
 }
 
 async function CachedSearch({ query }: { query: string }) {
+  'use cache';
+  cacheLife('search');
   const { results } = await SearchService.searchMovies(query);
   return <SearchContainer query={query} shows={results} />;
 }

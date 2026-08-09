@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { type Show } from '@/types';
-import { ShowCard } from './shows-cards';
+import { type Show } from '@/services/tmdb/types';
+import { ShowCard } from '@/features/browse/shows-cards';
 import { usePathname } from 'next/navigation';
-import ShowsSkeleton from './shows-skeleton';
+import ShowsSkeleton from '@/features/browse/shows-skeleton';
 
 interface RecommendedMoviesProps {
   shows: Show[];

@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '@/server/trpc';
-import MovieService from '@/services/MovieService';
-import { RequestType } from '@/enums/request-type';
-import { MediaType } from '@/types';
-import { Genre } from '@/enums/genre';
+import { executeRequest } from '@/services/tmdb/shows';
+import {
+  GENRES,
+  MediaType,
+  RequestType,
+} from '@/services/tmdb/types';
 
 export const movieRouter = router({
     getInfiniteShows: publicProcedure
@@ -11,7 +13,7 @@ export const movieRouter = router({
             z.object({
                 requestType: z.nativeEnum(RequestType),
                 mediaType: z.nativeEnum(MediaType),
-                genre: z.nativeEnum(Genre).optional(),
+                genre: z.nativeEnum(GENRES).optional(),
                 isLatest: z.boolean().optional(),
                 networkId: z.number().optional(),
                 page: z.number().optional(),
@@ -19,9 +21,9 @@ export const movieRouter = router({
             }),
         )
         .query(async ({ input }) => {
-            // console.log('movie.getInfiniteShows input:', JSON.stringify(input, null, 2));
+            'use cache';
             const page = input.cursor ?? 1;
-            const response = await MovieService.executeRequest({
+            const response = await executeRequest({
                 ...input,
                 page,
             });

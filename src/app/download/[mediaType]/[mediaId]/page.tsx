@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/shared/icons';
 import Loading from '@/components/ui/loading';
 
 export default function DownloadPage() {

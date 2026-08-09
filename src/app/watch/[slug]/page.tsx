@@ -1,11 +1,11 @@
 import React from 'react';
 import ModalCloser from '@/components/modal-closer';
-import MovieService from '@/services/MovieService';
-import { type Show, type ISeason } from '@/types';
-import NotFound from '@/components/watch/not-found-redirect';
+import MovieService from '@/services/tmdb/movie.service';
+import { type Show, type Season } from '@/services/tmdb/types';
+import NotFound from '@/features/watch/not-found-redirect';
 import { redirect } from 'next/navigation';
 import { type AxiosResponse } from 'axios';
-import WatchClientPage from './watch-client-page';
+import WatchClientPage from '@/features/watch/watch-client-page';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -26,7 +26,7 @@ export default async function Page(props: PageProps) {
 
   let showDetails: Show | null = null;
   let recommendedShows: Show[] = [];
-  let seasons: ISeason[] = [];
+  let seasons: Season[] = [];
 
   try {
     if (type === 'movie') {
@@ -66,14 +66,14 @@ export default async function Page(props: PageProps) {
 
         if (showDetails) {
           const numSeasons = showDetails.number_of_seasons || 1;
-          const seasonPromises = [] as Promise<AxiosResponse<ISeason>>[];
+          const seasonPromises = [] as Promise<AxiosResponse<Season>>[];
           const maxSeasons = type === 'anime' ? Math.min(numSeasons, 10) : numSeasons;
           for (let i = 1; i <= maxSeasons; i++) {
             seasonPromises.push(MovieService.getSeasons(mediaId, i));
           }
           const seasonResponses = await Promise.allSettled(seasonPromises);
           seasons = seasonResponses
-            .filter((r): r is PromiseFulfilledResult<AxiosResponse<ISeason>> => r.status === 'fulfilled')
+            .filter((r): r is PromiseFulfilledResult<AxiosResponse<Season>> => r.status === 'fulfilled')
             .map((r) => r.value.data);
         }
       } else {

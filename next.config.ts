@@ -14,6 +14,11 @@ const config: NextConfig = {
             revalidate: 1800,
             expire: 86400,
         },
+        search: {
+            stale: 60,
+            revalidate: 60,
+            expire: 600,
+        },
     },
     async headers() {
         return [

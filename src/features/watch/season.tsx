@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { type Show, type ISeason } from '@/types';
-import CustomImage from './custom-image';
+import { type Show, type Season } from '@/services/tmdb/types';
+import CustomImage from '@/components/shared/custom-image';
 
 interface SeasonsEpisodesSelectorProps {
   tvShow?: Show;
-  seasons: ISeason[];
+  seasons: Season[];
   tvId?: number;
   onSeasonEpisodeChange?: (season: number, episode: number) => void;
   selectedSeason?: number;
@@ -65,7 +65,7 @@ const SeasonsEpisodesSelector = ({
                       : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:bg-neutral-800'
                   }`}>
                   <span>S {season.season_number}</span>
-                  <span className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white ring-1 ring-neutral-950 ${
+                  <span className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold text-white ring-1 ring-neutral-950 ${
                     selectedSeason === season.season_number ? 'bg-blue-600' : 'bg-zinc-700'
                   }`}>
                     {season.episodes?.length || 0}

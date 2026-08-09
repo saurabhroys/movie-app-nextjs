@@ -3,7 +3,8 @@
 // import { productCategories } from "@/config/products"
 // import { slugify } from "@/lib/utils"
 
-import { Icons } from '@/components/icons';
+import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { LogoLong } from '@/components/shared/logo';
 import { env } from '@/env';
 
 export type SiteConfig = typeof siteConfig;
@@ -12,7 +13,7 @@ export const siteConfig = {
   name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',
-  logoLong: Icons.logo_long,
+  logoLong: LogoLong,
   logoPng: '/logo.png',
   description:
     'Watch movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more.',
@@ -45,22 +46,22 @@ export const siteConfig = {
     {
       title: 'Facebook',
       href: `${env.NEXT_PUBLIC_FACEBOOK}`,
-      icon: Icons.facebook,
+      icon: Facebook,
     },
     {
       title: 'Instagram',
       href: `${env.NEXT_PUBLIC_INSTAGRAM}`,
-      icon: Icons.instagram,
+      icon: Instagram,
     },
     {
       title: 'Twitter',
       href: `${env.NEXT_PUBLIC_TWITTER}`,
-      icon: Icons.twitter,
+      icon: Twitter,
     },
     {
       title: 'Youtube',
       href: `${env.NEXT_PUBLIC_YOUTUBE}`,
-      icon: Icons.youtube,
+      icon: Youtube,
     },
   ],
   footerItems: [

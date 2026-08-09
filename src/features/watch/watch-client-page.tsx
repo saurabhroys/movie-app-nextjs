@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import RecommendedMovies from '@/components/recommended-movies';
-import PlayerSelector from '@/components/watch/player-selector';
-import SeasonsEpisodesSelector from '@/components/season';
-import type { Show, ISeason } from '@/types';
+import RecommendedMovies from './recommended-movies';
+import PlayerSelector from './player-selector';
+import SeasonsEpisodesSelector from './season';
+import type { Show, Season } from '@/services/tmdb/types';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/shared/icons';
 
 interface WatchClientPageProps {
   showDetails: Show;
-  seasons: ISeason[];
+  seasons: Season[];
   mediaId: string;
   mediaType: 'movie' | 'tv' | 'anime';
   imdbId?: string;
