@@ -20,10 +20,6 @@ export const env = createEnv({
         NEXT_PUBLIC_TMDB_TOKEN: z.string().optional(),
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: z.string().optional(),
         NEXT_PUBLIC_SITE_NAME: z.string().optional(),
-        NEXT_PUBLIC_TWITTER: z.string().url().optional(),
-        NEXT_PUBLIC_FACEBOOK: z.string().url().optional(),
-        NEXT_PUBLIC_INSTAGRAM: z.string().url().optional(),
-        NEXT_PUBLIC_YOUTUBE: z.string().url().optional(),
         NEXT_PUBLIC_IMAGE_DOMAIN: z.string().optional(),
         NEXT_PUBLIC_TMDB_API_URL: z.string().url().optional(),
     },
@@ -40,13 +36,6 @@ export const env = createEnv({
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID:
             process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID,
         NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME ?? 'TuneBox',
-        NEXT_PUBLIC_TWITTER: process.env.NEXT_PUBLIC_TWITTER ?? 'https://x.com',
-        NEXT_PUBLIC_FACEBOOK:
-            process.env.NEXT_PUBLIC_FACEBOOK ?? 'https://facebook.com',
-        NEXT_PUBLIC_INSTAGRAM:
-            process.env.NEXT_PUBLIC_INSTAGRAM ?? 'https://instagram.com',
-        NEXT_PUBLIC_YOUTUBE:
-            process.env.NEXT_PUBLIC_YOUTUBE ?? 'https://youtube.com',
         NEXT_PUBLIC_IMAGE_DOMAIN:
             process.env.NEXT_PUBLIC_IMAGE_DOMAIN ?? 'image.tmdb.org',
         NEXT_PUBLIC_TMDB_API_URL:

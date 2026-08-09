@@ -30,7 +30,7 @@ Environment variables are validated in `src/env.ts` via `@t3-oss/env-nextjs`. Se
 - `NEXT_PUBLIC_SITE_NAME` — display name
 - `NEXT_PUBLIC_IMAGE_DOMAIN` — image host (default `image.tmdb.org`)
 - `NEXT_PUBLIC_TMDB_API_URL` — TMDb API base (default `https://api.themoviedb.org/3`)
-- `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID`, `NEXT_PUBLIC_TWITTER`, `NEXT_PUBLIC_FACEBOOK`, `NEXT_PUBLIC_INSTAGRAM`, `NEXT_PUBLIC_YOUTUBE` — analytics/social
+- `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` — analytics
 
 ## Architecture
 
