@@ -71,7 +71,7 @@
     "postcss": "^8.4.29",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "react-server-dom-webpack": "^19.2.4",
+    "react-server-dom-webpack": "^19.2.8",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.2.2",
     "vinext": "^0.0.24",
