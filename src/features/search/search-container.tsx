@@ -1,0 +1,117 @@
+'use client';
+
+import React from 'react';
+import { MediaType, type Show } from '@/services/tmdb/types';
+import ShowsGrid from '@/features/browse/shows-grid';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { searchApi } from '@/redux/features/search/searchApi';
+import { setQuery, setIsOpen } from '@/redux/features/search/searchSlice';
+import { cn } from '@/lib/utils';
+import { handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/dom';
+import { Button } from '@/components/ui/button';
+
+interface SearchContainerProps {
+  query: string;
+  shows: Show[];
+}
+
+function SearchContainer({ shows, query }: SearchContainerProps) {
+  const dispatch = useAppDispatch();
+  const searchQuery = useAppSelector((state) => state.search.query);
+  const [activeFilter, setActiveFilter] = React.useState<MediaType | 'all'>(
+    'all',
+  );
+
+  React.useEffect(() => {
+    dispatch(setIsOpen(true));
+    dispatch(setQuery(query));
+    dispatch(searchApi.util.upsertQueryData('search', query, shows));
+    const timer1: NodeJS.Timeout = setTimeout(() => {
+      handleDefaultSearchBtn();
+    }, 5);
+    const timer2: NodeJS.Timeout = setTimeout(() => {
+      handleDefaultSearchInp();
+    }, 10);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [dispatch, query, shows]);
+
+  const filteredShows = React.useMemo(() => {
+    if (activeFilter === 'all') return shows;
+    return shows.filter((show) => {
+      // In some cases, media_type might be anime if it's determined by the query or source
+      if (activeFilter === MediaType.ANIME) {
+        // Simple heuristic: check if genres contain animation (though not perfect)
+        // or if it was tagged as anime by the service
+        return (
+          show.media_type === MediaType.ANIME ||
+          (show.media_type === MediaType.TV &&
+            show.name?.toLowerCase().includes('anime'))
+        );
+      }
+      return show.media_type === activeFilter;
+    });
+  }, [shows, activeFilter]);
+
+  const filters: { label: string; value: MediaType | 'all' }[] = [
+    { label: 'All', value: 'all' },
+    { label: 'Movies', value: MediaType.MOVIE },
+    { label: 'TV Shows', value: MediaType.TV },
+    { label: 'Anime', value: MediaType.ANIME },
+  ];
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="container mt-2 md:mt-20 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-1 w-full sm:w-auto">
+          <span className="text-sm hidden sm:block font-medium text-neutral-400 shrink-0">Filter by:</span>
+          {filters.map((filter) => (
+            <Button
+              key={filter.value}
+              variant={activeFilter === filter.value ? 'default' : 'outline'}
+              size="sm"
+              className={cn(
+                'rounded-full px-4 transition-all duration-300 shrink-0',
+                activeFilter === filter.value
+                  ? 'bg-white text-black hover:bg-neutral-200'
+                  : 'border-neutral-700 bg-transparent text-white hover:bg-neutral-800',
+              )}
+              onClick={() => setActiveFilter(filter.value)}>
+                {filter.label}
+            </Button>
+          ))}
+        </div>
+        {filteredShows.length > 0 && (
+          <span className="text-xs text-neutral-500 shrink-0 sm:ml-auto">
+            {filteredShows.length} results found
+          </span>
+        )}
+      </div>
+
+      <ShowsGrid
+        shows={filteredShows}
+        query={searchQuery}
+      />
+
+      {filteredShows.length === 0 && shows.length > 0 && (
+        <div className="container -mt-10 flex flex-col items-center justify-center py-20 text-center">
+          <p className="mb-4 text-neutral-400">
+            No {activeFilter === MediaType.ANIME ? 'anime' : activeFilter === MediaType.MOVIE ? 'movies' : 'TV shows'} found for this search.
+          </p>
+          <Button 
+            variant="ghost" 
+            className="text-white underline underline-offset-4 hover:bg-white/5"
+            onClick={() => setActiveFilter('all')}
+          >
+            Clear filters
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default SearchContainer;

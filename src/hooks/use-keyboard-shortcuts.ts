@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import { useModalStore } from '@/stores/modal';
-import { useSearchStore } from '@/stores/search';
+import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import {
+  setIsOpen as previewSetIsOpen,
+  setPlay as previewSetPlay,
+  reset as previewReset,
+} from '@/features/modals/previewModalSlice';
+import {
+  setIsOpen as searchSetIsOpen,
+  reset as searchReset,
+} from '@/redux/features/search/searchSlice';
+import { clearSearch } from '@/lib/dom';
 
 interface ShortcutConfig {
   key: string;
@@ -20,10 +28,8 @@ interface ShortcutConfig {
 export function useKeyboardShortcuts() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
-  const { setTheme, theme } = useTheme();
-  const modalStore = useModalStore();
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const play = useAppSelector((state) => state.previewModal.play);
 
   // Ensure router is only used after mount
   useEffect(() => {
@@ -35,7 +41,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/');
-    } catch (error) {
+    } catch {
       // Router not ready, fallback to window.location
       if (typeof window !== 'undefined') {
         window.location.href = '/';
@@ -47,7 +53,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/movies');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/movies';
       }
@@ -58,7 +64,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/tv-shows');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/tv-shows';
       }
@@ -69,7 +75,7 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/anime');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/anime';
       }
@@ -80,27 +86,16 @@ export function useKeyboardShortcuts() {
     if (!isMounted) return;
     try {
       router.push('/new-and-popular');
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         window.location.href = '/new-and-popular';
       }
     }
   }, [router, isMounted]);
 
-  const navigateToSearch = useCallback(() => {
-    if (!isMounted) return;
-    try {
-      router.push('/search');
-    } catch (error) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/search';
-      }
-    }
-  }, [router, isMounted]);
-
   // Search shortcuts
   const openSearch = useCallback(() => {
-    searchStore.setIsOpen(true);
+    dispatch(searchSetIsOpen(true));
     // Focus search input after a short delay to ensure it's rendered
     setTimeout(() => {
       const searchInput = document.getElementById(
@@ -110,40 +105,25 @@ export function useKeyboardShortcuts() {
         searchInput.focus();
       }
     }, 100);
-  }, [searchStore]);
+  }, [dispatch]);
 
   const closeSearch = useCallback(() => {
-    searchStore.setIsOpen(false);
-    searchStore.reset();
-  }, [searchStore]);
-
-  // Theme shortcuts
-  const toggleTheme = useCallback(() => {
-    const themes = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(theme || 'system');
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  }, [theme, setTheme]);
-
-  const setLightTheme = useCallback(() => {
-    setTheme('light');
-  }, [setTheme]);
-
-  const setDarkTheme = useCallback(() => {
-    setTheme('dark');
-  }, [setTheme]);
+    dispatch(searchSetIsOpen(false));
+    dispatch(searchReset());
+    clearSearch();
+  }, [dispatch]);
 
   // Modal shortcuts
   const closeModal = useCallback(() => {
-    modalStore.setIsOpen(false);
-    modalStore.reset();
-  }, [modalStore]);
+    dispatch(previewSetIsOpen(false));
+    dispatch(previewReset());
+  }, [dispatch]);
 
   const togglePlayPause = useCallback(() => {
     // This would need to be implemented based on your video player
     // For now, we'll just toggle the play state
-    modalStore.setPlay(!modalStore.play);
-  }, [modalStore]);
+    dispatch(previewSetPlay(!play));
+  }, [play, dispatch]);
 
   // Carousel shortcuts
   const scrollCarouselLeft = useCallback(() => {
@@ -174,6 +154,7 @@ export function useKeyboardShortcuts() {
   const showHelp = useCallback(() => {
     // Create a help modal or tooltip
     const helpModal = document.createElement('div');
+    helpModalRef.current = helpModal;
     helpModal.className =
       'fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md';
     helpModal.innerHTML = `
@@ -205,13 +186,6 @@ export function useKeyboardShortcuts() {
               </div>
             </div>
             <div>
-              <h3 class="font-semibold mb-2">Theme</h3>
-              <div class="space-y-1 text-sm">
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">T</kbd> Toggle Theme</div>
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">L</kbd> Light Theme</div>
-                <div class="my-2"><kbd class="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded">D</kbd> Dark Theme</div>
-              </div>
-            </div>
             <div>
               <h3 class="font-semibold mb-2">Carousel</h3>
               <div class="space-y-1 text-sm">
@@ -253,8 +227,8 @@ export function useKeyboardShortcuts() {
     });
   }, []);
 
-  // Define all shortcuts
-  const shortcuts: ShortcutConfig[] = [
+  // Define all shortcuts - memoized to prevent listener churn
+  const shortcuts = useMemo<ShortcutConfig[]>(() => [
     // Navigation shortcuts
     {
       key: '1',
@@ -321,25 +295,6 @@ export function useKeyboardShortcuts() {
       preventDefault: true,
     },
 
-    // Theme shortcuts
-    {
-      key: 't',
-      description: 'Toggle Theme',
-      action: toggleTheme,
-      preventDefault: true,
-    },
-    {
-      key: 'l',
-      description: 'Light Theme',
-      action: setLightTheme,
-      preventDefault: true,
-    },
-    {
-      key: 'd',
-      description: 'Dark Theme',
-      action: setDarkTheme,
-      preventDefault: true,
-    },
 
     // Modal shortcuts
     {
@@ -383,7 +338,32 @@ export function useKeyboardShortcuts() {
       action: showHelp,
       preventDefault: true,
     }, // Shift+H for help
-  ];
+  ], [
+    navigateToHome,
+    navigateToMovies,
+    navigateToTVShows,
+    navigateToAnime,
+    navigateToNewAndPopular,
+    openSearch,
+    closeSearch,
+    closeModal,
+    togglePlayPause,
+    scrollCarouselLeft,
+    scrollCarouselRight,
+    showHelp,
+  ]);
+
+  // Track help modal for cleanup on unmount
+  const helpModalRef = useRef<HTMLDivElement | null>(null);
+
+  // Cleanup help modal on unmount
+  useEffect(() => {
+    return () => {
+      if (helpModalRef.current) {
+        helpModalRef.current.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

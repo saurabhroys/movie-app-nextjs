@@ -1,96 +1,68 @@
 'use client';
 
 import React from 'react';
-import { type Show, type NavItem } from '@/types';
+import { type NavItem } from '@/types';
 import Link from 'next/link';
-import {
-  cn,
-  getSearchValue,
-  handleDefaultSearchBtn,
-  handleDefaultSearchInp,
-} from '@/lib/utils';
-import { siteConfig } from '@/configs/site';
-import { Icons } from '@/components/icons';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { DropdownMenuTrigger } from '@/components/compat/react19-compat';
+import { cn } from '@/lib/utils';
+import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/dom';
+import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSearchStore } from '@/stores/search';
-// import { ModeToggle as ThemeToggle } from '@/components/theme-toggle';
-import { DebouncedInput } from '@/components/debounced-input';
-import MovieService from '@/services/MovieService';
-import SearchService from '@/services/SearchService';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { searchApi } from '@/redux/features/search/searchApi';
+import {
+  setQuery as searchSetQuery,
+  setIsOpen as searchSetIsOpen,
+  reset as searchReset,
+} from '@/redux/features/search/searchSlice';
+import { SearchField } from '@/features/search/search-field';
+import { DropdownMenuBase } from '@/components/ui/DropdownMenuBase';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
-import { ServerRecommendationSwitch } from '@/components/server-recommendation-switch';
+import { useWindowListeners } from '@/hooks/use-window-listeners';
 
 interface MainNavProps {
   items?: NavItem[];
 }
 
-interface SearchResult {
-  results: Show[];
-}
-
 export function MainNav({ items }: MainNavProps) {
   const path = usePathname();
   const router = useRouter();
-  // search store
-  const searchStore = useSearchStore();
+  const dispatch = useAppDispatch();
+  const searchQuery = useAppSelector((state) => state.search.query);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   // Get showHelp function from keyboard shortcuts hook
   const { showHelp } = useKeyboardShortcuts();
 
-  React.useEffect(() => {
-    window.addEventListener('popstate', handlePopstateEvent, false);
-    return () => {
-      window.removeEventListener('popstate', handlePopstateEvent, false);
-    };
-  }, []);
-
   const handlePopstateEvent = () => {
     const pathname = window.location.pathname;
     const search: string = getSearchValue('q');
 
     if (!search?.length || !pathname.includes('/search')) {
-      searchStore.reset();
-      searchStore.setIsOpen(false);
+      dispatch(searchReset());
+      dispatch(searchSetIsOpen(false));
     } else if (search?.length) {
-      searchStore.setIsOpen(true);
-      searchStore.setLoading(true);
-      searchStore.setQuery(search);
+      dispatch(searchSetIsOpen(true));
+      dispatch(searchSetQuery(search));
       setTimeout(() => {
         handleDefaultSearchBtn();
       }, 10);
       setTimeout(() => {
         handleDefaultSearchInp();
       }, 20);
-      SearchService.searchMovies(search)
-        .then(({ results }) => {
-          void searchStore.setShows(results);
-        })
-        .catch((e) => {
-          if (e.name !== 'AbortError') {
-            console.error(e);
-          }
-        })
-        .finally(() => searchStore.setLoading(false));
+      void dispatch(searchApi.endpoints.search.initiate(search));
     }
   };
+
+  useWindowListeners({ onPopState: handlePopstateEvent });
 
   async function searchShowsByQuery(value: string) {
     if (!value?.trim()?.length) {
       if (path === '/search') {
         try {
           router.push('/');
-        } catch (error) {
+        } catch {
           if (typeof window !== 'undefined') {
             window.location.href = '/';
           }
@@ -98,7 +70,7 @@ export function MainNav({ items }: MainNavProps) {
       } else {
         try {
           router.replace(path);
-        } catch (error) {
+        } catch {
           // Router not ready, silently fail
         }
       }
@@ -112,7 +84,7 @@ export function MainNav({ items }: MainNavProps) {
       } else {
         router.push(`/search?q=${value}`);
       }
-    } catch (error) {
+    } catch {
       // Router not ready, fallback to window.location
       if (typeof window !== 'undefined') {
         window.location.href = `/search?q=${value}`;
@@ -123,11 +95,19 @@ export function MainNav({ items }: MainNavProps) {
   // change background color on scroll
   React.useEffect(() => {
     const changeBgColor = () => {
-      window.scrollY > 0 ? setIsScrolled(true) : setIsScrolled(false);
+      setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener('scroll', changeBgColor);
     return () => window.removeEventListener('scroll', changeBgColor);
-  }, [isScrolled]);
+  }, []);
+
+  // Clear search on navigation away from search page
+  React.useEffect(() => {
+    if (path !== '/search') {
+      dispatch(searchReset());
+      dispatch(searchSetIsOpen(false));
+    }
+  }, [path, dispatch]);
 
 
 
@@ -135,13 +115,13 @@ export function MainNav({ items }: MainNavProps) {
     setIsMobileMenuOpen(open);
   };
 
-  const isMovieWatchPage = path.startsWith('/movie');
+
 
   return (
     <nav
       className={cn(
-        'from-secondary/70 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
-        isScrolled ? 'bg-neutral-950 text-white shadow-md' : 'bg-transparent',
+        'from-neutral-950/80 relative flex h-12 w-full items-center justify-between bg-linear-to-b from-10% px-[4vw] transition-colors duration-300 md:sticky md:h-16',
+        isScrolled ? 'bg-neutral-950/80 text-white shadow-md backdrop-blur-2xl' : 'bg-transparent',
       )}>
       <div className="flex items-center gap-6 md:gap-10">
         <Link
@@ -169,7 +149,7 @@ export function MainNav({ items }: MainNavProps) {
                         ? 'text-white'
                         : 'text-neutral-950 dark:text-white',
                     )}
-                    onClick={() => searchStore.reset()}>
+                    onClick={() => dispatch(searchReset())}>
                     {item.title}
                   </Link>
                 ),
@@ -177,12 +157,14 @@ export function MainNav({ items }: MainNavProps) {
           </nav>
         ) : null}
         <div className="block md:hidden">
-          <DropdownMenu onOpenChange={handleMobileMenuOpenChange}>
-            <DropdownMenuTrigger asChild>
+          <DropdownMenuBase
+            items={items || []}
+            onOpenChange={handleMobileMenuOpenChange}
+            onItemClick={() => dispatch(searchReset())}
+            trigger={
               <Button
                 variant="ghost"
                 className="flex items-center space-x-2 px-0 hover:bg-transparent focus:ring-0"
-                // className="h-auto px-2 py-1.5 text-base hover:bg-neutral-800 focus:ring-0 dark:hover:bg-neutral-800 lg:hidden"
               >
                 <Icons.logo className="h-6 w-6" />
                 {isMobileMenuOpen ? (
@@ -192,45 +174,16 @@ export function MainNav({ items }: MainNavProps) {
                 )}
                 <span className="text-base font-bold">Menu</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              sideOffset={5}
-              // className="w-52 overflow-y-auto overflow-x-hidden rounded-sm bg-neutral-800 text-slate-200 dark:bg-neutral-800 dark:text-slate-200"
-              className="w-52 overflow-x-hidden overflow-y-auto rounded-xl">
-              <DropdownMenuLabel>
-                <Link
-                  href="/"
-                  className="flex items-center justify-center"></Link>
-              </DropdownMenuLabel>
-              {/* <DropdownMenuSeparator /> */}
-              {items?.map((item, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  asChild
-                  className="items-center justify-center">
-                  {item.href && (
-                    <Link
-                      href={item.href}>
-                      <span
-                        className={cn(
-                          'text-foreground/60 hover:text-foreground/80 line-clamp-1',
-                          path === item.href && 'text-foreground font-bold',
-                        )}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            }
+            className="w-52 overflow-x-hidden overflow-y-auto rounded-xl"
+            sideOffset={5}
+          />
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <DebouncedInput
+        <SearchField
           id="search-input"
-          value={searchStore.query}
+          value={searchQuery}
           onChange={searchShowsByQuery}
           debounceTimeout={2000}
           className={cn('flex')}
@@ -248,7 +201,8 @@ export function MainNav({ items }: MainNavProps) {
           onClick={showHelp}
           className="hidden hover:bg-transparent md:flex"
           aria-label="Show keyboard shortcuts help"
-          title="Show keyboard shortcuts (?)">
+          data-tooltip="Show keyboard shortcuts (?)"
+          >
           <Icons.helpCircle className="h-5 w-5" />
         </Button>
         {/* <ThemeToggle /> */}

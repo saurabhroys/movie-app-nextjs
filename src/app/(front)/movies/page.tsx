@@ -1,14 +1,13 @@
-import Hero from '@/components/hero';
-import ShowsContainer from '@/components/shows-container';
+import Hero from '@/features/browse/hero';
+import ShowsContainer from '@/features/browse/shows-container';
 import { siteConfig } from '@/configs/site';
-import { Genre } from '@/enums/genre';
-import { RequestType, type ShowRequest } from '@/enums/request-type';
+import { GENRES, RequestType, type ShowRequest } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import MovieService from '@/services/MovieService';
-import { MediaType, type Show } from '@/types';
+import { getShows } from '@/services/tmdb/shows';
+import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
-import { cacheLife } from 'next/cache'; // siteConfig
+import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
@@ -19,20 +18,20 @@ export const metadata: Metadata = {
 export default async function MoviePage() {
   await connection();
   const h1 = `${siteConfig.name} Movie`;
-  const allShows = await getMovieData();
-  const randomShow: Show | null = getRandomShow(allShows);
+  const categorizedShows = await getMovieData();
+  const randomShow: Show | null = getRandomShow(categorizedShows);
   return (
     <>
       <h1 className="hidden">{h1}</h1>
       <Hero randomShow={randomShow} />
-      <ShowsContainer shows={allShows} />
+      <ShowsContainer shows={categorizedShows} />
     </>
   );
 }
 
 async function getMovieData() {
   'use cache';
-  cacheLife('show');
+  cacheLife('hours');
   const requests: ShowRequest[] = [
     {
       title: 'Trending Now',
@@ -54,52 +53,12 @@ async function getMovieData() {
       req: { requestType: RequestType.NOW_PLAYING, mediaType: MediaType.MOVIE },
       visible: true,
     },
-    // {
-    //   title: 'Netflix Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 213,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'Disney+ Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 2739,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'Amazon Prime Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 1024,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
-    // {
-    //   title: 'HBO Movies',
-    //   req: {
-    //     requestType: RequestType.NETWORK,
-    //     mediaType: MediaType.MOVIE,
-    //     networkId: 49,
-    //     isLatest: true,
-    //   },
-    //   visible: true,
-    // },
     {
       title: 'Comedy Movies',
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.COMEDY,
+        genre: GENRES.COMEDY,
         isLatest: true,
       },
       visible: true,
@@ -109,7 +68,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ACTION,
+        genre: GENRES.ACTION,
         isLatest: true,
       },
       visible: true,
@@ -119,7 +78,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ANIMATION,
+        genre: GENRES.ANIMATION,
         isLatest: true,
       },
       visible: true,
@@ -129,7 +88,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.SCIENCE_FICTION,
+        genre: GENRES.SCIENCE_FICTION,
         isLatest: true,
       },
       visible: true,
@@ -139,7 +98,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.HORROR,
+        genre: GENRES.HORROR,
         isLatest: true,
       },
       visible: true,
@@ -149,7 +108,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.ROMANCE,
+        genre: GENRES.ROMANCE,
         isLatest: true,
       },
       visible: true,
@@ -159,7 +118,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.THRILLER,
+        genre: GENRES.THRILLER,
         isLatest: true,
       },
       visible: true,
@@ -169,7 +128,7 @@ async function getMovieData() {
       req: {
         requestType: RequestType.GENRE,
         mediaType: MediaType.MOVIE,
-        genre: Genre.DOCUMENTARY,
+        genre: GENRES.DOCUMENTARY,
         isLatest: true,
       },
       visible: true,
@@ -183,7 +142,16 @@ async function getMovieData() {
       },
       visible: true,
     },
+    {
+      title: 'South Indian Movies',
+      req: {
+        requestType: RequestType.SOUTH_INDIAN,
+        mediaType: MediaType.MOVIE,
+        isLatest: true,
+      },
+      visible: true,
+    },
   ];
 
-  return await MovieService.getShows(requests);
+  return await getShows(requests);
 }

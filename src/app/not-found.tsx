@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/shared/icons';
 
 export default function NotFound() {
   return (

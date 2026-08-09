@@ -1,4 +1,5 @@
-/* eslint-disable react/display-name */
+'use client';
+
 import React from 'react';
 
 type LoadingProps = React.HTMLProps<HTMLDivElement>;
@@ -10,5 +11,6 @@ const Loading = React.forwardRef<HTMLDivElement, LoadingProps>((props, ref) => {
     </div>
   );
 });
+Loading.displayName = 'Loading';
 
 export default Loading;

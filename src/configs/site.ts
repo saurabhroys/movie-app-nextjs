@@ -3,16 +3,17 @@
 // import { productCategories } from "@/config/products"
 // import { slugify } from "@/lib/utils"
 
-import { Icons } from '@/components/icons';
-import { env } from '@/env.mjs';
+import { LogoLong } from '@/components/shared/logo';
+import { env } from '@/env';
 
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  revalidate: 1800, // 30 minutes for cached data refresh
   name: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   author: env.NEXT_PUBLIC_SITE_NAME || 'TuneBox',
   slogan: 'Watch TV Shows Online, Watch Movies Online.',
+  logoLong: LogoLong,
+  logoPng: '/logo.png',
   description:
     'Watch movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more.',
   keywords: [
@@ -35,32 +36,11 @@ export const siteConfig = {
   url: env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000',
   ogImage: `${env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'}/images/hero.jpg`,
   links: {
-    twitter: `${env.NEXT_PUBLIC_TWITTER}`,
-    github: 'https://www.netflix.com',
+    github: 'https://github.com/saurabhroys/movie-app-nextjs.git',
+    netflix: 'https://www.netflix.com',
     githubAccount: '',
+    buyMeACoffee: 'https://buymeacoffee.com/saurabhroy',
   },
-  socialLinks: [
-    {
-      title: 'Facebook',
-      href: `${env.NEXT_PUBLIC_FACEBOOK}`,
-      icon: Icons.facebook,
-    },
-    {
-      title: 'Instagram',
-      href: `${env.NEXT_PUBLIC_INSTAGRAM}`,
-      icon: Icons.instagram,
-    },
-    {
-      title: 'Twitter',
-      href: `${env.NEXT_PUBLIC_TWITTER}`,
-      icon: Icons.twitter,
-    },
-    {
-      title: 'Youtube',
-      href: `${env.NEXT_PUBLIC_YOUTUBE}`,
-      icon: Icons.youtube,
-    },
-  ],
   footerItems: [
     { title: 'Audio Description', href: '/' },
     { title: 'Help Center', href: '/' },

@@ -37,3 +37,5 @@ next-env.d.ts
 .wrangler
 *.lock
 /.*
+/dist/
+package-lock.json

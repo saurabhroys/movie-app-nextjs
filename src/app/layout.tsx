@@ -1,37 +1,43 @@
 import React, { Suspense } from 'react';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import '@/styles/globals.css';
-// import { TrpcProvider } from '@/client/trpc-provider';
 import type { Metadata, Viewport } from 'next';
-import { Inter as FontSans } from 'next/font/google';
-import localFont from 'next/font/local';
-import { Analytics } from '@/components/analytics';
+
+import { Analytics } from '@/components/shared/analytics';
 import { siteConfig } from '@/configs/site';
-import { env } from '@/env.mjs';
+import { env } from '@/env';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
-import SiteHeader from '@/components/main/site-header';
-import GlobalShortcutsWrapper from '@/components/global-shortcuts-wrapper';
-import SiteFooter from '@/components/main/site-footer';
-import AttributeTooltipManager from '@/components/attribute-tooltip';
-import PreviewModal from '@/components/preview-modal';
+import SiteHeader from '@/components/layout/site-header';
+import GlobalShortcutsWrapper from '@/components/providers/global-shortcuts-wrapper';
+import { TrpcProvider } from '@/components/providers/trpc-provider';
+import SiteFooter from '@/components/layout/site-footer';
+import { StoreProvider } from '@/components/providers/store-provider';
+import AttributeTooltipManager from '@/components/shared/attribute-tooltip';
+import Modals from '@/components/modals';
+import localFont from 'next/font/local';
 
-// export const runtime = 'edge';
-
-const fontSans = FontSans({
-  subsets: ['latin'],
+const inter = localFont({
+  src: [
+    { path: '../assets/fonts/Inter-Regular.ttf', weight: '400', style: 'normal' },
+    { path: '../assets/fonts/Inter-Bold.ttf', weight: '700', style: 'normal' },
+  ],
   variable: '--font-sans',
   display: 'swap',
 });
 
-// Font files can be colocated inside of `pages`
-const fontHeading = localFont({
-  src: '../assets/fonts/CalSans-SemiBold.woff2',
+const calSans = localFont({
+  src: [
+    { path: '../assets/fonts/CalSans-SemiBold.woff2', weight: '600', style: 'normal' },
+  ],
   variable: '--font-heading',
+  display: 'swap',
 });
+
+// export const runtime = 'edge';
+
+
 
 export const viewport: Viewport = {
   themeColor: [
@@ -83,36 +89,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-     <ThemeProvider>
+    <html lang="en" className={cn(inter.variable, calSans.variable, 'dark')} suppressHydrationWarning>
       <head />
-        <body
-          suppressHydrationWarning
-          className={cn(
-            'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]',
-            fontSans.variable,
-            fontHeading.variable,
-          )}>
-          <Suspense fallback={<div className="h-16" />}>
-            <SiteHeader />
-          </Suspense>
-          <GlobalShortcutsWrapper />
-          {/* <TrpcProvider> */}
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
-          <PreviewModal />
-          <SiteFooter />
-          <TailwindIndicator />
-          <Analytics />
-          <SpeedInsights />
-          <AttributeTooltipManager />
-          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
-          )}
-          {/* </TrpcProvider> */}
-        </body>
-      </ThemeProvider>
+      <body
+        className={cn(
+          'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]'
+        )}>
+        <TrpcProvider>
+          <StoreProvider>
+            <Suspense fallback={<div className="absolute top-0 left-0 right-0 h-16 pointer-events-none" />}>
+              <SiteHeader />
+            </Suspense>
+            <GlobalShortcutsWrapper />
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+            <Modals />
+            <SiteFooter />
+            <TailwindIndicator />
+            <Analytics />
+            {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+            <AttributeTooltipManager />
+            {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+              <>
+                <Script
+                  src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+                  strategy="afterInteractive"
+                />
+                <Script id="google-analytics" strategy="afterInteractive">
+                  {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){window.dataLayer.push(arguments);}
+                    gtag('js', new Date());
+
+                    gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
+                  `}
+                </Script>
+              </>
+            )}
+          </StoreProvider>
+        </TrpcProvider>
+      </body>
     </html>
   );
 }

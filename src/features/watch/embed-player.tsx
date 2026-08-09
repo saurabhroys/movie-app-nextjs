@@ -1,0 +1,122 @@
+'use client';
+import React from 'react';
+import Loading from '@/components/ui/loading';
+import { useRouter } from 'next/navigation';
+import type { MediaType } from '@/services/tmdb/types';
+
+interface EmbedPlayerProps {
+  url: string;
+  mediaId?: string;
+  playerClass?: string;
+  mediaType?: MediaType;
+  season?: number;
+  episode?: number;
+  showControls?: boolean;
+}
+
+function EmbedPlayer(props: EmbedPlayerProps) {
+  const router = useRouter();
+  const [iframeLoaded, setIframeLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    setIframeLoaded(false);
+    if (iframeRef.current) {
+      iframeRef.current.src = props.url;
+    }
+
+    const { current } = iframeRef;
+    const iframe: HTMLIFrameElement | null = current;
+    iframe?.addEventListener('load', handleIframeLoaded);
+    return () => {
+      iframe?.removeEventListener('load', handleIframeLoaded);
+    };
+  }, [props.url]);
+
+  const loadingRef = React.useRef<HTMLDivElement>(null);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+
+  const handleIframeLoaded = () => {
+    if (!iframeRef.current) {
+      return;
+    }
+    const iframe: HTMLIFrameElement = iframeRef.current;
+    if (iframe) {
+      iframe.style.opacity = '1';
+      setIframeLoaded(true);
+      iframe.removeEventListener('load', handleIframeLoaded);
+      if (loadingRef.current) loadingRef.current.style.display = 'none';
+    }
+  };
+
+  const isGemma = props.url.includes('gemma416okl.com');
+
+  React.useEffect(() => {
+    if (isGemma && iframeLoaded && iframeRef.current?.contentWindow) {
+      const s = props.season || 1;
+      const e = props.episode || 1;
+      const seasonIndex = s - 1;
+      const episodeIndex = e - 1;
+      const episodeId = `xx-${seasonIndex}-${s}-${episodeIndex}-${s}-${e}`;
+      
+      const payload = {
+        api: "play",
+        set: `id:${episodeId}`
+      };
+
+      try {
+        iframeRef.current.contentWindow.postMessage(payload, "https://gemma416okl.com");
+      } catch (err) {
+        console.error('Failed to postMessage to Gemma player:', err);
+      }
+    }
+  }, [isGemma, iframeLoaded, props.season, props.episode]);
+
+  return (
+    <div
+      className={props.playerClass?.includes('rounded') ? 'rounded-xl' : ''}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        backgroundColor: '#000',
+      }}>
+      <div className={`header-top absolute top-4 md:top-10 right-0 left-0 z-2 flex h-fit w-fit items-center justify-between gap-x-5 px-4 md:h-10 md:gap-x-8 md:px-10 lg:h-14 transition-opacity duration-500 ${
+        (props.showControls ?? true) ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}>
+        <div className="flex flex-1 items-center gap-x-5 md:gap-x-8">
+          <svg
+            className="h-10 w-10 shrink-0 cursor-pointer transition hover:scale-125"
+            stroke="#fff"
+            fill="#fff"
+            strokeWidth="0"
+            viewBox="0 0 16 16"
+            height="16px"
+            width="16px"
+            xmlns="http://www.w3.org/2000/svg"
+            onClick={() => router.back()}>
+            <path
+              fillRule="evenodd"
+              d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"></path>
+          </svg>
+        </div>
+      </div>
+      <div
+        ref={loadingRef}
+        className="absolute z-1 flex h-full w-full items-center justify-center">
+        <Loading />
+      </div>
+      <iframe
+        width="100%"
+        className={`${props.playerClass}`}
+        height="100%"
+        allowFullScreen
+        ref={iframeRef}
+        style={{ opacity: 0 }}
+        referrerPolicy="no-referrer"
+        // sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
+      />
+    </div>
+  );
+}
+
+export default EmbedPlayer;
