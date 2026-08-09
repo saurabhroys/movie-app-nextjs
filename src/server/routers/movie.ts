@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '@/server/trpc';
+import MovieService from '@/services/tmdb/movie.service';
 import { executeRequest } from '@/services/tmdb/shows';
 import {
   GENRES,
   MediaType,
   RequestType,
 } from '@/services/tmdb/types';
+
+const mediaTypeSchema = z.union([
+  z.literal(MediaType.MOVIE),
+  z.literal(MediaType.TV),
+]);
 
 export const movieRouter = router({
     getInfiniteShows: publicProcedure
@@ -34,5 +40,32 @@ export const movieRouter = router({
                 items: data.results,
                 nextCursor: data.page < data.total_pages ? data.page + 1 : undefined,
             };
+        }),
+
+    getShow: publicProcedure
+        .input(
+            z.object({
+                id: z.number().int().positive(),
+                mediaType: mediaTypeSchema,
+            }),
+        )
+        .query(async ({ input }) => {
+            const response =
+                input.mediaType === MediaType.TV
+                    ? await MovieService.findTvSeries(input.id)
+                    : await MovieService.findMovie(input.id);
+            return response.data;
+        }),
+
+    getSeasons: publicProcedure
+        .input(
+            z.object({
+                id: z.number().int().positive(),
+                season: z.number().int().positive(),
+            }),
+        )
+        .query(async ({ input }) => {
+            const response = await MovieService.getSeasons(input.id, input.season);
+            return response.data;
         }),
 });

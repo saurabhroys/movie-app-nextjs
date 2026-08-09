@@ -26,7 +26,7 @@ bun run dev
 
 Environment variables are validated in `src/env.ts` via `@t3-oss/env-nextjs`. Server-only vars (`NODE_ENV`) never reach the client; everything else is client-prefixed `NEXT_PUBLIC_`:
 - `NEXT_PUBLIC_APP_URL` — deployed URL
-- `NEXT_PUBLIC_TMDB_TOKEN` — TMDb API Bearer token (used by the axios instance)
+- `TMDB_TOKEN` — TMDb API Bearer token, **server-only** (used by the axios instance; never shipped to the browser)
 - `NEXT_PUBLIC_SITE_NAME` — display name
 - `NEXT_PUBLIC_IMAGE_DOMAIN` — image host (default `image.tmdb.org`)
 - `NEXT_PUBLIC_TMDB_API_URL` — TMDb API base (default `https://api.themoviedb.org/3`)

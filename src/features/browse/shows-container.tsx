@@ -1,18 +1,17 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { type CategorizedShows } from '@/services/tmdb/types';
+import { MediaType, type CategorizedShows } from '@/services/tmdb/types';
 
 import { getIdFromSlug } from '@/lib/slug';
 import ShowsCarousel from '@/features/browse/shows-carousel';
 import ShowsGrid from '@/features/browse/shows-grid';
+import { trpc } from '@/client/trpc';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openPreviewModal, setFirstLoad } from '@/features/modals/previewModalSlice';
 import { useSearchQuery } from '@/redux/features/search/searchApi';
 import React from 'react';
 import { type Show } from '@/services/tmdb/types';
-import { type AxiosResponse } from 'axios';
-import MovieService from '@/services/tmdb/movie.service';
 
 interface ShowsContainerProps {
   show?: Show;
@@ -25,6 +24,7 @@ const ShowsContainer = ({ shows, logoPaths }: ShowsContainerProps) => {
   const pathname = usePathname();
 
   const dispatch = useAppDispatch();
+  const utils = trpc.useUtils();
   const previewModalIsOpen = useAppSelector((state) => state.previewModal.isOpen);
   const searchQuery = useAppSelector((state) => state.search.query);
   const { data: searchShows = [] } = useSearchQuery(searchQuery, {
@@ -44,10 +44,9 @@ const ShowsContainer = ({ shows, logoPaths }: ShowsContainerProps) => {
       return;
     }
     try {
-      const response: AxiosResponse<Show> = pathname.includes('/tv-shows')
-        ? await MovieService.findTvSeries(mediaId)
-        : await MovieService.findMovie(mediaId);
-      const data: Show = response.data;
+      const mediaType =
+        pathname.includes('/tv-shows') ? MediaType.TV : MediaType.MOVIE;
+      const data: Show = await utils.movie.getShow.fetch({ id: mediaId, mediaType });
 
       if (data) {
         dispatch(openPreviewModal({ show: data, play: true }));

@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { getMobileDetect, getYear } from '@/lib/utils';
-import MovieService from '@/services/tmdb/movie.service';
+import { trpc } from '@/client/trpc';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { reset as previewReset } from '@/features/modals/previewModalSlice';
 import { fetchDetailedShow } from '@/features/modals/previewModalThunks';
@@ -54,6 +54,7 @@ const PreviewModal = () => {
   const detailedShow = useAppSelector((state) => state.previewModal.detailedShow);
   const firstLoad = useAppSelector((state) => state.previewModal.firstLoad);
   const isLoading = useAppSelector((state) => state.previewModal.isLoading);
+  const utils = trpc.useUtils();
 
   const IS_MOBILE: boolean = isMobile();
   const router = useRouter();
@@ -199,11 +200,11 @@ const PreviewModal = () => {
     if (!show?.id) return;
     setSelectedSeason(seasonNumber);
     try {
-      const seasonData = await MovieService.getSeasons(
-        show.id,
-        seasonNumber,
-      );
-      setSeasonEpisodes(seasonData.data.episodes || []);
+      const seasonData = await utils.movie.getSeasons.fetch({
+        id: show.id,
+        season: seasonNumber,
+      });
+      setSeasonEpisodes(seasonData.episodes || []);
     } catch (error) {
       console.error('Failed to fetch season episodes:', error);
     }
