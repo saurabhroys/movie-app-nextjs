@@ -3,7 +3,6 @@
 // import { productCategories } from "@/config/products"
 // import { slugify } from "@/lib/utils"
 
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { LogoLong } from '@/components/shared/logo';
 import { env } from '@/env';
 
@@ -42,28 +41,6 @@ export const siteConfig = {
     githubAccount: '',
     buyMeACoffee: 'https://buymeacoffee.com/saurabhroy',
   },
-  socialLinks: [
-    {
-      title: 'Facebook',
-      href: `${env.NEXT_PUBLIC_FACEBOOK}`,
-      icon: Facebook,
-    },
-    {
-      title: 'Instagram',
-      href: `${env.NEXT_PUBLIC_INSTAGRAM}`,
-      icon: Instagram,
-    },
-    {
-      title: 'Twitter',
-      href: `${env.NEXT_PUBLIC_TWITTER}`,
-      icon: Twitter,
-    },
-    {
-      title: 'Youtube',
-      href: `${env.NEXT_PUBLIC_YOUTUBE}`,
-      icon: Youtube,
-    },
-  ],
   footerItems: [
     { title: 'Audio Description', href: '/' },
     { title: 'Help Center', href: '/' },
