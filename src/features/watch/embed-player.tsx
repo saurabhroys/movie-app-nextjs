@@ -112,7 +112,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         allowFullScreen
         ref={iframeRef}
         style={{ opacity: 0 }}
-        referrerPolicy="no-referrer-when-downgrade"
+        referrerPolicy="no-referrer"
         // sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
       />
     </div>

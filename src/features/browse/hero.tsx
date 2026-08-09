@@ -4,7 +4,7 @@ import {
   getNameFromShow,
   getSlug,
 } from '@/lib/slug';
-import MovieService from '@/services/tmdb/movie.service';
+import { trpc } from '@/client/trpc';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   openPreviewModal,
@@ -14,7 +14,6 @@ import {
   MediaType,
   type Show,
 } from '@/services/tmdb/types';
-import { type AxiosResponse } from 'axios';
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import type Youtube from 'react-youtube';
@@ -139,6 +138,7 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   const reduxDispatch = useAppDispatch();
   const previewModalIsOpen = useAppSelector((state) => state.previewModal.isOpen);
   const hoverModalIsOpen = useAppSelector((state) => state.hoverModal.isOpen);
+  const utils = trpc.useUtils();
 
   const defaultOptions = React.useMemo(
     () => ({
@@ -168,21 +168,18 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
       if (!mediaId) {
         return;
       }
-      const findMovie: Promise<AxiosResponse<Show>> = pathname.includes(
-        '/tv-shows',
-      )
-        ? MovieService.findTvSeries(mediaId)
-        : MovieService.findMovie(mediaId);
-      findMovie
-        .then((response: AxiosResponse<Show>) => {
-          const { data } = response;
+      const mediaType =
+        pathname.includes('/tv-shows') ? MediaType.TV : MediaType.MOVIE;
+      utils.movie.getShow
+        .fetch({ id: mediaId, mediaType })
+        .then((data: Show) => {
           reduxDispatch(openPreviewModal({ show: data, play: true }));
         })
         .catch((error) => {
-          console.error(`findMovie: `, error);
+          console.error(`getShow: `, error);
         });
     }
-  }, [reduxDispatch]);
+  }, [reduxDispatch, utils]);
 
   React.useEffect(() => {
     window.addEventListener('popstate', handlePopstateEvent, false);

@@ -83,7 +83,7 @@ const onRequest = (
   config: InternalAxiosRequestConfig,
 ): InternalAxiosRequestConfig => {
   if (config.baseURL?.includes('themoviedb')) {
-    config.headers.Authorization = `Bearer ${env.NEXT_PUBLIC_TMDB_TOKEN}`;
+    config.headers.Authorization = `Bearer ${env.TMDB_TOKEN}`;
   }
   return config;
 };

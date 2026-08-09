@@ -1,11 +1,19 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import SearchService from '@/services/tmdb/search.service';
 import type { Show } from '@/services/tmdb/types';
 
 interface SearchError {
   message: string;
 }
 
+interface SearchResponse {
+  results: Show[];
+  error?: string;
+}
+
+/**
+ * RTK Query wrapper for the server-side search proxy at `/api/search`.
+ * The browser never talks to TMDb directly — the bearer token stays server-only.
+ */
 export const searchApi = createApi({
   reducerPath: 'searchApi',
   baseQuery: fakeBaseQuery<SearchError>(),
@@ -13,8 +21,16 @@ export const searchApi = createApi({
     search: builder.query<Show[], string>({
       async queryFn(query: string) {
         try {
-          const { results } = await SearchService.searchMovies(query);
-          return { data: results };
+          const response = await fetch('/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query }),
+          });
+          const data: SearchResponse = await response.json();
+          if (!response.ok) {
+            return { error: { message: data.error ?? 'Search failed' } };
+          }
+          return { data: data.results };
         } catch (error) {
           return {
             error: {

@@ -55,8 +55,8 @@ export default function DownloadPage() {
           className="w-full min-h-[80vh] rounded-xl border border-neutral-800 bg-[#0d0d0d] shadow-2xl"
           allowFullScreen
           onLoad={() => setIsLoading(false)}
-          referrerPolicy="no-referrer-when-downgrade"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"
+          referrerPolicy="no-referrer"
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-popups"
         />
       </div>
     </div>

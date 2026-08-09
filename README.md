@@ -17,12 +17,12 @@ A launching point for building a movie streaming website.
 
 1. Click the button below to deploy the project on Vercel.
 
-- [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsaurabhroys%2Fmovie-app-nextjs&env=NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_TMDB_TOKEN,NEXT_PUBLIC_SITE_NAME)
+- [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsaurabhroys%2Fmovie-app-nextjs&env=NEXT_PUBLIC_APP_URL,TMDB_TOKEN,NEXT_PUBLIC_SITE_NAME)
 
 2. Fill in the required environment variables:
 
 - `NEXT_PUBLIC_APP_URL`: The URL of your deployed project (e.g., `https://getmo.netlify.app`)
-- `NEXT_PUBLIC_TMDB_TOKEN`: Your TMDb API key (get it [here](https://www.themoviedb.org/documentation/api), or you can use default token in .env.example file for testing)
+- `TMDB_TOKEN`: Your TMDb API key — **server-side only**, never exposed to the browser (get it [here](https://www.themoviedb.org/documentation/api), or use the default token in .env.example for testing)
 - `NEXT_PUBLIC_SITE_NAME`: The name of your website (e.g., `TuneBox`)
 
 3. Click "Deploy" and wait for the deployment to complete.
