@@ -22,7 +22,7 @@ A launching point for building a movie streaming website.
 2. Fill in the required environment variables:
 
 - `NEXT_PUBLIC_APP_URL`: The URL of your deployed project (e.g., `https://getmo.netlify.app`)
-- `TMDB_TOKEN`: Your TMDb API key — **server-side only**, never exposed to the browser (get it [here](https://www.themoviedb.org/documentation/api), or use the default token in .env.example for testing)
+- `TMDB_TOKEN`: Your TMDb API key — **server-side only**, never exposed to the browser (get one [here](https://www.themoviedb.org/documentation/api))
 - `NEXT_PUBLIC_SITE_NAME`: The name of your website (e.g., `TuneBox`)
 
 3. Click "Deploy" and wait for the deployment to complete.
