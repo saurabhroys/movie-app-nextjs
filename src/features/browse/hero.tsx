@@ -33,7 +33,6 @@ const count = 1;
 interface HeroState {
   showTrailer: boolean;
   trailerFinished: boolean;
-  countdown: number;
   isCountdownActive: boolean;
   isMuted: boolean;
   showControls: boolean;
@@ -44,7 +43,6 @@ interface HeroState {
 const initialState: HeroState = {
   showTrailer: false,
   trailerFinished: false,
-  countdown: count,
   isCountdownActive: false,
   isMuted: true,
   showControls: false,
@@ -55,7 +53,7 @@ const initialState: HeroState = {
 type HeroAction =
   | { type: 'RESET_SHOW' }
   | { type: 'START_COUNTDOWN' }
-  | { type: 'TICK' }
+  | { type: 'COUNTDOWN_DONE' }
   | { type: 'TRAILER_PLAY' }
   | { type: 'TRAILER_END' }
   | { type: 'TOGGLE_MUTE' }
@@ -73,20 +71,21 @@ function heroReducer(state: HeroState, action: HeroAction): HeroState {
         showControls: false,
         isPaused: false,
         showTextElements: true,
+        isCountdownActive: false,
+        showTrailer: false,
       };
     case 'START_COUNTDOWN':
-      return { ...state, isCountdownActive: true, countdown: count };
-    case 'TICK':
-      if (state.countdown <= 1) {
-        return {
-          ...state,
-          countdown: 0,
-          isCountdownActive: false,
-          showTrailer: true,
-        };
-      }
-      return { ...state, countdown: state.countdown - 1 };
+      if (state.isCountdownActive) return state;
+      return { ...state, isCountdownActive: true };
+    case 'COUNTDOWN_DONE':
+      if (state.showTrailer) return state;
+      return {
+        ...state,
+        isCountdownActive: false,
+        showTrailer: true,
+      };
     case 'TRAILER_PLAY':
+      if (state.showControls) return state;
       return { ...state, showControls: true };
     case 'TRAILER_END':
       return {
@@ -98,10 +97,13 @@ function heroReducer(state: HeroState, action: HeroAction): HeroState {
     case 'TOGGLE_MUTE':
       return { ...state, isMuted: !state.isMuted };
     case 'SET_PAUSED':
+      if (state.isPaused === action.paused) return state;
       return { ...state, isPaused: action.paused };
     case 'SHOW_TEXT':
+      if (state.showTextElements) return state;
       return { ...state, showTextElements: true };
     case 'HIDE_TEXT':
+      if (!state.showTextElements) return state;
       return { ...state, showTextElements: false };
     case 'REPLAY':
       return {
@@ -123,7 +125,6 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   const {
     showTrailer,
     trailerFinished,
-    countdown,
     isCountdownActive,
     isMuted,
     showControls,
@@ -132,9 +133,12 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   } = state;
   const youtubeRef = React.useRef<Youtube | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
-  const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
-  const countdownValueRef = React.useRef<number>(count);
+  const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const textHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  // Mirrors the latest `showTrailer`/`playerReady` so the preload strategy can
+  // start playback the instant the countdown finishes without stale closures.
+  const showTrailerRef = React.useRef(false);
+  const playerReadyRef = React.useRef(false);
 
   const reduxDispatch = useAppDispatch();
   const previewModalIsOpen = useAppSelector((state) => state.previewModal.isOpen);
@@ -145,16 +149,14 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     () => ({
       playerVars: {
         rel: 0,
-        mute: 0,
+        mute: 1,      // required for browser autoplay policy (allows muted autoplay)
         loop: 0,
-        autoplay: 1,
+        autoplay: 0,  // disabled — we control playback explicitly (preload strategy)
         controls: 0,
-        showinfo: 0,
         disablekb: 1,
         enablejsapi: 1,
         playsinline: 1,
-        cc_load_policy: 0,
-        modestbranding: 3,
+        modestbranding: 1, // 0/1 only; 3 is not honored by YT
       },
     }),
     [],
@@ -189,9 +191,34 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     };
   }, [handlePopstateEvent]);
 
+  // Keep refs in sync so callbacks can read current state without stale closures
+  React.useEffect(() => {
+    showTrailerRef.current = showTrailer;
+  });
+
+  // Preload play trigger: when the countdown ends (showTrailer flips true), kick
+  // off playback on the preloaded player if it's already ready.  If the player
+  // isn't ready yet, `handleTrailerReady` will pick up the play call.
+  React.useEffect(() => {
+    if (showTrailer && !trailerFinished && playerReadyRef.current) {
+      const player = youtubeRef.current as {
+        internalPlayer?: { playVideo?: () => Promise<void> };
+      } | null;
+      if (player?.internalPlayer) {
+        try {
+          player.internalPlayer.playVideo?.()?.catch?.(() => {});
+        } catch {}
+      }
+    }
+  }, [showTrailer, trailerFinished]);
+
   // Reset states when randomShow changes
   React.useEffect(() => {
     if (randomShow?.id) {
+      if (countdownTimerRef.current) {
+        clearTimeout(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
       dispatch({ type: 'RESET_SHOW' });
       if (textHideTimerRef.current) {
         clearTimeout(textHideTimerRef.current);
@@ -201,21 +228,20 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
 
   // Start countdown when trailer is available and not finished
   React.useEffect(() => {
-    if (trailer && !isCountdownActive && !trailerFinished) {
-      startCountdown();
+    if (trailer && !isCountdownActive && !trailerFinished && !showTrailer) {
+      dispatch({ type: 'START_COUNTDOWN' });
+      countdownTimerRef.current = setTimeout(() => {
+        countdownTimerRef.current = null;
+        dispatch({ type: 'COUNTDOWN_DONE' });
+      }, count * 1000);
     }
-  }, [trailer, trailerFinished]);
-
-  // Keep a ref of the live countdown so the interval can self-clean
-  React.useEffect(() => {
-    countdownValueRef.current = countdown;
-  }, [countdown]);
+  }, [trailer, trailerFinished, isCountdownActive, showTrailer]);
 
   // Cleanup timers on unmount
   React.useEffect(() => {
     return () => {
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
+      if (countdownTimerRef.current) {
+        clearTimeout(countdownTimerRef.current);
       }
       if (textHideTimerRef.current) {
         clearTimeout(textHideTimerRef.current);
@@ -255,47 +281,46 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     }
   }, [previewModalIsOpen, hoverModalIsOpen, showTrailer, trailerFinished]);
 
-  const startCountdown = React.useCallback(() => {
-    dispatch({ type: 'START_COUNTDOWN' });
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-    }
-    countdownRef.current = setInterval(() => {
-      if (countdownValueRef.current <= 1) {
-        if (countdownRef.current) {
-          clearInterval(countdownRef.current);
-          countdownRef.current = null;
-        }
-      }
-      dispatch({ type: 'TICK' });
-    }, 1000);
-  }, []);
-
   const handleTrailerPlay = React.useCallback(() => {
     if (imageRef.current) {
       imageRef.current.style.opacity = '0';
     }
     dispatch({ type: 'TRAILER_PLAY' });
 
-    // Start 10-second timer to hide text elements
+    // Start 10-second timer to hide text elements — but only once.  react-youtube
+    // fires onPlay on every PLAYING state change (including resume after buffering),
+    // which would otherwise restart the timer repeatedly.
+    if (textHideTimerRef.current) return;
     textHideTimerRef.current = setTimeout(() => {
+      textHideTimerRef.current = null;
       dispatch({ type: 'HIDE_TEXT' });
     }, 10000);
   }, []);
 
   const handleTrailerEnd = React.useCallback(() => {
     dispatch({ type: 'TRAILER_END' });
+    // Clear the pending text-hide timer so it can't fire after the trailer ends
+    if (textHideTimerRef.current) {
+      clearTimeout(textHideTimerRef.current);
+      textHideTimerRef.current = null;
+    }
     if (imageRef.current) {
       imageRef.current.style.opacity = '1';
     }
   }, []);
 
   const handleTrailerReady = React.useCallback((e: { target?: { playVideo?: () => Promise<void> } }) => {
-    try {
-      if (e?.target && typeof e.target.playVideo === 'function') {
-        e.target.playVideo()?.catch?.(() => {});
-      }
-    } catch { }
+    playerReadyRef.current = true;
+    // If the countdown has already completed when the player becomes ready,
+    // play immediately (covers the non-preloaded / slow-network case).
+    // Otherwise the preload-play effect will trigger play when showTrailer flips true.
+    if (showTrailerRef.current) {
+      try {
+        if (e?.target && typeof e.target.playVideo === 'function') {
+          e.target.playVideo()?.catch?.(() => {});
+        }
+      } catch {}
+    }
   }, []);
 
   const handleChangeMute = React.useCallback(() => {
@@ -351,19 +376,15 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     return null;
   }
 
-  const handleHref = (): string => {
-    if (!randomShow) {
-      return '#';
-    }
+  const playHref = React.useMemo(() => {
+    if (!randomShow) return '#';
     if (!path.includes('/anime')) {
       const type = randomShow.media_type === MediaType.MOVIE ? 'movie' : 'tv';
       return `/watch/${randomShow.id}?type=${type}`;
     }
-    const prefix: string =
-      randomShow?.media_type === MediaType.MOVIE ? 'm' : 't';
-    const id = `${prefix}-${randomShow.id}`;
-    return `/watch/${id}?type=anime`;
-  };
+    const prefix = randomShow.media_type === MediaType.MOVIE ? 'm' : 't';
+    return `/watch/${prefix}-${randomShow.id}?type=anime`;
+  }, [randomShow, path]);
 
   return (
     <>
@@ -394,7 +415,7 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
                 showControls={showControls}
                 trailerFinished={trailerFinished}
                 isMuted={isMuted}
-                playHref={handleHref()}
+                playHref={playHref}
                 onMoreInfo={handleMoreInfo}
                 onToggleMute={handleChangeMute}
                 onReplay={handleReplayTrailer}
@@ -402,7 +423,7 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
               {/* end text details */}
 
               {/* Timer */}
-              {isCountdownActive && <HeroCountdown countdown={countdown} />}
+              {isCountdownActive && <HeroCountdown />}
               {/* timer end */}
             </div>
             {/* player end */}

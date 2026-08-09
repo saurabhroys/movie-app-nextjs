@@ -78,6 +78,45 @@ function isNotFound(error: unknown): boolean {
   return (error as { response?: { status?: number } })?.response?.status === 404;
 }
 
+/**
+ * Fetches the content rating for a movie or TV show, preferring the
+ * RATING_PREFERENCE country codes. Used by the modals and the hero, which
+ * both need just the rating without pulling the full show payload.
+ */
+export async function fetchContentRating(
+  type: 'movie' | 'tv',
+  id: number,
+): Promise<string | null> {
+  try {
+    if (type === 'tv') {
+      const response = await MovieService.getContentRating('tv', id);
+      const ratingData = response.data as unknown as { results?: RatingResult[] };
+      const results = ratingData?.results ?? [];
+      for (const cc of RATING_PREFERENCE) {
+        const match = results.find((r) => r?.iso_3166_1 === cc);
+        if (match?.rating || match?.certification) {
+          return String(match.rating ?? match.certification).trim();
+        }
+      }
+    } else {
+      const response = await MovieService.getMovieReleaseDates(id);
+      const ratingData = response.data as unknown as {
+        results?: CountryRelease[];
+      };
+      const countries = ratingData?.results ?? [];
+      for (const cc of RATING_PREFERENCE) {
+        const country = countries.find((c) => c?.iso_3166_1 === cc);
+        const releases = country?.release_dates ?? [];
+        const match = releases.find((rd) => rd.certification?.trim());
+        if (match && match.certification) {
+          return match.certification.trim();
+        }
+      }
+    }
+  } catch {}
+  return null;
+}
+
 async function fetchWithTrailer(
   id: number,
   currentType: 'tv' | 'movie',
@@ -135,38 +174,8 @@ export async function fetchDetailedShowData({
   const data = result.data;
   const type = currentType;
 
-  // Content rating
-  let rating: string | null = null;
-  try {
-    if (type === 'tv') {
-      const response = await MovieService.getContentRating('tv', id);
-      const ratingData = response.data as unknown as { results?: RatingResult[] };
-      const results = ratingData?.results ?? [];
-      for (const cc of RATING_PREFERENCE) {
-        const match = results.find((r) => r?.iso_3166_1 === cc);
-        if (match?.rating || match?.certification) {
-          rating = String(match.rating ?? match.certification).trim();
-          break;
-        }
-      }
-    } else {
-      const response = await MovieService.getMovieReleaseDates(id);
-      const ratingData = response.data as unknown as {
-        results?: CountryRelease[];
-      };
-      const countries = ratingData?.results ?? [];
-      for (const cc of RATING_PREFERENCE) {
-        const country = countries.find((c) => c?.iso_3166_1 === cc);
-        const releases = country?.release_dates ?? [];
-        const match = releases.find((rd) => rd.certification?.trim());
-        if (match && match.certification) {
-          rating = match.certification.trim();
-          break;
-        }
-      }
-    }
-  } catch {}
-  data.contentRating = rating;
+  // Content rating (reuses the shared exported helper)
+  data.contentRating = await fetchContentRating(type, id);
 
   // Logo
   try {

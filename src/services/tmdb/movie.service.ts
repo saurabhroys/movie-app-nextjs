@@ -13,6 +13,7 @@ import {
   type TmdbPagingResponse,
   type ReleaseDatesResponse,
   type CreditsResponse,
+  type VideoResult,
 } from './types';
 
 /**
@@ -414,6 +415,24 @@ class MovieService {
     );
     return data;
   });
+
+  /**
+   * Cached: Fetches the video/trailer list for a movie or TV show.
+   * Lightweight alternative to `findMovieByIdAndType` when only the trailer
+   * key is needed (e.g. the hero autoplay) — skips the full detail payload
+   * and its 8s append_to_response timeout.
+   */
+  static getVideos = cache(
+    async (
+      mediaType: 'movie' | 'tv',
+      mediaId: number,
+      language: string = 'en-US',
+    ): Promise<AxiosResponse<{ results?: VideoResult[] }>> => {
+      return http.get(`/${mediaType}/${mediaId}/videos`, {
+        params: { language },
+      });
+    },
+  );
 }
 
 export default MovieService;

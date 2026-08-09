@@ -21,6 +21,11 @@ interface HeroBackdropProps {
  * Base layer of the hero: the poster/backdrop image, the YouTube trailer
  * iframe, and the gradient shadows. Memoized so the heavy image/iframe
  * subtree does not re-render on every countdown tick.
+ *
+ * The iframe is mounted as soon as a trailer key is available (before the
+ * countdown ends) and kept hidden behind the poster via `opacity-0`. This
+ * lets the YT iframe_api script, player init and video buffer happen during
+ * the countdown so playback starts instantly when it completes.
  */
 const HeroBackdrop = React.memo(function HeroBackdrop({
   randomShow,
@@ -46,7 +51,7 @@ const HeroBackdrop = React.memo(function HeroBackdrop({
         fill
         preload
       />
-      {trailer && showTrailer && !trailerFinished && (
+      {trailer && !trailerFinished && (
         <Youtube
           opts={defaultOptions}
           onEnd={onTrailerEnd}
@@ -58,7 +63,7 @@ const HeroBackdrop = React.memo(function HeroBackdrop({
           title={
             randomShow?.title ?? randomShow?.name ?? 'hero-trailer'
           }
-          className="absolute inset-0 z-0 h-full w-full scale-[1.35] origin-center"
+          className={`absolute inset-0 z-0 h-full w-full scale-[1.35] origin-center transition-opacity duration-500 ${showTrailer ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           style={{ width: '100%', height: '100%' }}
           iframeClassName="absolute inset-0 w-full h-[85%] md:h-full z-10 pointer-events-none"
         />

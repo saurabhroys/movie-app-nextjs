@@ -12,7 +12,7 @@ import {
   type CategorizedShows,
 } from '@/services/tmdb/types';
 import { getRandomShow } from '@/lib/utils';
-import { fetchDetailedShowData } from '@/redux/features/modals/detail-fetch-helper';
+import { fetchContentRating } from '@/redux/features/modals/detail-fetch-helper';
 
 import { cacheLife } from 'next/cache';
 import { connection } from 'next/server';
@@ -169,28 +169,29 @@ async function getHomeData(): Promise<HomeData> {
   const categorizedShows = await getShows(requests);
   const randomShow: Show | null = getRandomShow(categorizedShows);
 
-  let heroTrailer: string | null = null;
-  let heroLogoPath: string | null = null;
-  let heroContentRating: string | null = null;
+  // Fetch hero trailer key, hero content rating, and all logo paths in
+  // parallel.  The hero no longer pulls the full show payload (the old path
+  // used `fetchDetailedShowData` which fetched two full `/movie/{id}` calls
+  // with videos+keywords — each with an 8 s timeout).  The new path hits
+  // the lightweight `/videos` endpoint and reuses the content-rating helper.
+  // The hero logo comes from the shared logoPaths batch.
+  const [heroTrailer, heroContentRating, logoPaths] = await Promise.all([
+    randomShow
+      ? fetchHeroTrailer(randomShow.id, randomShow.media_type).catch(
+          () => null,
+        )
+      : Promise.resolve(null),
+    randomShow
+      ? fetchContentRating(
+          randomShow.media_type === MediaType.TV ? 'tv' : 'movie',
+          randomShow.id,
+        ).catch(() => null)
+      : Promise.resolve(null),
+    fetchAllLogos(categorizedShows),
+  ]);
 
-  if (randomShow) {
-    try {
-      const details = await fetchDetailedShowData({
-        id: randomShow.id,
-        mediaType: randomShow.media_type,
-        onFlipMediaType: () => {},
-        includeExtras: false,
-      });
-      heroTrailer =
-        details.videos?.results?.find((v) => v.type === 'Trailer')?.key ?? null;
-      heroLogoPath = details.logoPath ?? null;
-      heroContentRating = details.contentRating ?? null;
-    } catch {
-      // hero is decorative — keep defaults if lookups fail
-    }
-  }
-
-  const logoPaths = await fetchAllLogos(categorizedShows);
+  const heroLogoPath: string | null =
+    randomShow ? (logoPaths[randomShow.id] ?? null) : null;
 
   return {
     categorizedShows,
@@ -233,4 +234,28 @@ async function fetchAllLogos(
     }),
   );
   return Object.fromEntries(entries);
+}
+
+/**
+ * Fetches the first Trailer key for the hero using the lightweight
+ * /videos endpoint. Tries en-US first, falls back to hi-IN only when
+ * en-US has no Trailer. Replaces the old fetchDetailedShowData path
+ * which pulled two full show payloads just for a trailer key.
+ */
+async function fetchHeroTrailer(
+  id: number,
+  mediaType: MediaType,
+): Promise<string | null> {
+  const type: 'movie' | 'tv' = mediaType === MediaType.TV ? 'tv' : 'movie';
+  for (const language of ['en-US', 'hi-IN']) {
+    try {
+      const { data } = await MovieService.getVideos(type, id, language);
+      const key =
+        data?.results?.find((v) => v.type === 'Trailer')?.key ?? null;
+      if (key) return key;
+    } catch {
+      // try the next language
+    }
+  }
+  return null;
 }
