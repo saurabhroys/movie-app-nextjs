@@ -11,7 +11,7 @@
     "lint:cache": "eslint src --cache",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky install",
+    "prepare": "husky",
     "dev:vinext": "vite dev --port 3001",
     "build:vinext": "NODE_ENV=production vite build",
     "start:vinext": "vinext start --port 3001",
