@@ -3,6 +3,7 @@ import * as React from 'react';
 // @see https://usehooks.com/useLockBodyScroll.
 export function useLockBody() {
   React.useLayoutEffect((): (() => void) => {
+    if (typeof window === 'undefined') return () => {};
     const originalStyle: string = window.getComputedStyle(
       document.body,
     ).overflow;
