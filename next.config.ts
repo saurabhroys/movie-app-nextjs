@@ -15,6 +15,19 @@ const config: NextConfig = {
             expire: 86400,
         },
     },
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+                    { key: 'X-Content-Type-Options', value: 'nosniff' },
+                    { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+                    { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+                ],
+            },
+        ];
+    },
 
     /**
      * i18n configuration is unsupported in App Router.

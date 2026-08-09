@@ -70,9 +70,8 @@ export function getIdFromSlug(slug: string): number {
 }
 
 export function clearSearch(): void {
-  const searchInput: HTMLInputElement | null = document.getElementById(
-    'search-input',
-  ) as HTMLInputElement;
+  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+  if (!searchInput) return;
   searchInput.blur();
   searchInput.value = '';
   searchInput.defaultValue = '';
@@ -82,16 +81,14 @@ export function getNameFromShow(show: Show | null): string {
   return show?.name ?? show?.title ?? '';
 }
 
-let timer: NodeJS.Timeout;
-export function debounce(
-  func: (...args: (string | object)[]) => void,
+export function debounce<T extends (...args: unknown[]) => void>(
+  func: T,
   timeout: number,
-): (...args: (string | object)[]) => void {
-  return (...args: (string | object)[]) => {
+): (...args: Parameters<T>) => void {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      func(...args);
-    }, timeout);
+    timer = setTimeout(() => func(...args), timeout);
   };
 }
 

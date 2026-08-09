@@ -42,11 +42,9 @@ export function useSearch(options: UseSearchOptions = {}) {
       try {
         const { results, requestId } = await SearchService.searchMovies(query);
 
-        // Only update if this is still the current request
-        if (
-          requestId === searchStore.currentRequestId ||
-          !searchStore.currentRequestId
-        ) {
+        // Get fresh state at resolution time to avoid stale closure race conditions
+        const currentRequestId = useSearchStore.getState().currentRequestId;
+        if (requestId === currentRequestId || !currentRequestId) {
           searchStore.setShows(results);
           searchStore.setCurrentRequestId(requestId);
         }
@@ -62,7 +60,7 @@ export function useSearch(options: UseSearchOptions = {}) {
         searchStore.setLoading(false);
       }
     },
-    [searchStore, minQueryLength, onError],
+    [minQueryLength, onError],
   );
 
   const debouncedSearch = useCallback(

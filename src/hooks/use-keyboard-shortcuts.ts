@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePreviewModalStore } from '@/stores/preview-modal';
 import { useSearchStore } from '@/stores/search';
@@ -144,6 +144,7 @@ export function useKeyboardShortcuts() {
   const showHelp = useCallback(() => {
     // Create a help modal or tooltip
     const helpModal = document.createElement('div');
+    helpModalRef.current = helpModal;
     helpModal.className =
       'fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md';
     helpModal.innerHTML = `
@@ -216,8 +217,8 @@ export function useKeyboardShortcuts() {
     });
   }, []);
 
-  // Define all shortcuts
-  const shortcuts: ShortcutConfig[] = [
+  // Define all shortcuts - memoized to prevent listener churn
+  const shortcuts = useMemo<ShortcutConfig[]>(() => [
     // Navigation shortcuts
     {
       key: '1',
@@ -327,7 +328,32 @@ export function useKeyboardShortcuts() {
       action: showHelp,
       preventDefault: true,
     }, // Shift+H for help
-  ];
+  ], [
+    navigateToHome,
+    navigateToMovies,
+    navigateToTVShows,
+    navigateToAnime,
+    navigateToNewAndPopular,
+    openSearch,
+    closeSearch,
+    closeModal,
+    togglePlayPause,
+    scrollCarouselLeft,
+    scrollCarouselRight,
+    showHelp,
+  ]);
+
+  // Track help modal for cleanup on unmount
+  const helpModalRef = useRef<HTMLDivElement | null>(null);
+
+  // Cleanup help modal on unmount
+  useEffect(() => {
+    return () => {
+      if (helpModalRef.current) {
+        helpModalRef.current.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
