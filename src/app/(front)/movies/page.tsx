@@ -1,10 +1,8 @@
-import Hero from '@/features/browse/hero';
-import ShowsContainer from '@/features/browse/shows-container';
+import ShowsPage, { type BrowsePageData } from '@/features/browse/shows-page';
+import { enrichShowsWithLogos } from '@/features/browse/shows-page';
 import { siteConfig } from '@/configs/site';
-import { GENRES, RequestType, type ShowRequest } from '@/services/tmdb/types';
-import { getRandomShow } from '@/lib/utils';
+import { GENRES, RequestType, MediaType, type ShowRequest } from '@/services/tmdb/types';
 import { getShows } from '@/services/tmdb/shows';
-import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
 import { cacheLife } from 'next/cache';
@@ -18,18 +16,16 @@ export const metadata: Metadata = {
 export default async function MoviePage() {
   await connection();
   const h1 = `${siteConfig.name} Movie`;
-  const categorizedShows = await getMovieData();
-  const randomShow: Show | null = getRandomShow(categorizedShows);
+  const data = await getMovieData();
   return (
     <>
       <h1 className="hidden">{h1}</h1>
-      <Hero randomShow={randomShow} />
-      <ShowsContainer shows={categorizedShows} />
+      <ShowsPage data={data} />
     </>
   );
 }
 
-async function getMovieData() {
+async function getMovieData(): Promise<BrowsePageData> {
   'use cache';
   cacheLife('hours');
   const requests: ShowRequest[] = [
@@ -153,5 +149,5 @@ async function getMovieData() {
     },
   ];
 
-  return await getShows(requests);
+  return await enrichShowsWithLogos(await getShows(requests));
 }

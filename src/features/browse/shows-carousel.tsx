@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { ShowCard } from '@/features/browse/shows-cards';
+import { useShowLogos } from '@/features/browse/use-show-logos';
 import { trpc } from '@/client/trpc';
 import { type TmdbRequest } from '@/services/tmdb/types';
 
@@ -46,6 +47,8 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
   );
 
   const allShows = data?.pages.flatMap((page) => page.items) ?? initialShows;
+
+  const mergedLogoPaths = useShowLogos(allShows, logoPaths);
 
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
@@ -125,7 +128,7 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
                   key={`${show.id}-${idx}`}
                   show={show}
                   pathname={pathname}
-                  logoPath={logoPaths?.[show.id]}
+                  logoPath={mergedLogoPaths[show.id]}
                 />
               ))}
               {isFetchingNextPage && (

@@ -19,6 +19,11 @@ const config: NextConfig = {
             revalidate: 60,
             expire: 600,
         },
+        logo: {
+            stale: 3600,
+            revalidate: 86400,
+            expire: 604800,
+        },
     },
     async headers() {
         return [

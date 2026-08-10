@@ -2,6 +2,7 @@
 
 import type { Show } from '@/services/tmdb/types';
 import { ShowCard } from '@/features/browse/shows-cards';
+import { useShowLogos } from '@/features/browse/use-show-logos';
 import { usePathname } from 'next/navigation';
 import { useSearchQuery } from '@/redux/features/search/searchApi';
 import ShowsSkeleton from '@/features/browse/shows-skeleton';
@@ -14,6 +15,7 @@ interface SearchedShowsProps {
 
 const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
   const pathname = usePathname();
+  const mergedLogoPaths = useShowLogos(shows);
   const { isFetching: loading } = useSearchQuery(query || '', { skip: !query?.trim() });
 
   return (
@@ -41,7 +43,12 @@ const ShowsGrid = ({ shows, query }: SearchedShowsProps) => {
               query && 'max-[375px]:grid-cols-1 max-sm:grid-cols-2',
             )}>
             {shows.map((show: Show) => (
-              <ShowCard key={show.id} show={show} pathname={pathname} />
+              <ShowCard
+                key={show.id}
+                show={show}
+                pathname={pathname}
+                logoPath={mergedLogoPaths[show.id]}
+              />
             ))}
           </div>
         )}

@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '@/server/trpc';
 import MovieService from '@/services/tmdb/movie.service';
+import { fetchLogoPaths } from '@/services/tmdb/logos';
 import { executeRequest } from '@/services/tmdb/shows';
 import {
   GENRES,
   MediaType,
   RequestType,
 } from '@/services/tmdb/types';
+import { cacheLife } from 'next/cache';
 
 const mediaTypeSchema = z.union([
   z.literal(MediaType.MOVIE),
@@ -67,5 +69,24 @@ export const movieRouter = router({
         .query(async ({ input }) => {
             const response = await MovieService.getSeasons(input.id, input.season);
             return response.data;
+        }),
+
+    getLogos: publicProcedure
+        .input(
+            z.object({
+                shows: z.array(
+                    z.object({
+                        id: z.number().int().positive(),
+                        mediaType: z.nativeEnum(MediaType),
+                    }),
+                ).max(50),
+            }),
+        )
+        .query(async ({ input }) => {
+            'use cache';
+            cacheLife('logo');
+            return fetchLogoPaths(
+                input.shows.map((s) => ({ id: s.id, media_type: s.mediaType })),
+            );
         }),
 });

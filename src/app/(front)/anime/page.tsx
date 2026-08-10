@@ -1,10 +1,8 @@
-import Hero from '@/features/browse/hero';
-import ShowsContainer from '@/features/browse/shows-container';
+import ShowsPage, { type BrowsePageData } from '@/features/browse/shows-page';
+import { enrichShowsWithLogos } from '@/features/browse/shows-page';
 import { siteConfig } from '@/configs/site';
-import { RequestType, type ShowRequest } from '@/services/tmdb/types';
-import { getRandomShow } from '@/lib/utils';
+import { RequestType, MediaType, type ShowRequest, type Show } from '@/services/tmdb/types';
 import { getShows } from '@/services/tmdb/shows';
-import { MediaType, type Show } from '@/services/tmdb/types';
 import { type Metadata } from 'next';
 
 import { cacheLife } from 'next/cache';
@@ -18,19 +16,17 @@ export const metadata: Metadata = {
 export default async function AnimePage() {
   await connection();
   const h1 = `${siteConfig.name} Anime`;
-  const categorizedShows = await getAnimeData();
-  const randomShow: Show | null = getRandomShow(categorizedShows);
+  const data = await getAnimeData();
 
   return (
     <>
       <h1 className="hidden">{h1}</h1>
-      <Hero randomShow={randomShow} />
-      <ShowsContainer shows={categorizedShows} />
+      <ShowsPage data={data} />
     </>
   );
 }
 
-async function getAnimeData() {
+async function getAnimeData(): Promise<BrowsePageData> {
   'use cache';
   cacheLife('hours');
   const requests: ShowRequest[] = [
@@ -78,17 +74,15 @@ async function getAnimeData() {
     },
   ];
   const fetchedShows = await getShows(requests);
-  return fetchedShows.map((category, idx) => {
-    return {
-      ...category,
-      shows: category.shows.map((show: Show) => {
-        return {
-          ...show,
-          media_type: requests[idx].title.includes('Movies')
-            ? MediaType.MOVIE
-            : MediaType.TV,
-        };
-      }),
-    };
-  });
+  // Fix media_type per show so fetchLogoPaths hits the correct /images endpoint
+  const categorizedShows = fetchedShows.map((category, idx) => ({
+    ...category,
+    shows: category.shows.map((show: Show) => ({
+      ...show,
+      media_type: requests[idx].title.includes('Movies')
+        ? MediaType.MOVIE
+        : MediaType.TV,
+    })),
+  }));
+  return enrichShowsWithLogos(categorizedShows);
 }
