@@ -89,22 +89,25 @@ const AttributeTooltipManager = () => {
     let raf: number | null = null;
 
     const hide = () => {
-      tooltipEl.style.transform = 'translate(-9999px, -9999px)';
-      tooltipEl.textContent = '';
+      if (tooltipEl) {
+        tooltipEl.style.transform = 'translate(-9999px, -9999px)';
+        tooltipEl.textContent = '';
+      }
       // Restore native title and clean ARIA linkage
       if (currentAnchor) {
-        // Check if element is still in the DOM
-        if (currentAnchor.isConnected && currentAnchor instanceof HTMLElement) {
-          const anchorEl = currentAnchor;
-          const savedTitle = anchorEl.getAttribute('data-original-title');
-          if (savedTitle) {
-            anchorEl.setAttribute('title', savedTitle);
-            anchorEl.removeAttribute('data-original-title');
+        try {
+          if (currentAnchor.isConnected && currentAnchor instanceof HTMLElement) {
+            const anchorEl = currentAnchor;
+            const savedTitle = anchorEl.getAttribute?.('data-original-title');
+            if (savedTitle) {
+              anchorEl.setAttribute?.('title', savedTitle);
+              anchorEl.removeAttribute?.('data-original-title');
+            }
+            if (anchorEl.getAttribute?.('aria-describedby') === TOOLTIP_ID) {
+              anchorEl.removeAttribute?.('aria-describedby');
+            }
           }
-          if (anchorEl.getAttribute('aria-describedby') === TOOLTIP_ID) {
-            anchorEl.removeAttribute('aria-describedby');
-          }
-        }
+        } catch { }
       }
       currentAnchor = null;
       if (raf) {
@@ -114,7 +117,7 @@ const AttributeTooltipManager = () => {
     };
 
     const update = () => {
-      if (currentAnchor && currentAnchor.isConnected) {
+      if (currentAnchor && currentAnchor.isConnected && tooltipEl) {
         positionTooltip(tooltipEl, currentAnchor);
         raf = requestAnimationFrame(update);
       } else {
@@ -124,31 +127,35 @@ const AttributeTooltipManager = () => {
     };
 
     const onPointerEnter = (e: Event) => {
+      if (!e || !e.target) return;
       const rawTarget = e.target as Element | null;
+      if (!rawTarget) return;
       const target = findTooltipAnchor(rawTarget);
       if (!target) return;
       // Ensure target is an HTMLElement and still connected to DOM
       if (!(target instanceof HTMLElement) || !target.isConnected) return;
       const text = getAttrText(target);
-      if (!text) return;
+      if (!text || !tooltipEl) return;
       currentAnchor = target;
       const anchorEl = target;
       
-      // Double-check element is still valid before modifying attributes
-      if (!anchorEl || !anchorEl.isConnected || !(anchorEl instanceof HTMLElement)) return;
-      
-      // Suppress native title tooltips while our tooltip is visible
-      const title = anchorEl.getAttribute('title');
-      if (title) {
-        anchorEl.setAttribute('data-original-title', title);
-        anchorEl.removeAttribute('title');
-      }
-      // Link via ARIA to avoid screen reader duplication
-      anchorEl.setAttribute('aria-describedby', TOOLTIP_ID);
-      tooltipEl.textContent = text;
-      // Pre-measure by placing text then positioning
-      positionTooltip(tooltipEl, target);
-      if (!raf) raf = requestAnimationFrame(update);
+      try {
+        // Double-check element is still valid before modifying attributes
+        if (!anchorEl || !anchorEl.isConnected || !(anchorEl instanceof HTMLElement) || typeof anchorEl.setAttribute !== 'function') return;
+        
+        // Suppress native title tooltips while our tooltip is visible
+        const title = anchorEl.getAttribute?.('title');
+        if (title) {
+          anchorEl.setAttribute?.('data-original-title', title);
+          anchorEl.removeAttribute?.('title');
+        }
+        // Link via ARIA to avoid screen reader duplication
+        anchorEl.setAttribute?.('aria-describedby', TOOLTIP_ID);
+        tooltipEl.textContent = text;
+        // Pre-measure by placing text then positioning
+        positionTooltip(tooltipEl, target);
+        if (!raf) raf = requestAnimationFrame(update);
+      } catch { }
     };
 
     const onPointerLeave = (e: Event) => {

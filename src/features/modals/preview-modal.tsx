@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { getYear } from '@/lib/utils';
+// import { getNameFromShow, getSlug } from '@/lib/slug';
 import { trpc } from '@/client/trpc';
 import { observer, use$ } from '@legendapp/state/react';
 import { previewModal$, previewModalActions, fetchDetailedShow } from '@/state/preview-modal';

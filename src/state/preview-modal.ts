@@ -2,6 +2,9 @@ import { observable } from '@legendapp/state';
 import type { MediaType, Show } from '@/services/tmdb/types';
 import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 import { getShowDetails } from '@/server/actions/get-show-details';
+import { addressBar$, initAddressBarSync, type AddressBarState } from '@/state/address-bar';
+
+export { addressBar$, type AddressBarState };
 
 export interface PreviewModalState {
   isOpen: boolean;
@@ -22,6 +25,9 @@ const initialState: PreviewModalState = {
 };
 
 export const previewModal$ = observable<PreviewModalState>(initialState);
+
+// Initialize address bar history synchronization
+initAddressBarSync(previewModal$);
 
 export const previewModalActions = {
   setIsOpen: (isOpen: boolean) => previewModal$.isOpen.set(isOpen),

@@ -1,4 +1,5 @@
 'use client';
+// import { getNameFromShow, getSlug } from '@/lib/slug';
 import { observer, use$ } from '@legendapp/state/react';
 import { previewModal$, previewModalActions } from '@/state/preview-modal';
 import { hoverModal$ } from '@/state/hover-modal';
@@ -124,6 +125,7 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     isPaused,
     showTextElements,
   } = state;
+  // const router = useRouter();
   const youtubeRef = React.useRef<Youtube | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -324,11 +326,8 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     previewModalActions.openPreviewModal({ show: randomShow, play: true });
   }, [randomShow]);
 
-  const searchQuery = use$(search$.query);
-
-  if (searchQuery.length > 0) {
-    return null;
-  }
+  const rawSearchQuery = use$(search$.query);
+  const searchQuery = typeof rawSearchQuery === 'string' ? rawSearchQuery : '';
 
   const playHref = React.useMemo(() => {
     if (!randomShow) return '#';
@@ -339,6 +338,10 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
     const prefix = randomShow.media_type === MediaType.MOVIE ? 'm' : 't';
     return `/watch/${prefix}-${randomShow.id}?type=anime`;
   }, [randomShow, path]);
+
+  if (searchQuery.length > 0) {
+    return null;
+  }
 
   return (
     <>

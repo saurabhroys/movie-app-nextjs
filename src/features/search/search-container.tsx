@@ -3,7 +3,7 @@
 import React from 'react';
 import { MediaType, type Show } from '@/services/tmdb/types';
 import ShowsGrid from '@/features/browse/shows-grid';
-import { observer, use$ } from '@legendapp/state/react';
+import { use$ } from '@legendapp/state/react';
 import { search$, searchActions } from '@/state/search';
 import { upsertSearchQuery } from '@/state/search-api';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,7 @@ interface SearchContainerProps {
   shows: Show[];
 }
 
-function SearchContainer({ shows, query }: SearchContainerProps) {
+function SearchContainer({ shows = [], query }: SearchContainerProps) {
   const searchQuery = use$(search$.query);
   const [activeFilter, setActiveFilter] = React.useState<MediaType | 'all'>(
     'all',
@@ -65,7 +65,7 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="container mt-2 md:mt-20 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-1 w-full sm:w-auto">
+        <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none py-1 w-full sm:w-auto">
           <span className="text-sm hidden sm:block font-medium text-neutral-400 shrink-0">Filter by:</span>
           {filters.map((filter) => (
             <Button

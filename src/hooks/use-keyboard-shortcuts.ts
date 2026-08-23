@@ -109,6 +109,18 @@ export function useKeyboardShortcuts() {
   const closeModal = useCallback(() => {
     if (previewModal$.isOpen.peek()) {
       previewModalActions.reset();
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith('/watch') && !currentPath.startsWith('/download') && /\d/.test(currentPath)) {
+          if (window.history.state?.modalOpened) {
+            window.history.back();
+          } else {
+            const segments = currentPath.split('/').filter(Boolean);
+            const basePath = segments.length > 1 ? `/${segments[0]}` : '/';
+            window.history.replaceState(null, '', basePath);
+          }
+        }
+      }
     }
   }, []);
 

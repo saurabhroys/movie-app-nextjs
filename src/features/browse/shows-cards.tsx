@@ -3,6 +3,8 @@ import { previewModalActions } from '@/state/preview-modal';
 import { type Show } from '@/services/tmdb/types';
 import * as React from 'react';
 
+// import { useRouter } from 'next/navigation';
+
 import { getMobileDetect } from '@/lib/utils';
 import { getNameFromShow, getSlug } from '@/lib/slug';
 import CustomImage from '@/components/shared/custom-image';
@@ -18,6 +20,7 @@ interface ShowCardProps {
 }
 
 export const ShowCard = React.memo(({ show, pathname: _pathname, logoPath = null }: ShowCardProps) => {
+  // const router = useRouter();
   const openTimerRef = React.useRef<number | null>(null);
   const closeTimerRef = React.useRef<number | null>(null);
   const IS_MOBILE = isMobile();

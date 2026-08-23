@@ -16,6 +16,7 @@ import Youtube from 'react-youtube';
 import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+// import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 const defaultOptions = {
@@ -35,6 +36,7 @@ const defaultOptions = {
 };
 
 const PreviewModal = () => {
+  // const router = useRouter();
   const isOpen = use$(hoverModal$.isOpen);
   const show = use$(hoverModal$.show);
   const detailedShow = use$(hoverModal$.detailedShow);

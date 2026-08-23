@@ -1,6 +1,8 @@
 import { type Metadata } from 'next';
 import { handleMetadata } from '@/lib/metadata';
 import MoviePage from '../page';
+
+export const instant = false;
 type Props = {
   params: { slug: string };
   searchParams: Record<string, string | string[] | undefined>;
