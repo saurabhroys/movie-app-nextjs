@@ -1,12 +1,5 @@
-import { useAppDispatch } from '@/redux/hooks';
-import { store } from '@/redux/store';
-import {
-  setIsOpen as hoverSetIsOpen,
-  setAnchorRect as hoverSetAnchorRect,
-  setShow as hoverSetShow,
-  openHoverPreview,
-} from '@/features/modals/hoverModalSlice';
-import { openPreviewModal } from '@/features/modals/previewModalSlice';
+import { hoverModal$, hoverModalActions } from '@/state/hover-modal';
+import { previewModalActions } from '@/state/preview-modal';
 import { type Show } from '@/services/tmdb/types';
 import * as React from 'react';
 
@@ -25,7 +18,6 @@ interface ShowCardProps {
 }
 
 export const ShowCard = React.memo(({ show, pathname: _pathname, logoPath = null }: ShowCardProps) => {
-  const dispatch = useAppDispatch();
   const openTimerRef = React.useRef<number | null>(null);
   const closeTimerRef = React.useRef<number | null>(null);
   const IS_MOBILE = isMobile();
@@ -43,22 +35,34 @@ export const ShowCard = React.memo(({ show, pathname: _pathname, logoPath = null
       window.clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
+    // If a different show's preview is currently open, wipe it immediately
+    // before arming the new hover timer so the old modal never lingers.
+    const currentHoverId = hoverModal$.show.get()?.id;
+    if (
+      currentHoverId != null &&
+      currentHoverId !== show.id &&
+      hoverModal$.isOpen.get()
+    ) {
+      hoverModalActions.reset();
+    }
+
+    // Mark the hover zone as active so the modal stays open during card→modal transit
+    hoverModalActions.setIsActive(true);
+
     const target = e.currentTarget as HTMLDivElement;
     const rect = target.getBoundingClientRect();
-    const immediate = store.getState().hoverModal.isOpen;
+    const immediate = hoverModal$.isOpen.get();
     if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
     const run = () => {
-      dispatch(
-        openHoverPreview({
-          show,
-          rect: {
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height,
-          },
-        }),
-      );
+      hoverModalActions.openHoverPreview({
+        show,
+        rect: {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        },
+      });
     };
     if (immediate) run();
     else {
@@ -75,22 +79,30 @@ export const ShowCard = React.memo(({ show, pathname: _pathname, logoPath = null
       openTimerRef.current = null;
     }
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    // Mark the pointer as outside the hover zone (card or modal) so the
+    // close timer below is not skipped. The modal's onMouseEnter / the next
+    // card's onMouseEnter re-set this to true, so leaving the card alone
+    // never keeps the modal stuck open.
+    hoverModalActions.setIsActive(false);
+    // Increase timeout to 400ms to give the user enough time to move from the
+    // card onto the modal surface. The modal's handleModalMouseLeave arms a
+    // 300ms timer, so this longer window lets the card's timer fire first
+    // (and see isActive=true once the modal is hovered).
     closeTimerRef.current = window.setTimeout(() => {
-      const { isActive } = store.getState().hoverModal;
+      // Only close if this card's own preview is still the one being shown.
+      // If the user has already moved to another card, leave the new modal
+      // untouched.
+      if (hoverModal$.show.get()?.id !== show.id) return;
+      const isActive = hoverModal$.isActive.get();
       if (!isActive) {
-        dispatch(hoverSetIsOpen(false));
-        dispatch(hoverSetAnchorRect(null));
-        dispatch(hoverSetShow(null));
+        hoverModalActions.reset();
       }
-    }, 160);
+    }, 400);
   };
 
   const handleMoreDetails = () => {
-    const name = getNameFromShow(show);
-    const path: string =
-      (show.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
-    window.history.pushState(null, '', `/${path}/${getSlug(show.id, name)}`);
-    dispatch(openPreviewModal({ show, play: true }));
+    hoverModalActions.reset();
+    previewModalActions.openPreviewModal({ show, play: true });
   };
 
   const handleMobileCardClick = () => {

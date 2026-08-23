@@ -1,23 +1,15 @@
-'use client';
-
-import {
-  Dialog,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { X } from 'lucide-react';
-import { getMobileDetect, getYear } from '@/lib/utils';
+import { getYear } from '@/lib/utils';
 import { trpc } from '@/client/trpc';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { reset as previewReset } from '@/features/modals/previewModalSlice';
-import { fetchDetailedShow } from '@/features/modals/previewModalThunks';
-import { useLockBody } from '@/hooks/use-lock-body';
+import { observer, use$ } from '@legendapp/state/react';
+import { previewModal$, previewModalActions, fetchDetailedShow } from '@/state/preview-modal';
+import { useRouter } from 'next/navigation';
 import {
   type KeyWord,
   type VideoResult,
   type Show,
   type Episode,
 } from '@/services/tmdb/types';
-import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import type Youtube from 'react-youtube';
 import PreviewTrailerPane, { type YouTubeEvent } from './preview-trailer-pane';
@@ -26,15 +18,13 @@ import PreviewSeasonSelector from './preview-season-selector';
 import PreviewRecommendations from './preview-recommendations';
 import PreviewCollection from './preview-collection';
 import PreviewAbout from './preview-about';
+import { Dialog, DialogDescription } from '@radix-ui/react-dialog';
 
-const userAgent =
-  typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
-const { isMobile } = getMobileDetect(userAgent);
 const defaultOptions: Record<string, object> = {
   playerVars: {
     // https://developers.google.com/youtube/player_parameters
     rel: 0,
-    mute: isMobile() ? 1 : 0,
+    mute: 0,
     loop: 0,
     autoplay: 1,
     controls: 0,
@@ -48,22 +38,16 @@ const defaultOptions: Record<string, object> = {
 };
 
 const PreviewModal = () => {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((state) => state.previewModal.isOpen);
-  const show = useAppSelector((state) => state.previewModal.show);
-  const detailedShow = useAppSelector((state) => state.previewModal.detailedShow);
-  const firstLoad = useAppSelector((state) => state.previewModal.firstLoad);
-  const isLoading = useAppSelector((state) => state.previewModal.isLoading);
+  const isOpen = use$(previewModal$.isOpen);
+  const show = use$(previewModal$.show);
+  const detailedShow = use$(previewModal$.detailedShow);
+  const isLoading = use$(previewModal$.isLoading);
   const utils = trpc.useUtils();
 
-  const IS_MOBILE: boolean = isMobile();
   const router = useRouter();
 
-  const [isMuted, setIsMuted] = React.useState<boolean>(
-    firstLoad || IS_MOBILE,
-  );
-  const [options, setOptions] =
-    React.useState<Record<string, object>>(defaultOptions);
+  const [isMuted, setIsMuted] = React.useState<boolean>(false);
+  const options = defaultOptions;
   const youtubeRef = React.useRef<Youtube | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const [trailerFinished, setTrailerFinished] = React.useState<boolean>(false);
@@ -72,7 +56,6 @@ const PreviewModal = () => {
   >('initial');
   const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
   const [seasonEpisodes, setSeasonEpisodes] = React.useState<Episode[]>([]);
-  const isClosingRef = React.useRef(false);
 
   const trailer = React.useMemo(() => {
     if (!detailedShow?.videos?.results) return '';
@@ -85,18 +68,10 @@ const PreviewModal = () => {
 
   React.useEffect(() => {
     if (isOpen && show) {
-      dispatch(fetchDetailedShow({ id: show.id, mediaType: show.media_type }));
+      setIsMuted(false);
+      void fetchDetailedShow({ id: show.id, mediaType: show.media_type });
     }
   }, [isOpen, show?.id]);
-
-  React.useEffect(() => {
-    if (firstLoad || IS_MOBILE) {
-      setOptions((state: Record<string, object>) => ({
-        ...state,
-        playerVars: { ...state.playerVars, mute: 1 },
-      }));
-    }
-  }, [firstLoad, IS_MOBILE]);
 
   // Initial fetch for Season 1 episodes when opening a TV show
   React.useEffect(() => {
@@ -113,18 +88,28 @@ const PreviewModal = () => {
   }, [isOpen, show?.media_type, detailedShow?.id]); // depend on detailedShow.id to trigger only when data is ready
 
   const handleCloseModal = React.useCallback(() => {
-    if (isClosingRef.current || !isOpen) return;
-    isClosingRef.current = true;
-    dispatch(previewReset());
-    if (!show || firstLoad) {
-      window.history.pushState(null, '', '/');
-    } else {
-      window.history.back();
-    }
-    setTimeout(() => {
-      isClosingRef.current = false;
-    }, 100);
-  }, [isOpen, show, firstLoad, dispatch]);
+    previewModalActions.reset();
+  }, []);
+
+  // Lock body scroll and listen for ESC key when modal is open
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleCloseModal]);
 
   const onEnd = () => {
     setTrailerFinished(true);
@@ -149,8 +134,13 @@ const PreviewModal = () => {
 
   const onReady = (event: YouTubeEvent) => {
     try {
-      if (event?.target && typeof event.target.playVideo === 'function') {
-        event.target.playVideo()?.catch?.(() => {});
+      if (event?.target) {
+        if (typeof event.target.unMute === 'function') {
+          event.target.unMute();
+        }
+        if (typeof event.target.playVideo === 'function') {
+          event.target.playVideo()?.catch?.(() => {});
+        }
       }
     } catch { }
   };
@@ -227,40 +217,25 @@ const PreviewModal = () => {
     return `/watch/${id}?type=${type}`;
   };
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const contentEl = document.getElementById('content');
-    if (!contentEl) return;
-    if (e.target instanceof Node && contentEl.contains(e.target)) {
-      return;
-    }
-    e.stopPropagation(); // Prevent Dialog's onOpenChange from firing
-    handleCloseModal();
-  };
-
   const navigateToMovie = (movieId: number) => {
     // Avoid history.back() to ensure navigation happens
-    dispatch(previewReset());
+    previewModalActions.reset();
     router.push(`/watch/${movieId}?type=movie`);
   };
 
   const navigateToEpisode = (seasonNumber: number, episodeNumber: number) => {
     // Avoid history.back() to ensure navigation happens
     if (!show?.id) return;
-    dispatch(previewReset());
+    previewModalActions.reset();
     router.push(
       `/watch/${show.id}?type=tv&season=${seasonNumber}&episode=${episodeNumber}`,
     );
   };
 
   const navigateToItem = (item: Show) => {
-    dispatch(previewReset());
+    previewModalActions.reset();
     const type = (item.media_type as string) === 'movie' ? 'movie' : 'tv';
     router.push(`/watch/${item.id}?type=${type}`);
-  };
-
-  const BodyScrollLock = () => {
-    useLockBody();
-    return null;
   };
 
   if (!isOpen) return null;
@@ -274,145 +249,141 @@ const PreviewModal = () => {
         }
       }}
       aria-label="Modal containing show's details">
-      {isOpen && <BodyScrollLock />}
       <div
-        className="'bg-black/20 data-[state=open]:animate-in data-[state=closed]:animate-out fixed inset-0 z-50 backdrop-blur-[1px]"
-        onClick={handleOverlayClick}>
-        <div className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 translate-all fixed top-[50%] left-[50%] z-50 grid h-full w-full translate-x-[-50%] translate-y-[-50%] overflow-y-auto py-10 duration-500 disabled:pointer-events-none">
-          <div className="flex justify-center">
-            <div
-              id="content"
-              className="relative w-full overflow-y-auto rounded-md border-none bg-neutral-900 p-0 text-left align-middle ring-0 sm:max-w-3xl lg:max-w-4xl">
-              <PreviewTrailerPane
-                show={show}
-                detailedShow={detailedShow}
-                trailer={trailer}
-                isMuted={isMuted}
-                trailerFinished={trailerFinished}
-                logoTransition={logoTransition}
-                options={options}
-                imageRef={imageRef}
-                youtubeRef={youtubeRef}
-                playHref={handleHref()}
-                onEnd={onEnd}
-                onPlay={onPlay}
-                onReady={onReady}
-                onToggleMute={handleChangeMute}
-                onReplay={handleReplay}
-              />
+        className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/75 backdrop-blur-xs p-4 md:p-10 duration-300 animate-in fade-in-0"
+        onClick={handleCloseModal}>
+        <div
+          id="content"
+          className="relative my-auto w-full max-w-4xl overflow-hidden rounded-xl border-none bg-neutral-900 p-0 text-left align-middle shadow-2xl duration-300 animate-in zoom-in-95 sm:max-w-3xl lg:max-w-4xl"
+          onClick={(e) => e.stopPropagation()}>
+          <PreviewTrailerPane
+            show={show}
+            detailedShow={detailedShow}
+            trailer={trailer}
+            isMuted={isMuted}
+            trailerFinished={trailerFinished}
+            logoTransition={logoTransition}
+            options={options}
+            imageRef={imageRef}
+            youtubeRef={youtubeRef}
+            playHref={handleHref()}
+            onEnd={onEnd}
+            onPlay={onPlay}
+            onReady={onReady}
+            onToggleMute={handleChangeMute}
+            onReplay={handleReplay}
+          />
 
-              {/* Two Column Layout */}
-              <div className="relative z-40 -mt-10 flex flex-wrap md:flex-nowrap w-full gap-4 px-4 md:px-10 pb-10">
-                <div className="w-full md:w-3/4">
-                  {/* Movie Details Row */}
-                  <div className="flex items-center space-x-2 text-sm">
-                    {/* Release Year */}
-                    {show?.release_date ? (
+          {/* Two Column Layout */}
+          <div className="relative z-40 -mt-10 flex flex-wrap md:flex-nowrap w-full gap-4 px-4 md:px-10 pb-10">
+            <div className="w-full md:w-3/4">
+              {/* Movie Details Row */}
+              <div className="flex items-center space-x-2 text-sm">
+                {/* Release Year */}
+                {show?.release_date ? (
+                  <p className="text-sm font-bold text-slate-200">
+                    {getYear(show?.release_date)}
+                  </p>
+                ) : show?.first_air_date ? (
+                  <p className="text-sm font-bold text-slate-200">
+                    {getYear(show?.first_air_date)}
+                  </p>
+                ) : null}
+
+                {/* Duration */}
+                {detailedShow?.runtime && (
+                  <p className="text-sm font-bold text-slate-200">
+                    {Math.floor(detailedShow.runtime / 60)}h {detailedShow.runtime % 60}m
+                  </p>
+                )}
+                {/* Seasons (TV only) */}
+                {(show?.media_type as string) === 'tv' &&
+                  (() => {
+                    const count = detailedShow?.number_of_seasons ?? show?.number_of_seasons ?? null;
+                    return typeof count === 'number' && count > 0 ? (
                       <p className="text-sm font-bold text-slate-200">
-                        {getYear(show?.release_date)}
+                        {count} {count === 1 ? 'Season' : 'Seasons'}
                       </p>
-                    ) : show?.first_air_date ? (
-                      <p className="text-sm font-bold text-slate-200">
-                        {getYear(show?.first_air_date)}
-                      </p>
-                    ) : null}
+                    ) : null;
+                  })()}
 
-                    {/* Duration */}
-                    {detailedShow?.runtime && (
-                      <p className="text-sm font-bold text-slate-200">
-                        {Math.floor(detailedShow.runtime / 60)}h {detailedShow.runtime % 60}m
-                      </p>
-                    )}
-                    {/* Seasons (TV only) */}
-                    {(show?.media_type as string) === 'tv' &&
-                      (() => {
-                        const count = detailedShow?.number_of_seasons ?? show?.number_of_seasons ?? null;
-                        return typeof count === 'number' && count > 0 ? (
-                          <p className="text-sm font-bold text-slate-200">
-                            {count} {count === 1 ? 'Season' : 'Seasons'}
-                          </p>
-                        ) : null;
-                      })()}
+                {/* Quality Badge */}
+                <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-semibold text-neutral-300">
+                  HD
+                </span>
 
-                    {/* Quality Badge */}
-                    <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-semibold text-neutral-300">
-                      HD
-                    </span>
-
-                    {/* Language */}
-                    {show?.original_language && (
-                      <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-bold text-neutral-300">
-                        {show.original_language.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* Age Rating */}
-                    <span className="w-9 place-items-center border border-neutral-400 px-[0.4rem] text-center text-[12px] font-bold text-neutral-200">
-                      {detailedShow?.contentRating ?? '16+'}
-                    </span>
-                    {/* KeyWords */}
-                    <span className="text-sm text-slate-50">
-                      {detailedShow?.keywords && detailedShow.keywords.length > 0
-                        ? detailedShow.keywords
-                          .slice(0, 3)
-                          .map((keyword) => keyword.name)
-                          .join(', ')
-                        : 'content warning'}
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <DialogDescription className="pt-5 text-[15px] leading-relaxed text-slate-50">
-                    {show?.overview ?? '-'}
-                  </DialogDescription>
-                </div>
-
-                <PreviewCastList detailedShow={detailedShow} />
+                {/* Language */}
+                {show?.original_language && (
+                  <span className="place-items-center rounded-[3px] border border-neutral-500 px-1.5 py-0 text-[10px] font-bold text-neutral-300">
+                    {show.original_language.toUpperCase()}
+                  </span>
+                )}
               </div>
 
-              {/* Movie Collection Section */}
-              <PreviewCollection
-                collection={detailedShow?.collection}
-                onMovieClick={navigateToMovie}
-              />
+              <div className="flex items-center gap-2">
+                {/* Age Rating */}
+                <span className="w-9 place-items-center border border-neutral-400 px-[0.4rem] text-center text-[12px] font-bold text-neutral-200">
+                  {detailedShow?.contentRating ?? '16+'}
+                </span>
+                {/* KeyWords */}
+                <span className="text-sm text-slate-50">
+                  {detailedShow?.keywords && detailedShow.keywords.length > 0
+                    ? detailedShow.keywords
+                      .slice(0, 3)
+                      .map((keyword) => keyword.name)
+                      .join(', ')
+                    : 'content warning'}
+                </span>
+              </div>
 
-              {/* TV Seasons Section */}
-              <PreviewSeasonSelector
-                show={show}
-                detailedShow={detailedShow}
-                selectedSeason={selectedSeason}
-                seasonEpisodes={seasonEpisodes}
-                onSeasonChange={handleSeasonChange}
-                onEpisodeClick={navigateToEpisode}
-              />
-
-              {/* More like this */}
-              <PreviewRecommendations
-                detailedShow={detailedShow}
-                loadingRecommended={loadingRecommended}
-                onShowClick={navigateToItem}
-              />
-
-              {/* About Section */}
-              <PreviewAbout show={show} detailedShow={detailedShow} />
-
-              <button
-                className="absolute top-4 right-4 z-30 cursor-pointer rounded-full bg-black p-1 text-slate-50 opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCloseModal();
-                }}>
-                <X className="h-6 w-6" />
-                <span className="sr-only">Close</span>
-              </button>
+              {/* Description */}
+              <DialogDescription className="pt-5 text-[15px] leading-relaxed text-slate-50">
+                {show?.overview ?? '-'}
+              </DialogDescription>
             </div>
+
+            <PreviewCastList detailedShow={detailedShow} />
           </div>
+
+          {/* Movie Collection Section */}
+          <PreviewCollection
+            collection={detailedShow?.collection}
+            onMovieClick={navigateToMovie}
+          />
+
+          {/* TV Seasons Section */}
+          <PreviewSeasonSelector
+            show={show}
+            detailedShow={detailedShow}
+            selectedSeason={selectedSeason}
+            seasonEpisodes={seasonEpisodes}
+            onSeasonChange={handleSeasonChange}
+            onEpisodeClick={navigateToEpisode}
+          />
+
+          {/* More like this */}
+          <PreviewRecommendations
+            detailedShow={detailedShow}
+            loadingRecommended={loadingRecommended}
+            onShowClick={navigateToItem}
+          />
+
+          {/* About Section */}
+          <PreviewAbout show={show} detailedShow={detailedShow} />
+
+          <button
+            className="absolute top-4 right-4 z-30 cursor-pointer rounded-full bg-black p-1 text-slate-50 opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCloseModal();
+            }}>
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </button>
         </div>
       </div>
     </Dialog>
   );
 };
 
-export default PreviewModal;
+export default observer(PreviewModal);

@@ -1,28 +1,23 @@
 'use client';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { observer, use$ } from '@legendapp/state/react';
 import {
-  setIsActive as hoverSetIsActive,
-  reset as hoverReset,
-} from '@/features/modals/hoverModalSlice';
-import { fetchPreviewData } from '@/features/modals/hoverModalThunks';
-import { openPreviewModal } from '@/features/modals/previewModalSlice';
+  hoverModal$,
+  hoverModalActions,
+  fetchPreviewData,
+} from '@/state/hover-modal';
+import { previewModal$, previewModalActions } from '@/state/preview-modal';
 import {
   type KeyWord,
   type VideoResult,
   type MediaType,
 } from '@/services/tmdb/types';
-import { getMobileDetect } from '@/lib/utils';
 import CustomImage from '@/components/shared/custom-image';
 import Youtube from 'react-youtube';
 import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import * as React from 'react';
-import { getNameFromShow, getSlug } from '@/lib/slug';
 
-const userAgent =
-  typeof navigator === 'undefined' ? 'SSR' : navigator.userAgent;
-const { isMobile } = getMobileDetect(userAgent);
 const defaultOptions = {
   playerVars: {
     rel: 0,
@@ -40,14 +35,12 @@ const defaultOptions = {
 };
 
 const PreviewModal = () => {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((state) => state.hoverModal.isOpen);
-  const show = useAppSelector((state) => state.hoverModal.show);
-  const detailedShow = useAppSelector((state) => state.hoverModal.detailedShow);
-  const anchorRect = useAppSelector((state) => state.hoverModal.anchorRect);
-  const previewModalIsOpen = useAppSelector((state) => state.previewModal.isOpen);
-  const IS_MOBILE = isMobile();
-  const [isMuted, setIsMuted] = React.useState(IS_MOBILE);
+  const isOpen = use$(hoverModal$.isOpen);
+  const show = use$(hoverModal$.show);
+  const detailedShow = use$(hoverModal$.detailedShow);
+  const anchorRect = use$(hoverModal$.anchorRect);
+  const previewModalIsOpen = use$(previewModal$.isOpen);
+  const [isMuted, setIsMuted] = React.useState(false);
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
 
@@ -70,18 +63,45 @@ const PreviewModal = () => {
   React.useEffect(() => {
     if (isOpen && show) {
       const type = (show.media_type as string) === 'tv' ? 'tv' : 'movie';
-      dispatch(fetchPreviewData({ id: show.id, mediaType: type as MediaType }));
+      void fetchPreviewData({ id: show.id, mediaType: type as MediaType });
     }
   }, [isOpen, show?.id]);
 
   // Close preview when the main show modal opens
   React.useEffect(() => {
     if (!previewModalIsOpen) return;
-    dispatch(hoverReset());
+    hoverModalActions.reset();
   }, [previewModalIsOpen]);
 
-  const handleCloseModal = () => {
-    dispatch(hoverReset());
+  const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelCloseTimer = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  // Schedule a close when the user's pointer leaves the visible modal
+  // surface. The card's mouseleave timer also runs, but it's only armed
+  // when the user leaves the card, so we need a parallel timer here for
+  // the case where the user moves from the card onto the modal and then
+  // away from the modal entirely.
+  const handleModalMouseLeave = () => {
+    hoverModalActions.setIsActive(false);
+    cancelCloseTimer();
+    closeTimerRef.current = setTimeout(() => {
+      // Only close if the pointer didn't re-enter a hover zone (card or
+      // modal) while this timer was pending. The card's mouseenter sets
+      // isActive back to true, so if the user moved from the modal onto a
+      // card, the pending close is skipped.
+      if (hoverModal$.isActive.get()) return;
+      hoverModalActions.reset();
+    }, 300);
+  };
+
+  const handleModalMouseEnter = () => {
+    cancelCloseTimer();
+    hoverModalActions.setIsActive(true);
   };
 
   const handleChangeMute = () => {
@@ -157,40 +177,32 @@ const PreviewModal = () => {
     }
   }, [isOpen]);
 
-  // Close preview on any scroll start (wheel, scroll, touchmove)
+  // Close preview on any scroll start (wheel, scroll, touchmove). Attached
+  // to both window and document (capture, passive) so any scroll anywhere on
+  // the page instantly dismisses the hover modal.
   React.useEffect(() => {
     if (!isOpen) return;
     const close = () => {
-      dispatch(hoverReset());
+      hoverModalActions.reset();
     };
     const onWheel = () => close();
     const onScroll = () => close();
     const onTouchMove = () => close();
-    window.addEventListener('wheel', onWheel, { passive: true, capture: true });
-    window.addEventListener('scroll', onScroll, {
+    const captureOpts: AddEventListenerOptions = {
       passive: true,
       capture: true,
-    });
-    window.addEventListener('touchmove', onTouchMove, {
-      passive: true,
-      capture: true,
-    });
+    };
+    for (const target of [window, document]) {
+      target.addEventListener('wheel', onWheel, captureOpts);
+      target.addEventListener('scroll', onScroll, captureOpts);
+      target.addEventListener('touchmove', onTouchMove, captureOpts);
+    }
     return () => {
-      window.removeEventListener(
-        'wheel',
-        onWheel,
-        true as unknown as EventListenerOptions,
-      );
-      window.removeEventListener(
-        'scroll',
-        onScroll,
-        true as unknown as EventListenerOptions,
-      );
-      window.removeEventListener(
-        'touchmove',
-        onTouchMove,
-        true as unknown as EventListenerOptions,
-      );
+      for (const target of [window, document]) {
+        target.removeEventListener('wheel', onWheel, true);
+        target.removeEventListener('scroll', onScroll, true);
+        target.removeEventListener('touchmove', onTouchMove, true);
+      }
     };
   }, [isOpen]);
 
@@ -199,7 +211,7 @@ const PreviewModal = () => {
     if (!isOpen) return;
 
     const close = () => {
-      dispatch(hoverReset());
+      hoverModalActions.reset();
     };
 
     // Close on navigation (popstate event)
@@ -231,6 +243,14 @@ const PreviewModal = () => {
     };
   }, [isOpen]);
 
+  // Clean up the modal-level close timer on unmount/close so we don't
+  // dispatch a reset after the component is gone.
+  React.useEffect(() => {
+    return () => {
+      cancelCloseTimer();
+    };
+  }, []);
+
   if (!isOpen || !show) return null;
 
   // Calculate position based on anchor rect
@@ -251,9 +271,6 @@ const PreviewModal = () => {
     e?.stopPropagation();
     if (!show) return;
     const current = show;
-    const name = getNameFromShow(current);
-    const path: string =
-      (current.media_type as string) === 'tv' ? 'tv-shows' : 'movies';
     const videoRef = youtubeRef.current as {
       internalPlayer?: {
         pauseVideo?: () => Promise<void>;
@@ -264,15 +281,10 @@ const PreviewModal = () => {
       videoRef?.internalPlayer?.pauseVideo?.()?.catch?.(() => {});
       videoRef?.internalPlayer?.stopVideo?.()?.catch?.(() => {});
     } catch { }
-    // Open the main modal on the next frame for smoother transition
-    requestAnimationFrame(() => {
-      window.history.pushState(
-        null,
-        '',
-        `${path}/${getSlug(current.id, name)}`,
-      );
-      dispatch(openPreviewModal({ show: current, play: true }));
-    });
+    // Close the hover modal synchronously so it doesn't stack on top of
+    // the preview modal for a frame during the route transition.
+    hoverModalActions.reset();
+    previewModalActions.openPreviewModal({ show: current, play: true });
   };
 
   const handleTrailerPlay = () => {
@@ -302,15 +314,15 @@ const PreviewModal = () => {
   return (
     <div
       className="pointer-events-none fixed inset-0 z-50"
-      aria-label="Preview overlay"
-      onMouseEnter={() => dispatch(hoverSetIsActive(true))}
-      onMouseLeave={handleCloseModal}>
+      aria-label="Preview overlay">
       <div
         key={animKey}
         className="animate-in fade-in-0 zoom-in-95 pointer-events-auto absolute w-80 max-w-[90vw] duration-150 will-change-transform"
         style={getPosition()}
+        onMouseEnter={handleModalMouseEnter}
+        onMouseLeave={handleModalMouseLeave}
         onWheel={() => {
-          dispatch(hoverReset());
+          hoverModalActions.reset();
         }}>
         <div className="overflow-hidden rounded-xl bg-neutral-900 shadow-lg shadow-black">
           <div className="group relative aspect-video overflow-hidden">
@@ -468,4 +480,4 @@ const PreviewModal = () => {
   );
 };
 
-export default PreviewModal;
+export default observer(PreviewModal);

@@ -1,6 +1,7 @@
 'use client';
+import { observer } from '@legendapp/state/react';
 import type { Show } from '@/services/tmdb/types';
-import type { DetailedShowInfo } from '@/redux/features/modals/detail-fetch-helper';
+import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
 interface PreviewAboutProps {
   show: Show | null;
@@ -83,4 +84,4 @@ const PreviewAbout = ({ show, detailedShow }: PreviewAboutProps) => {
   );
 };
 
-export default PreviewAbout;
+export default observer(PreviewAbout);

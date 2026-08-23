@@ -1,8 +1,9 @@
 'use client';
+import { observer } from '@legendapp/state/react';
 import { Icons } from '@/components/shared/icons';
 import CustomImage from '@/components/shared/custom-image';
 import { getYear } from '@/lib/utils';
-import type { MovieCollection } from '@/redux/features/modals/detail-fetch-helper';
+import type { MovieCollection } from '@/features/modals/detail-fetch-helper';
 
 interface PreviewCollectionProps {
   collection: MovieCollection | undefined;
@@ -63,4 +64,4 @@ const PreviewCollection = ({
   );
 };
 
-export default PreviewCollection;
+export default observer(PreviewCollection);

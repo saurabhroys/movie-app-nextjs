@@ -1,5 +1,6 @@
 'use client';
-import type { DetailedShowInfo } from '@/redux/features/modals/detail-fetch-helper';
+import { observer } from '@legendapp/state/react';
+import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
 interface PreviewCastListProps {
   detailedShow: DetailedShowInfo | null;
@@ -36,4 +37,4 @@ const PreviewCastList = ({ detailedShow }: PreviewCastListProps) => {
   );
 };
 
-export default PreviewCastList;
+export default observer(PreviewCastList);

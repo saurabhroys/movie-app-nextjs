@@ -3,9 +3,9 @@
 import React from 'react';
 import { MediaType, type Show } from '@/services/tmdb/types';
 import ShowsGrid from '@/features/browse/shows-grid';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { searchApi } from '@/redux/features/search/searchApi';
-import { setQuery, setIsOpen } from '@/redux/features/search/searchSlice';
+import { observer, use$ } from '@legendapp/state/react';
+import { search$, searchActions } from '@/state/search';
+import { upsertSearchQuery } from '@/state/search-api';
 import { cn } from '@/lib/utils';
 import { handleDefaultSearchBtn, handleDefaultSearchInp } from '@/lib/dom';
 import { Button } from '@/components/ui/button';
@@ -16,16 +16,15 @@ interface SearchContainerProps {
 }
 
 function SearchContainer({ shows, query }: SearchContainerProps) {
-  const dispatch = useAppDispatch();
-  const searchQuery = useAppSelector((state) => state.search.query);
+  const searchQuery = use$(search$.query);
   const [activeFilter, setActiveFilter] = React.useState<MediaType | 'all'>(
     'all',
   );
 
   React.useEffect(() => {
-    dispatch(setIsOpen(true));
-    dispatch(setQuery(query));
-    dispatch(searchApi.util.upsertQueryData('search', query, shows));
+    searchActions.setIsOpen(true);
+    searchActions.setQuery(query);
+    upsertSearchQuery(query, shows);
     const timer1: NodeJS.Timeout = setTimeout(() => {
       handleDefaultSearchBtn();
     }, 5);
@@ -37,7 +36,7 @@ function SearchContainer({ shows, query }: SearchContainerProps) {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [dispatch, query, shows]);
+  }, [query, shows]);
 
   const filteredShows = React.useMemo(() => {
     if (activeFilter === 'all') return shows;

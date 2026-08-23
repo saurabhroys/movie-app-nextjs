@@ -5,7 +5,7 @@ import {
   fetchHeroTrailer,
 } from '@/services/tmdb/logos';
 import { getRandomShow } from '@/lib/utils';
-import { fetchContentRating } from '@/redux/features/modals/detail-fetch-helper';
+import { fetchContentRating } from '@/features/modals/detail-fetch-helper';
 import {
   MediaType,
   type CategorizedShows,

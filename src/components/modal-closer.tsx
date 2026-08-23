@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAppDispatch } from '@/redux/hooks';
-import { reset } from '@/features/modals/previewModalSlice';
+import { usePathname } from 'next/navigation';
+import { previewModalActions } from '@/state/preview-modal';
+import { hoverModalActions } from '@/state/hover-modal';
 
 const ModalCloser = () => {
-  const dispatch = useAppDispatch();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Close any open modals when this component mounts (page loads)
-    dispatch(reset());
-  }, [dispatch]);
+    // Close open modals on route navigation
+    previewModalActions.reset();
+    hoverModalActions.reset();
+  }, [pathname]);
 
   return null; // This component doesn't render anything
 };

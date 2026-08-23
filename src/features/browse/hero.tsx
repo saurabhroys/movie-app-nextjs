@@ -1,15 +1,8 @@
 'use client';
-import {
-  getIdFromSlug,
-  getNameFromShow,
-  getSlug,
-} from '@/lib/slug';
-import { trpc } from '@/client/trpc';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import {
-  openPreviewModal,
-  reset as previewReset,
-} from '@/features/modals/previewModalSlice';
+import { observer, use$ } from '@legendapp/state/react';
+import { previewModal$, previewModalActions } from '@/state/preview-modal';
+import { hoverModal$ } from '@/state/hover-modal';
+import { search$ } from '@/state/search';
 import {
   MediaType,
   type Show,
@@ -44,10 +37,10 @@ const initialState: HeroState = {
   showTrailer: false,
   trailerFinished: false,
   isCountdownActive: false,
-  isMuted: true,
+  isMuted: false,
   showControls: false,
   isPaused: false,
-  showTextElements: true,
+  showTextElements: false,
 };
 
 type HeroAction =
@@ -70,7 +63,7 @@ function heroReducer(state: HeroState, action: HeroAction): HeroState {
         trailerFinished: false,
         showControls: false,
         isPaused: false,
-        showTextElements: true,
+        showTextElements: false,
         isCountdownActive: false,
         showTrailer: false,
       };
@@ -92,7 +85,7 @@ function heroReducer(state: HeroState, action: HeroAction): HeroState {
         ...state,
         trailerFinished: true,
         showTrailer: false,
-        showTextElements: true,
+        showTextElements: false,
       };
     case 'TOGGLE_MUTE':
       return { ...state, isMuted: !state.isMuted };
@@ -140,56 +133,27 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   const showTrailerRef = React.useRef(false);
   const playerReadyRef = React.useRef(false);
 
-  const reduxDispatch = useAppDispatch();
-  const previewModalIsOpen = useAppSelector((state) => state.previewModal.isOpen);
-  const hoverModalIsOpen = useAppSelector((state) => state.hoverModal.isOpen);
-  const utils = trpc.useUtils();
+  const previewModalIsOpen = use$(previewModal$.isOpen);
+  const hoverModalIsOpen = use$(hoverModal$.isOpen);
 
   const defaultOptions = React.useMemo(
     () => ({
       playerVars: {
         rel: 0,
-        mute: 1,      // required for browser autoplay policy (allows muted autoplay)
+        mute: 0,
         loop: 0,
         autoplay: 0,  // disabled — we control playback explicitly (preload strategy)
         controls: 0,
         disablekb: 1,
         enablejsapi: 1,
         playsinline: 1,
-        modestbranding: 1, // 0/1 only; 3 is not honored by YT
+        modestbranding: 0, // 0/1 only; 3 is not honored by YT
       },
     }),
     [],
   );
 
-  const handlePopstateEvent = React.useCallback(() => {
-    const pathname = window.location.pathname;
-    if (!/\d/.test(pathname)) {
-      reduxDispatch(previewReset());
-    } else if (/\d/.test(pathname)) {
-      const mediaId: number = getIdFromSlug(pathname);
-      if (!mediaId) {
-        return;
-      }
-      const mediaType =
-        pathname.includes('/tv-shows') ? MediaType.TV : MediaType.MOVIE;
-      utils.movie.getShow
-        .fetch({ id: mediaId, mediaType })
-        .then((data: Show) => {
-          reduxDispatch(openPreviewModal({ show: data, play: true }));
-        })
-        .catch((error) => {
-          console.error(`getShow: `, error);
-        });
-    }
-  }, [reduxDispatch, utils]);
 
-  React.useEffect(() => {
-    window.addEventListener('popstate', handlePopstateEvent, false);
-    return () => {
-      window.removeEventListener('popstate', handlePopstateEvent, false);
-    };
-  }, [handlePopstateEvent]);
 
   // Keep refs in sync so callbacks can read current state without stale closures
   React.useEffect(() => {
@@ -357,20 +321,10 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
 
   const handleMoreInfo = React.useCallback(() => {
     if (!randomShow) return;
-    const name = getNameFromShow(randomShow);
-    const pathname: string =
-      randomShow.media_type === MediaType.TV
-        ? 'tv-shows'
-        : 'movies';
-    window.history.pushState(
-      null,
-      '',
-      `/${pathname}/${getSlug(randomShow.id, name)}`,
-    );
-    reduxDispatch(openPreviewModal({ show: randomShow, play: true }));
-  }, [randomShow, reduxDispatch]);
+    previewModalActions.openPreviewModal({ show: randomShow, play: true });
+  }, [randomShow]);
 
-  const searchQuery = useAppSelector((state) => state.search.query);
+  const searchQuery = use$(search$.query);
 
   if (searchQuery.length > 0) {
     return null;
@@ -436,4 +390,4 @@ const Hero = ({ randomShow, trailer = null, logoPath = null, contentRating = nul
   );
 };
 
-export default Hero;
+export default observer(Hero);

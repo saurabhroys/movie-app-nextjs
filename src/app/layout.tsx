@@ -13,7 +13,6 @@ import SiteHeader from '@/components/layout/site-header';
 import GlobalShortcutsWrapper from '@/components/providers/global-shortcuts-wrapper';
 import { TrpcProvider } from '@/components/providers/trpc-provider';
 import SiteFooter from '@/components/layout/site-footer';
-import { StoreProvider } from '@/components/providers/store-provider';
 import AttributeTooltipManager from '@/components/shared/attribute-tooltip';
 import Modals from '@/components/modals';
 import localFont from 'next/font/local';
@@ -96,38 +95,36 @@ export default function RootLayout({
           'min-h-screen overflow-x-hidden overflow-y-auto bg-white font-sans antialiased dark:bg-[#141414]'
         )}>
         <TrpcProvider>
-          <StoreProvider>
-            <Suspense fallback={<div className="absolute top-0 left-0 right-0 h-16 pointer-events-none" />}>
-              <SiteHeader />
-            </Suspense>
-            <GlobalShortcutsWrapper />
-            <Suspense fallback={null}>
-              {children}
-            </Suspense>
-            <Modals />
-            <SiteFooter />
-            <TailwindIndicator />
-            <Analytics />
-            {process.env.NODE_ENV === 'production' && <SpeedInsights />}
-            <AttributeTooltipManager />
-            {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
-              <>
-                <Script
-                  src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
-                  strategy="afterInteractive"
-                />
-                <Script id="google-analytics" strategy="afterInteractive">
-                  {`
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){window.dataLayer.push(arguments);}
-                    gtag('js', new Date());
+          <Suspense fallback={<div className="absolute top-0 left-0 right-0 h-16 pointer-events-none" />}>
+            <SiteHeader />
+          </Suspense>
+          <GlobalShortcutsWrapper />
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
+          <Modals />
+          <SiteFooter />
+          <TailwindIndicator />
+          <Analytics />
+          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+          <AttributeTooltipManager />
+          {env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){window.dataLayer.push(arguments);}
+                  gtag('js', new Date());
 
-                    gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
-                  `}
-                </Script>
-              </>
-            )}
-          </StoreProvider>
+                  gtag('config', '${env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
+                `}
+              </Script>
+            </>
+          )}
         </TrpcProvider>
       </body>
     </html>

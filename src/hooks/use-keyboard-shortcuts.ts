@@ -2,16 +2,9 @@
 
 import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import {
-  setIsOpen as previewSetIsOpen,
-  setPlay as previewSetPlay,
-  reset as previewReset,
-} from '@/features/modals/previewModalSlice';
-import {
-  setIsOpen as searchSetIsOpen,
-  reset as searchReset,
-} from '@/redux/features/search/searchSlice';
+// import { use$ } from '@legendapp/state/react';
+import { previewModal$, previewModalActions } from '@/state/preview-modal';
+import { searchActions } from '@/state/search';
 import { clearSearch } from '@/lib/dom';
 
 interface ShortcutConfig {
@@ -28,8 +21,7 @@ interface ShortcutConfig {
 export function useKeyboardShortcuts() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const play = useAppSelector((state) => state.previewModal.play);
+  // const play = use$(previewModal$.play);
 
   // Ensure router is only used after mount
   useEffect(() => {
@@ -95,7 +87,7 @@ export function useKeyboardShortcuts() {
 
   // Search shortcuts
   const openSearch = useCallback(() => {
-    dispatch(searchSetIsOpen(true));
+    searchActions.setIsOpen(true);
     // Focus search input after a short delay to ensure it's rendered
     setTimeout(() => {
       const searchInput = document.getElementById(
@@ -105,25 +97,26 @@ export function useKeyboardShortcuts() {
         searchInput.focus();
       }
     }, 100);
-  }, [dispatch]);
+  }, []);
 
   const closeSearch = useCallback(() => {
-    dispatch(searchSetIsOpen(false));
-    dispatch(searchReset());
+    searchActions.setIsOpen(false);
+    searchActions.reset();
     clearSearch();
-  }, [dispatch]);
+  }, []);
 
   // Modal shortcuts
   const closeModal = useCallback(() => {
-    dispatch(previewSetIsOpen(false));
-    dispatch(previewReset());
-  }, [dispatch]);
+    if (previewModal$.isOpen.peek()) {
+      previewModalActions.reset();
+    }
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     // This would need to be implemented based on your video player
     // For now, we'll just toggle the play state
-    dispatch(previewSetPlay(!play));
-  }, [play, dispatch]);
+    previewModal$.play.set(p => !p);
+  }, []);
 
   // Carousel shortcuts
   const scrollCarouselLeft = useCallback(() => {

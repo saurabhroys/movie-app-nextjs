@@ -1,13 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { searchApi, useSearchQuery } from '@/redux/features/search/searchApi';
-import {
-  setQuery as searchSetQuery,
-  setIsOpen as searchSetIsOpen,
-  reset as searchReset,
-} from '@/redux/features/search/searchSlice';
+import { use$ } from '@legendapp/state/react';
+import { search$, searchActions } from '@/state/search';
+import { useSearchQuery, searchShows } from '@/state/search-api';
 import { clearSearch as clearSearchDom } from '@/lib/dom';
 
 interface UseSearchOptions {
@@ -18,9 +14,8 @@ interface UseSearchOptions {
 export function useSearch(options: UseSearchOptions = {}) {
   const { debounceTimeout = 500, minQueryLength = 2 } = options;
 
-  const dispatch = useAppDispatch();
-  const query = useAppSelector((state) => state.search.query);
-  const isOpen = useAppSelector((state) => state.search.isOpen);
+  const query = use$(search$.query);
+  const isOpen = use$(search$.isOpen);
   const [activeQuery, setActiveQuery] = useState('');
   const { data: shows = [], isFetching: loading } = useSearchQuery(activeQuery, {
     skip: activeQuery.trim().length < minQueryLength,
@@ -35,16 +30,16 @@ export function useSearch(options: UseSearchOptions = {}) {
         timeoutRef.current = null;
       }
 
-      dispatch(searchSetQuery(value));
+      searchActions.setQuery(value);
       const trimmed = value.trim();
       if (trimmed.length < minQueryLength) {
         setActiveQuery('');
         return;
       }
       setActiveQuery(trimmed);
-      void dispatch(searchApi.endpoints.search.initiate(trimmed));
+      void searchShows(trimmed);
     },
-    [minQueryLength, dispatch],
+    [minQueryLength],
   );
 
   const search = useCallback(
@@ -71,9 +66,9 @@ export function useSearch(options: UseSearchOptions = {}) {
 
     // Reset store
     setActiveQuery('');
-    dispatch(searchReset());
+    searchActions.reset();
     clearSearchDom();
-  }, [dispatch]);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -92,6 +87,6 @@ export function useSearch(options: UseSearchOptions = {}) {
     shows,
     loading,
     isOpen,
-    setIsOpen: (value: boolean) => dispatch(searchSetIsOpen(value)),
+    setIsOpen: (value: boolean) => searchActions.setIsOpen(value),
   };
 }

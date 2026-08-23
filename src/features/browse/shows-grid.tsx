@@ -4,7 +4,7 @@ import type { Show } from '@/services/tmdb/types';
 import { ShowCard } from '@/features/browse/shows-cards';
 import { useShowLogos } from '@/features/browse/use-show-logos';
 import { usePathname } from 'next/navigation';
-import { useSearchQuery } from '@/redux/features/search/searchApi';
+import { useSearchQuery } from '@/state/search-api';
 import ShowsSkeleton from '@/features/browse/shows-skeleton';
 import { cn } from '@/lib/utils';
 

@@ -2,7 +2,8 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/redux/hooks';
+import { observer, use$ } from '@legendapp/state/react';
+import { search$ } from '@/state/search';
 
 interface ShowsSkeletonProps {
   count?: number;
@@ -19,7 +20,7 @@ const ShowsSkeleton = ({
   withTitle = true,
   gridClassName,
 }: ShowsSkeletonProps) => {
-  const searchQuery = useAppSelector((state) => state.search.query);
+  const searchQuery = use$(search$.query);
 
   return (
     <>

@@ -1,4 +1,5 @@
 'use client';
+import { observer } from '@legendapp/state/react';
 import * as React from 'react';
 import Youtube from 'react-youtube';
 import Link from 'next/link';
@@ -6,7 +7,7 @@ import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import CustomImage from '@/components/shared/custom-image';
 import type { Show } from '@/services/tmdb/types';
-import type { DetailedShowInfo } from '@/redux/features/modals/detail-fetch-helper';
+import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
 type YouTubePlayer = {
   mute: () => void;
@@ -128,7 +129,7 @@ const PreviewTrailerPane = ({
         </div>
       )}
 
-      <div className="absolute bottom-[-5px] z-10 h-full w-full bg-neutral-900 mask-t-from-9% mask-t-to-50%"></div>
+      <div className="absolute -bottom-1.25 z-10 h-full w-full bg-neutral-900 mask-t-from-9% mask-t-to-50%"></div>
 
       <div className="absolute bottom-14 md:bottom-20 z-30 flex w-full items-center justify-between gap-2 px-4 md:px-10">
         <div className="flex items-center gap-2.5">
@@ -177,4 +178,4 @@ const PreviewTrailerPane = ({
   );
 };
 
-export default PreviewTrailerPane;
+export default observer(PreviewTrailerPane);

@@ -8,13 +8,9 @@ import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '
 import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { searchApi } from '@/redux/features/search/searchApi';
-import {
-  setQuery as searchSetQuery,
-  setIsOpen as searchSetIsOpen,
-  reset as searchReset,
-} from '@/redux/features/search/searchSlice';
+import { observer, use$ } from '@legendapp/state/react';
+import { search$, searchActions } from '@/state/search';
+import { searchShows } from '@/state/search-api';
 import { SearchField } from '@/features/search/search-field';
 import { DropdownMenuBase } from '@/components/ui/DropdownMenuBase';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -27,8 +23,7 @@ interface MainNavProps {
 export function MainNav({ items }: MainNavProps) {
   const path = usePathname();
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const searchQuery = useAppSelector((state) => state.search.query);
+  const searchQuery = use$(search$.query);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -40,18 +35,18 @@ export function MainNav({ items }: MainNavProps) {
     const search: string = getSearchValue('q');
 
     if (!search?.length || !pathname.includes('/search')) {
-      dispatch(searchReset());
-      dispatch(searchSetIsOpen(false));
+      searchActions.reset();
+      searchActions.setIsOpen(false);
     } else if (search?.length) {
-      dispatch(searchSetIsOpen(true));
-      dispatch(searchSetQuery(search));
+      searchActions.setIsOpen(true);
+      searchActions.setQuery(search);
       setTimeout(() => {
         handleDefaultSearchBtn();
       }, 10);
       setTimeout(() => {
         handleDefaultSearchInp();
       }, 20);
-      void dispatch(searchApi.endpoints.search.initiate(search));
+      void searchShows(search);
     }
   };
 
@@ -104,10 +99,10 @@ export function MainNav({ items }: MainNavProps) {
   // Clear search on navigation away from search page
   React.useEffect(() => {
     if (path !== '/search') {
-      dispatch(searchReset());
-      dispatch(searchSetIsOpen(false));
+      searchActions.reset();
+      searchActions.setIsOpen(false);
     }
-  }, [path, dispatch]);
+  }, [path]);
 
 
 
@@ -149,7 +144,7 @@ export function MainNav({ items }: MainNavProps) {
                         ? 'text-white'
                         : 'text-neutral-950 dark:text-white',
                     )}
-                    onClick={() => dispatch(searchReset())}>
+                    onClick={() => searchActions.reset()}>
                     {item.title}
                   </Link>
                 ),
@@ -160,7 +155,7 @@ export function MainNav({ items }: MainNavProps) {
           <DropdownMenuBase
             items={items || []}
             onOpenChange={handleMobileMenuOpenChange}
-            onItemClick={() => dispatch(searchReset())}
+            onItemClick={() => searchActions.reset()}
             trigger={
               <Button
                 variant="ghost"

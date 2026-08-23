@@ -1,8 +1,9 @@
 'use client';
+import { observer } from '@legendapp/state/react';
 import { Icons } from '@/components/shared/icons';
 import CustomImage from '@/components/shared/custom-image';
 import type { Show, Episode } from '@/services/tmdb/types';
-import type { DetailedShowInfo } from '@/redux/features/modals/detail-fetch-helper';
+import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
 interface PreviewSeasonSelectorProps {
   show: Show | null;
@@ -100,4 +101,4 @@ const PreviewSeasonSelector = ({
   );
 };
 
-export default PreviewSeasonSelector;
+export default observer(PreviewSeasonSelector);

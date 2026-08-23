@@ -4,7 +4,8 @@ import React from 'react';
 import MainNav from '@/components/navigation/main-nav';
 // import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { usePathname } from 'next/navigation';
-import { useAppSelector } from '@/redux/hooks';
+import { observer, use$ } from '@legendapp/state/react';
+import { search$ } from '@/state/search';
 
 const SiteHeader = () => {
   // Initialize keyboard shortcuts
@@ -12,7 +13,7 @@ const SiteHeader = () => {
 
   const path = usePathname();
   const [isAtTop, setIsAtTop] = React.useState(true);
-  const isSearchOpen = useAppSelector((state) => state.search.isOpen);
+  const isSearchOpen = use$(search$.isOpen);
 
   React.useEffect(() => {
     setIsAtTop(window.scrollY < 30);

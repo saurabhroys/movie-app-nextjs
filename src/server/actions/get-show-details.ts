@@ -5,7 +5,7 @@ import type { MediaType } from '@/services/tmdb/types';
 import {
   fetchDetailedShowData,
   type DetailedShowInfo,
-} from '@/redux/features/modals/detail-fetch-helper';
+} from '@/features/modals/detail-fetch-helper';
 
 export interface GetShowDetailsInput {
   id: number;

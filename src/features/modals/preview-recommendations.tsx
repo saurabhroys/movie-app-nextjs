@@ -1,10 +1,11 @@
 'use client';
+import { observer } from '@legendapp/state/react';
 import { Icons } from '@/components/shared/icons';
 import CustomImage from '@/components/shared/custom-image';
 import ShowsSkeleton from '@/features/browse/shows-skeleton';
 import { getYear } from '@/lib/utils';
 import type { Show } from '@/services/tmdb/types';
-import type { DetailedShowInfo } from '@/redux/features/modals/detail-fetch-helper';
+import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
 interface PreviewRecommendationsProps {
   detailedShow: DetailedShowInfo | null;
@@ -146,4 +147,4 @@ const PreviewRecommendations = ({
   );
 };
 
-export default PreviewRecommendations;
+export default observer(PreviewRecommendations);
