@@ -315,17 +315,59 @@ const PlayerSelector = ({
             }
           }}
         >
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-4 py-2 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:bg-zinc-900 cursor-pointer md:text-xs"
-          >
-            <span>{currentServerName}</span>
-            <Icons.chevronDown
-              className={`h-3 w-3 text-neutral-400 transition-transform duration-200 ${
-                isOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-4 py-2 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:bg-zinc-900 cursor-pointer md:text-xs"
+            >
+              <span>{currentServerName}</span>
+              <Icons.chevronDown
+                className={`h-3 w-3 text-neutral-400 transition-transform duration-200 ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {activePlayerId === 'netflix-live' && (
+              <div 
+                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-2 py-1 shadow-lg backdrop-blur-md transition-all md:px-3 md:py-1.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-[10px] font-medium text-neutral-400 md:text-xs pl-1">Server</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      const num = parseInt(netflixServerIndex) || 0;
+                      if (num > 0) {
+                        const val = (num - 1).toString();
+                        setNetflixServerIndex(val);
+                        if (typeof window !== 'undefined') localStorage.setItem('netflixServerIndex', val);
+                      }
+                    }}
+                    className="flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    <Icons.chevronLeft className="h-3 w-3" />
+                  </button>
+                  <span className="w-6 text-center text-[10px] font-bold text-white md:text-xs">
+                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][parseInt(netflixServerIndex) || 0]}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const num = parseInt(netflixServerIndex) || 0;
+                      if (num < 9) {
+                        const val = (num + 1).toString();
+                        setNetflixServerIndex(val);
+                        if (typeof window !== 'undefined') localStorage.setItem('netflixServerIndex', val);
+                      }
+                    }}
+                    className="flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    <Icons.chevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {isOpen && (
             <div className="absolute top-full pt-1.5 w-48 z-50">
@@ -346,28 +388,6 @@ const PlayerSelector = ({
                     {player.name}
                   </button>
                 ))}
-                
-                {activePlayerId === 'netflix-live' && (
-                  <div className="mt-1 border-t border-white/10 pt-1.5 px-2 pb-1" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-neutral-400 font-medium">Server Index</span>
-                      <input
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={netflixServerIndex}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setNetflixServerIndex(val);
-                          if (typeof window !== 'undefined') {
-                            localStorage.setItem('netflixServerIndex', val);
-                          }
-                        }}
-                        className="w-10 rounded border border-white/10 bg-zinc-900 px-1 py-0.5 text-center text-[10px] text-white outline-none focus:border-white/30"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
