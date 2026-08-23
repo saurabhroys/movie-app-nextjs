@@ -48,7 +48,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/eslint": "^9.6.1",
     "@types/node": "^20.19.35",
     "@types/react": "19.2.18",
@@ -62,8 +62,8 @@
     "lint-staged": "^16.2.7",
     "postcss": "^8.4.29",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "tailwindcss": "^4.2.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.2.2"
   },
   "overrides": {
