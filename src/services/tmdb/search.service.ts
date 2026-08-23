@@ -10,6 +10,7 @@ interface PendingRequest {
   promise: Promise<unknown>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class SearchService {
   private static pendingRequests: Map<string, PendingRequest> = new Map();
   private static readonly MIN_QUERY_LENGTH = 2;

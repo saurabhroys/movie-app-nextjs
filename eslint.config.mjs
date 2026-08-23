@@ -25,7 +25,7 @@ export default [
       "@typescript-eslint": tsPlugin,
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
+      ...tsPlugin.configs.strict.rules,
       "@typescript-eslint/array-type": "off",
       "@typescript-eslint/consistent-type-definitions": "off",
       "@typescript-eslint/no-empty-interface": "off",

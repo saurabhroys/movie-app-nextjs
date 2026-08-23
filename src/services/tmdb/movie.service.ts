@@ -24,6 +24,7 @@ import {
  * - This works in conjunction with Next.js ISR (revalidate) for persistent caching
  */
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class MovieService {
   static async findCurrentMovie(id: number, pathname: string): Promise<Show> {
     const data = await Promise.allSettled([
@@ -213,8 +214,9 @@ class MovieService {
 
       // Filter by language if specified
       if (options?.languages && options.languages.length > 0) {
+        const langs = options.languages;
         filteredResults = filteredResults.filter((item) =>
-          options.languages!.includes(item.original_language?.toLowerCase() || ''),
+          langs.includes(item.original_language?.toLowerCase() || ''),
         );
       }
 
