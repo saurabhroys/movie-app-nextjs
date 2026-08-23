@@ -8,7 +8,7 @@ import { getSearchValue, handleDefaultSearchBtn, handleDefaultSearchInp } from '
 import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { observer, use$ } from '@legendapp/state/react';
+import { use$ } from '@legendapp/state/react';
 import { search$, searchActions } from '@/state/search';
 import { searchShows } from '@/state/search-api';
 import { SearchField } from '@/features/search/search-field';

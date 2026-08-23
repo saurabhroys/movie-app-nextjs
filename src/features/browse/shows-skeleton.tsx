@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { observer, use$ } from '@legendapp/state/react';
+import { use$ } from '@legendapp/state/react';
 import { search$ } from '@/state/search';
 
 interface ShowsSkeletonProps {
@@ -47,8 +47,8 @@ const ShowsSkeleton = ({
         </div>
       ) : (
         <section className={cn("relative my-[3vw] p-0", classname)}>
-             {withTitle && <Skeleton className="mb-2.5 mx-[4%] h-[1.62rem] w-36 rounded bg-neutral-700 2xl:px-[60px]" />}
-             <div className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 sm:auto-cols-[25%] lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]"
+             {withTitle && <Skeleton className="mb-2.5 mx-[4%] h-[1.62rem] w-36 rounded bg-neutral-700 2xl:px-15" />}
+             <div className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 sm:auto-cols-[25%] lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-15"
              >
              {Array.from({ length: count }, (_, i) => (
                 <div key={i} className="px-1">

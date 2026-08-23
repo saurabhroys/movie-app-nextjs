@@ -4,7 +4,7 @@ import React from 'react';
 import MainNav from '@/components/navigation/main-nav';
 // import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { usePathname } from 'next/navigation';
-import { observer, use$ } from '@legendapp/state/react';
+import { use$ } from '@legendapp/state/react';
 import { search$ } from '@/state/search';
 
 const SiteHeader = () => {
