@@ -71,6 +71,8 @@ const buildPlayerUrl = (
   season: number,
   episode: number,
   imdbId?: string,
+  gemmaDomain: string = 'https://gemma416okl.com',
+  netflixServerIndex: string = '3',
 ): string => {
   const s = season || 1;
   const e = episode || 1;
@@ -80,13 +82,14 @@ const buildPlayerUrl = (
     // TV/Movie Players
     case 'netflix-live':
       const netflixPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
-      return `https://z.zxcstream.xyz/player/${netflixPath}?dubLang=hi&server=3`;
+      const serverQuery = netflixServerIndex ? `&server=${netflixServerIndex}` : '';
+      return `https://z.zxcstream.xyz/player/${netflixPath}?dubLang=hi${serverQuery}`;
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
     case 'gemma':
       if (!imdbId) return '';
-      return `https://gemma416okl.com/play/${imdbId}`;
+      return `${gemmaDomain}/play/${imdbId}`;
     case 'test':
       const testPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
       return `https://vidsrc-embed.ru/embed/${testPath}`;
@@ -132,6 +135,8 @@ const PlayerSelector = ({
   const [activePlayerId, setActivePlayerId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [gemmaDomain, setGemmaDomain] = useState<string>('https://gemma416okl.com');
+  const [netflixServerIndex, setNetflixServerIndex] = useState<string>('3');
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -143,6 +148,10 @@ const PlayerSelector = ({
       const saved = localStorage.getItem('activePlayerId');
       if (saved) {
         setActivePlayerId(saved);
+      }
+      const savedServer = localStorage.getItem('netflixServerIndex');
+      if (savedServer) {
+        setNetflixServerIndex(savedServer);
       }
     }
   }, []);
@@ -197,6 +206,13 @@ const PlayerSelector = ({
     probeZxcStream().then((online) => {
       if (mounted) setZxcOnline(online);
     });
+    import('@/server/actions/get-gemma-domain').then((mod) => {
+      mod.getGemmaDomain().then((domain) => {
+        if (mounted && domain) {
+          setGemmaDomain(domain);
+        }
+      });
+    });
     return () => {
       mounted = false;
     };
@@ -207,7 +223,7 @@ const PlayerSelector = ({
       return ANIME_PLAYERS;
     }
     return TV_MOVIE_PLAYERS.filter((player) => {
-      if (player.id === 'netflix-live') return zxcOnline !== false;
+      if (player.id === 'netflix-live-multi' || player.id === 'netflix-live-default') return zxcOnline !== false;
       if (player.id === 'vidify') return zxcOnline === false;
       if (player.id === 'gemma') return !!imdbId;
       return true;
@@ -232,8 +248,8 @@ const PlayerSelector = ({
 
   const activeUrl = React.useMemo(() => {
     if (!activePlayerId) return '';
-    return buildPlayerUrl(activePlayerId, mediaType, mediaId, season || 1, episode || 1, imdbId);
-  }, [activePlayerId, mediaType, mediaId, season, episode, imdbId]);
+    return buildPlayerUrl(activePlayerId, mediaType, mediaId, season || 1, episode || 1, imdbId, gemmaDomain, netflixServerIndex);
+  }, [activePlayerId, mediaType, mediaId, season, episode, imdbId, gemmaDomain, netflixServerIndex]);
 
   React.useEffect(() => {
     if (onPlayerChange && activePlayerId) {
@@ -330,6 +346,28 @@ const PlayerSelector = ({
                     {player.name}
                   </button>
                 ))}
+                
+                {activePlayerId === 'netflix-live' && (
+                  <div className="mt-1 border-t border-white/10 pt-1.5 px-2 pb-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-neutral-400 font-medium">Server Index</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={netflixServerIndex}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNetflixServerIndex(val);
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('netflixServerIndex', val);
+                          }
+                        }}
+                        className="w-10 rounded border border-white/10 bg-zinc-900 px-1 py-0.5 text-center text-[10px] text-white outline-none focus:border-white/30"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
