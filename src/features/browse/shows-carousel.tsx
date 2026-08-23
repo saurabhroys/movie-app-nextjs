@@ -105,7 +105,7 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
     <section aria-label={`Carousel of ${title}`} className="relative my-[3vw] p-0">
       {allShows.length !== 0 && (
         <div className="space-y-1 sm:space-y-2.5">
-          <h2 className="text-foreground/80 hover:text-foreground m-0 px-[4%] pb-2 text-lg font-semibold transition-colors sm:text-xl 2xl:px-[60px]">
+          <h2 className="text-foreground/80 hover:text-foreground m-0 px-[4%] pb-2 text-lg font-semibold transition-colors sm:text-xl 2xl:px-15">
             {title}
           </h2>
           <div className="overflow-disable relative w-full items-center justify-center">
@@ -113,7 +113,7 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
               aria-label="Scroll left"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/90 hover:text-foreground text-foreground absolute top-0 left-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 md:flex 2xl:w-[60px]',
+                'hover:bg-secondary/90 hover:text-foreground text-foreground absolute top-0 left-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-l-none bg-transparent py-0 md:flex 2xl:w-15',
                 !canScrollLeft && 'opacity-0 pointer-events-none'
               )}
               onClick={() => scrollToDirection('left')}>
@@ -122,7 +122,7 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
 
             <div
               ref={showsRef}
-              className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 duration-500 ease-in-out sm:auto-cols-[25%] md:touch-pan-y lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-[60px]">
+              className="no-scrollbar m-0 grid auto-cols-[calc(100%/3)] grid-flow-col overflow-x-auto px-[4%] py-0 duration-500 ease-in-out sm:auto-cols-[25%] md:touch-pan-y lg:auto-cols-[20%] xl:auto-cols-[calc(100%/6)] 2xl:px-15">
               {allShows.map((show, idx) => (
                 <ShowCard
                   key={`${show.id}-${idx}`}
@@ -142,7 +142,7 @@ const ShowsCarousel = ({ title, initialShows, req, logoPaths }: ShowsCarouselPro
               aria-label="Scroll right"
               variant="ghost"
               className={cn(
-                'hover:bg-secondary/70 hover:text-foreground text-foreground absolute top-0 right-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 md:flex 2xl:w-[60px]',
+                'hover:bg-secondary/70 hover:text-foreground text-foreground absolute top-0 right-0 z-10 hidden h-full w-[4%] items-center justify-center rounded-r-none bg-transparent py-0 md:flex 2xl:w-15',
                 !canScrollRight && !hasNextPage && 'opacity-0 pointer-events-none'
               )}
               onClick={() => scrollToDirection('right')}>
