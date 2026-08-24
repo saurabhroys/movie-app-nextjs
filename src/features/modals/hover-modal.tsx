@@ -29,8 +29,8 @@ const defaultOptions = {
     showinfo: 0,
     disablekb: 1,
     enablejsapi: 1,
-    playsinline: 1,
-    cc_load_policy: 3,
+    playsinline: 0,
+    cc_load_policy: 0,
     modestbranding: 1,
   },
 };
@@ -290,9 +290,11 @@ const PreviewModal = () => {
   };
 
   const handleTrailerPlay = () => {
-    if (imageRef.current) {
-      imageRef.current.style.opacity = '0';
-    }
+    setTimeout(() => {
+      if (imageRef.current) {
+        imageRef.current.style.opacity = '0';
+      }
+    }, 4000);
   };
 
   const handleTrailerEnd = (e: { target?: { seekTo?: (seconds: number) => Promise<void> } }) => {

@@ -123,9 +123,11 @@ const PreviewModal = () => {
   const onPlay = () => {
     setTrailerFinished(false);
     setLogoTransition('trailer-playing');
-    if (imageRef.current) {
-      imageRef.current.style.opacity = '0';
-    }
+    setTimeout(() => {
+      if (imageRef.current) {
+        imageRef.current.style.opacity = '0';
+      }
+    }, 3000);
     if (youtubeRef.current) {
       const iframeRef: HTMLElement | null =
         document.getElementById('video-trailer');
