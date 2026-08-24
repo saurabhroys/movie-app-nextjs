@@ -31,7 +31,7 @@ const defaultOptions = {
     enablejsapi: 1,
     playsinline: 0,
     cc_load_policy: 0,
-    modestbranding: 1,
+    modestbranding: 0,
   },
 };
 
@@ -290,11 +290,11 @@ const PreviewModal = () => {
   };
 
   const handleTrailerPlay = () => {
-    setTimeout(() => {
+    // setTimeout(() => {
       if (imageRef.current) {
         imageRef.current.style.opacity = '0';
       }
-    }, 4000);
+    // }, 4000);
   };
 
   const handleTrailerEnd = (e: { target?: { seekTo?: (seconds: number) => Promise<void> } }) => {
@@ -305,10 +305,16 @@ const PreviewModal = () => {
     } catch { }
   };
 
-  const handleTrailerReady = (e: { target?: { playVideo?: () => Promise<void> } }) => {
+  const handleTrailerReady = (e: { target?: { playVideo?: () => Promise<void>, unloadModule?: (module: string) => void } }) => {
     try {
-      if (e?.target && typeof e.target.playVideo === 'function') {
-        e.target.playVideo()?.catch?.(() => {});
+      if (e?.target) {
+        if (typeof e.target.playVideo === 'function') {
+          e.target.playVideo()?.catch?.(() => {});
+        }
+        if (typeof e.target.unloadModule === 'function') {
+          e.target.unloadModule('captions');
+          e.target.unloadModule('cc');
+        }
       }
     } catch { }
   };

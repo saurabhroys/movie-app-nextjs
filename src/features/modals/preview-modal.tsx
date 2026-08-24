@@ -34,7 +34,7 @@ const defaultOptions: Record<string, object> = {
     enablejsapi: 1,
     playsinline: 1,
     cc_load_policy: 0,
-    modestbranding: 1,
+    modestbranding: 0,
   },
 };
 
@@ -123,11 +123,11 @@ const PreviewModal = () => {
   const onPlay = () => {
     setTrailerFinished(false);
     setLogoTransition('trailer-playing');
-    setTimeout(() => {
+    // setTimeout(() => {
       if (imageRef.current) {
         imageRef.current.style.opacity = '0';
       }
-    }, 3000);
+    // }, 3000);
     if (youtubeRef.current) {
       const iframeRef: HTMLElement | null =
         document.getElementById('video-trailer');
@@ -135,7 +135,7 @@ const PreviewModal = () => {
     }
   };
 
-  const onReady = (event: YouTubeEvent) => {
+  const onReady = (event: YouTubeEvent & { target: { unloadModule?: (module: string) => void } }) => {
     try {
       if (event?.target) {
         if (typeof event.target.unMute === 'function') {
@@ -143,6 +143,10 @@ const PreviewModal = () => {
         }
         if (typeof event.target.playVideo === 'function') {
           event.target.playVideo()?.catch?.(() => {});
+        }
+        if (typeof event.target.unloadModule === 'function') {
+          event.target.unloadModule('captions');
+          event.target.unloadModule('cc');
         }
       }
     } catch { }
