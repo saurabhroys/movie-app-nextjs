@@ -1,6 +1,6 @@
 import { observable } from '@legendapp/state';
 import { useEffect } from 'react';
-import { use$ } from '@legendapp/state/react';
+import { useSelector } from '@legendapp/state/react';
 import type { Show } from '@/services/tmdb/types';
 
 interface SearchResponse {
@@ -80,11 +80,11 @@ export function useSearchQuery(
   const trimmed = query.trim();
   const enabled = !skip && trimmed.length > 0;
 
-  const data = use$<Show[] | undefined>(
-    enabled ? searchCache$[trimmed] : undefined,
+  const data = useSelector(() =>
+    enabled ? searchCache$[trimmed].get() : undefined
   );
-  const isFetching = use$<boolean>(
-    enabled ? searchFetching$[trimmed] : false,
+  const isFetching = useSelector(() =>
+    enabled ? searchFetching$[trimmed].get() : false
   );
 
   useEffect(() => {
