@@ -5,13 +5,11 @@ import type { PreviewModalState } from '@/state/preview-modal';
 export interface AddressBarState {
   previousUrl: string | null;
   activeSlugUrl: string | null;
-  isPushed: boolean;
 }
 
 export const addressBar$ = observable<AddressBarState>({
   previousUrl: null,
   activeSlugUrl: null,
-  isPushed: false,
 });
 
 export function initAddressBarSync(previewModal$: Observable<PreviewModalState>) {
@@ -46,7 +44,6 @@ export function initAddressBarSync(previewModal$: Observable<PreviewModalState>)
       pushTimer = setTimeout(() => {
         if (previewModal$.isOpen.peek() && window.location.pathname !== slugUrl) {
           window.history.pushState({ modalOpened: true }, '', slugUrl);
-          addressBar$.isPushed.set(true);
         }
         pushTimer = null;
       }, 2000);
@@ -73,7 +70,6 @@ export function initAddressBarSync(previewModal$: Observable<PreviewModalState>)
       addressBar$.set({
         previousUrl: null,
         activeSlugUrl: null,
-        isPushed: false,
       });
     }
   });
