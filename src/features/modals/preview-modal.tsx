@@ -34,7 +34,7 @@ const defaultOptions: Record<string, object> = {
     enablejsapi: 1,
     playsinline: 1,
     cc_load_policy: 0,
-    modestbranding: 3,
+    modestbranding: 1,
   },
 };
 

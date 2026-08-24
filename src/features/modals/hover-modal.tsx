@@ -30,8 +30,8 @@ const defaultOptions = {
     disablekb: 1,
     enablejsapi: 1,
     playsinline: 1,
-    cc_load_policy: 0,
-    modestbranding: 3,
+    cc_load_policy: 3,
+    modestbranding: 1,
   },
 };
 

@@ -87,7 +87,7 @@ const PreviewTrailerPane = ({
           videoId={trailer}
           id="video-trailer"
           title="YouTube video player"
-          className="relative aspect-video w-full"
+          className="relative aspect-video w-full scale-[1.35] md:scale-[1.25]"
           style={{ width: '100%', height: '100%' }}
           iframeClassName={`relative pointer-events-none w-full h-full -z-10 opacity-0`}
         />
