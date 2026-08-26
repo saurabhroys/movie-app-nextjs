@@ -47,7 +47,7 @@ const config: NextConfig = {
                             "font-src 'self' data:",
                             "connect-src 'self' https://zxcstream.xyz https://www.googletagmanager.com https://www.google-analytics.com",
                             "media-src 'self' blob: data:",
-                            "frame-src 'self' https://z.zxcstream.xyz https://player.vidify.top https://gemma416okl.com https://vidsrc.to https://embed.vidsrc.pk https://vidnest.fun https://vidfast.pro https://player.videasy.net https://player.autoembed.cc https://vidsrc-embed.ru https://www.youtube.com https://www.youtube-nocookie.com",
+                            "frame-src 'self' https://z.zxcstream.xyz https://player.vidify.top https://slast430did.com https://vidsrc.to https://embed.vidsrc.pk https://vidnest.fun https://vidfast.pro https://player.videasy.net https://player.autoembed.cc https://vidsrc-embed.ru https://www.youtube.com https://www.youtube-nocookie.com",
                             "object-src 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",

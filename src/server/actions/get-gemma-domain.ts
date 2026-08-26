@@ -7,19 +7,19 @@ export async function getGemmaDomain(): Promise<string> {
     });
     
     if (!res.ok) {
-      return 'https://gemma416okl.com';
+      return 'https://slast430did.com';
     }
 
     const text = await res.text();
     const match = text.match(/const\s+AwsIndStreamDomain\s*=\s*['"]([^'"]+)['"]/);
-    
+    // console.log('Fetched Gemma domain:', match ? match[1] : 'not found');
     if (match && match[1]) {
       return match[1];
     }
     
-    return 'https://gemma416okl.com';
+    return 'https://slast430did.com';
   } catch (error) {
     console.error('Failed to fetch Gemma domain:', error);
-    return 'https://gemma416okl.com'; // fallback
+    return 'https://slast430did.com'; // fallback
   }
 }

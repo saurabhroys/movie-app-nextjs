@@ -71,7 +71,7 @@ const buildPlayerUrl = (
   season: number,
   episode: number,
   imdbId?: string,
-  gemmaDomain: string = 'https://gemma416okl.com',
+  gemmaDomain: string = 'https://slast430did.com',
   netflixServerIndex: string = '3',
 ): string => {
   const s = season || 1;
@@ -135,7 +135,7 @@ const PlayerSelector = ({
   const [activePlayerId, setActivePlayerId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [gemmaDomain, setGemmaDomain] = useState<string>('https://gemma416okl.com');
+  const [gemmaDomain, setGemmaDomain] = useState<string>('https://slast430did.com');
   const [netflixServerIndex, setNetflixServerIndex] = useState<string>('3');
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);

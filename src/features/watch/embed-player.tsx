@@ -64,7 +64,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
       };
 
       try {
-        iframeRef.current.contentWindow.postMessage(payload, "https://gemma416okl.com");
+        iframeRef.current.contentWindow.postMessage(payload, "https://slast430did.com");
       } catch (err) {
         console.error('Failed to postMessage to Gemma player:', err);
       }
