@@ -330,7 +330,7 @@ const PlayerSelector = ({
 
             {activePlayerId === 'netflix-live' && (
               <div 
-                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-2 py-1 shadow-lg backdrop-blur-md transition-all md:px-3 md:py-1.5"
+                className="hidden md:flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-950/80 px-2 py-1 shadow-lg backdrop-blur-md transition-all md:px-3 md:py-1.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <span className="text-[10px] font-medium text-neutral-400 md:text-xs pl-1">Server</span>
@@ -388,6 +388,48 @@ const PlayerSelector = ({
                     {player.name}
                   </button>
                 ))}
+
+                {activePlayerId === 'netflix-live' && (
+                  <div className="mt-1 border-t border-white/10 pt-1.5 pb-0.5 px-1 md:hidden">
+                    <div 
+                      className="flex items-center justify-between gap-1.5 rounded-lg bg-white/5 px-2 py-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="text-[10px] font-medium text-neutral-400 pl-1">Server</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            const num = parseInt(netflixServerIndex) || 0;
+                            if (num > 0) {
+                              const val = (num - 1).toString();
+                              setNetflixServerIndex(val);
+                              if (typeof window !== 'undefined') localStorage.setItem('netflixServerIndex', val);
+                            }
+                          }}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                        >
+                          <Icons.chevronLeft className="h-3 w-3" />
+                        </button>
+                        <span className="w-6 text-center text-[10px] font-bold text-white">
+                          {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][parseInt(netflixServerIndex) || 0]}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const num = parseInt(netflixServerIndex) || 0;
+                            if (num < 9) {
+                              const val = (num + 1).toString();
+                              setNetflixServerIndex(val);
+                              if (typeof window !== 'undefined') localStorage.setItem('netflixServerIndex', val);
+                            }
+                          }}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+                        >
+                          <Icons.chevronRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
