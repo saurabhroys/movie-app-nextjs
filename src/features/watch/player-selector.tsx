@@ -7,6 +7,18 @@ import { MediaType } from '@/services/tmdb/types';
 import { Icons } from '@/components/shared/icons';
 import { siteConfig } from '@/configs/site';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
+import {
+  AUTOEMBED_DOMAIN,
+  GEMMA_DOMAIN,
+  VIDEASY_DOMAIN,
+  VIDFAST_DOMAIN,
+  VIDIFY_DOMAIN,
+  VIDNEST_DOMAIN,
+  VIDSTUCK_DOMAIN,
+  VIDSRC_EMBED_RU_DOMAIN,
+  VIDSRC_TO_DOMAIN,
+  ZXCSTREAM_DOMAIN,
+} from '@/config/embed-domains';
 
 interface PlayerOption {
   id: string;
@@ -55,7 +67,7 @@ const probeZxcStream = (): Promise<boolean> => {
   const timeout = new Promise<boolean>((resolve) => {
     setTimeout(() => resolve(false), ZXC_PROBE_TIMEOUT);
   });
-  const probe = fetch('https://zxcstream.cc', { mode: 'no-cors', cache: 'no-store' })
+  const probe = fetch(ZXCSTREAM_DOMAIN, { mode: 'no-cors', cache: 'no-store' })
     .then(() => true)
     .catch(() => false);
   zxcProbePromise = Promise.race([probe, timeout]);
@@ -70,7 +82,7 @@ const buildPlayerUrl = (
   season: number,
   episode: number,
   imdbId?: string,
-  gemmaDomain: string = 'https://slast430did.com',
+  gemmaDomain: string = GEMMA_DOMAIN,
   netflixServerIndex: string = '3',
 ): string => {
   const s = season || 1;
@@ -82,36 +94,36 @@ const buildPlayerUrl = (
     case 'netflix-live':
       const netflixPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       const serverQuery = netflixServerIndex ? `&server=${netflixServerIndex}` : '';
-      return `https://zxcstream.cc/player/${netflixPath}?dubLang=hi${serverQuery}`;
+      return `${ZXCSTREAM_DOMAIN}/player/${netflixPath}?dubLang=hi${serverQuery}`;
     case 'netflix-ii':
       const vidstuckPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
-      return `https://vidstuck.cc/embed/${vidstuckPath}`;
+      return `${VIDSTUCK_DOMAIN}/embed/${vidstuckPath}`;
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
-      return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
+      return `${VIDIFY_DOMAIN}/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
     case 'gemma':
       if (!imdbId) return '';
       return `${gemmaDomain}/play/${imdbId}`;
     case 'test':
       const testPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
-      return `https://vidsrc-embed.ru/embed/${testPath}`;
+      return `${VIDSRC_EMBED_RU_DOMAIN}/embed/${testPath}`;
     case 'vidsrc-to':
       const toPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
-      return `https://vidsrc.to/embed/${toPath}`;
+      return `${VIDSRC_TO_DOMAIN}/embed/${toPath}`;
 
     // Anime Players
     case 'vidnest-anime':
-      return `https://vidnest.fun/anime/${mediaId}/${s}/${e}`;
+      return `${VIDNEST_DOMAIN}/anime/${mediaId}/${s}/${e}`;
     case 'vidnest-delta-anime':
-      return `https://vidnest.fun/anime/${mediaId}/${s}/${e}?server=delta`;
+      return `${VIDNEST_DOMAIN}/anime/${mediaId}/${s}/${e}?server=delta`;
     case 'vidfast-anime':
-      return `https://vidfast.pro/tv/${mediaId}/${s}/${e}?nextButton=true&autoNext=true&autoPlay=true`;
+      return `${VIDFAST_DOMAIN}/tv/${mediaId}/${s}/${e}?nextButton=true&autoNext=true&autoPlay=true`;
     case 'videasy-anime':
-      return `https://player.videasy.net/anime/${mediaId}/${e}?dub=true|false`;
+      return `${VIDEASY_DOMAIN}/anime/${mediaId}/${e}?dub=true|false`;
     case 'autoembed-anime':
-      return `https://player.autoembed.cc/embed/anime/${mediaId}/${s}/${e}?server=2`;
+      return `${AUTOEMBED_DOMAIN}/embed/anime/${mediaId}/${s}/${e}?server=2`;
     case 'vidsrc-to-tv-anime':
-      return `https://vidsrc.to/embed/tv/${idOrImdb}/${s}/${e}`;
+      return `${VIDSRC_TO_DOMAIN}/embed/tv/${idOrImdb}/${s}/${e}`;
 
     default:
       return '';
@@ -132,7 +144,7 @@ const PlayerSelector = ({
   const [activePlayerId, setActivePlayerId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [gemmaDomain, setGemmaDomain] = useState<string>('https://slast430did.com');
+  const [gemmaDomain, setGemmaDomain] = useState<string>(GEMMA_DOMAIN);
   const [netflixServerIndex, setNetflixServerIndex] = useState<string>('3');
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);

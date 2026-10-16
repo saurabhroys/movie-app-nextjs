@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Loading from '@/components/ui/loading';
+import { GEMMA_DOMAIN } from '@/config/embed-domains';
 import { useRouter } from 'next/navigation';
 import type { MediaType } from '@/services/tmdb/types';
 
@@ -65,7 +66,7 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     };
 
     try {
-      contentWindow.postMessage(payload, 'https://slast430did.com');
+      contentWindow.postMessage(payload, GEMMA_DOMAIN);
     } catch (err) {
       console.error('Failed to postMessage to Gemma player:', err);
     }

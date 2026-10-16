@@ -8,9 +8,9 @@ import {
 import { previewModal$, previewModalActions } from '@/state/preview-modal';
 import {
   type KeyWord,
-  type VideoResult,
   type MediaType,
 } from '@/services/tmdb/types';
+import { makeYoutubeOptions, selectTrailerKey } from './modal-helpers';
 import CustomImage from '@/components/shared/custom-image';
 import Youtube from 'react-youtube';
 import { Icons } from '@/components/shared/icons';
@@ -19,21 +19,8 @@ import Link from 'next/link';
 // import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
-const defaultOptions = {
-  playerVars: {
-    rel: 0,
-    mute: 0,
-    loop: 1,
-    autoplay: 1,
-    controls: 0,
-    showinfo: 0,
-    disablekb: 1,
-    enablejsapi: 1,
-    playsinline: 0,
-    cc_load_policy: 0,
-    modestbranding: 0,
-  },
-};
+// Hover card: loop the trailer with playsinline off so it restarts while hovered.
+const HOVER_YOUTUBE_OPTIONS = makeYoutubeOptions({ loop: 1, playsinline: 0 });
 
 const PreviewModal = () => {
   // const router = useRouter();
@@ -46,13 +33,10 @@ const PreviewModal = () => {
   const youtubeRef = React.useRef(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
 
-  const trailer = React.useMemo(() => {
-    if (!detailedShow?.videos?.results) return '';
-    return (
-      detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')
-        ?.key ?? ''
-    );
-  }, [detailedShow]);
+  const trailer = React.useMemo(
+    () => selectTrailerKey(detailedShow?.videos?.results),
+    [detailedShow],
+  );
 
   const isAnime = React.useMemo(() => {
     const keywords = (
@@ -290,11 +274,9 @@ const PreviewModal = () => {
   };
 
   const handleTrailerPlay = () => {
-    // setTimeout(() => {
-      if (imageRef.current) {
-        imageRef.current.style.opacity = '0';
-      }
-    // }, 4000);
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '0';
+    }
   };
 
   const handleTrailerEnd = (e: { target?: { seekTo?: (seconds: number) => Promise<void> } }) => {
@@ -317,8 +299,6 @@ const PreviewModal = () => {
       }
     } catch { }
   };
-
-  // console.log(detailedShow);
 
   return (
     <div
@@ -346,7 +326,7 @@ const PreviewModal = () => {
             />
             {trailer && (
               <Youtube
-                opts={defaultOptions}
+                opts={HOVER_YOUTUBE_OPTIONS}
                 onEnd={handleTrailerEnd}
                 onPlay={handleTrailerPlay}
                 ref={youtubeRef}

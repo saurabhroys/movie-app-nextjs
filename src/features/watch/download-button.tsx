@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Icons } from '@/components/shared/icons';
+import { ZXCSTREAM_DOMAIN } from '@/config/embed-domains';
 
 interface DownloadButtonProps {
   mediaId: string;
@@ -67,7 +68,7 @@ const DownloadButton = ({ mediaId, mediaType, zxcOnline }: DownloadButtonProps) 
                 </div>
               )}
               <iframe
-                src={`https://zxcstream.cc/download/${mediaType}/${mediaId}`}
+                src={`${ZXCSTREAM_DOMAIN}/download/${mediaType}/${mediaId}`}
                 width="100%"
                 height="100%"
                 className="w-full h-full border-none"

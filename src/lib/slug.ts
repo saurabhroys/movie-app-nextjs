@@ -1,16 +1,28 @@
 import { env } from '@/env';
 import { MediaType, type Show } from '@/services/tmdb/types';
 
+const SLUG_SEPARATOR_REGEX = /[^\x00-\x7F]|[&$+,:;=?@#\s<>\[\]{}|\\^%]+/gm;
+
 export function getSlug(id: number, name: string): string {
-  // build slug from name and id
-  const regex = /([^\x00-\x7F]|[&$\+,:;=\?@#\s<>\[\]\{\}|\\\^%])+/gm;
-  return `${name.toLowerCase().replace(regex, '-')}-${id}`;
+  // Build a URL-safe slug from the name and id. Collapse consecutive
+  // separators and trim leading/trailing dashes so the slug stays stable
+  // across environments.
+  const slugifiedName =
+    (name ?? '')
+      .toLowerCase()
+      .replace(SLUG_SEPARATOR_REGEX, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') ?? '';
+  return `${slugifiedName || 'unknown'}-${id}`;
 }
 
 export function getIdFromSlug(slug: string): number {
-  // get id from slug
-  const id: string | undefined = slug.split('-').pop();
-  return id ? parseInt(id) : 0;
+  // Extract the trailing id from the slug; use radix 10 and reject NaN
+  // so callers can rely on a numeric result.
+  if (typeof slug !== 'string' || !slug) return 0;
+  const id = slug.split('-').pop();
+  const parsed = Number.parseInt(id ?? '', 10);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export function getNameFromShow(show: Show | null): string {

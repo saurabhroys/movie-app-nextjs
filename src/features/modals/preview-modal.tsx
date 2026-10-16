@@ -1,13 +1,11 @@
 import { X } from 'lucide-react';
 import { getYear } from '@/lib/utils';
-// import { getNameFromShow, getSlug } from '@/lib/slug';
 import { trpc } from '@/client/trpc';
 import { observer, use$ } from '@legendapp/state/react';
 import { previewModal$, previewModalActions, fetchDetailedShow } from '@/state/preview-modal';
 import { useRouter } from 'next/navigation';
 import {
   type KeyWord,
-  type VideoResult,
   type Show,
   type Episode,
 } from '@/services/tmdb/types';
@@ -19,24 +17,8 @@ import PreviewSeasonSelector from './preview-season-selector';
 import PreviewRecommendations from './preview-recommendations';
 import PreviewCollection from './preview-collection';
 import PreviewAbout from './preview-about';
+import { makeYoutubeOptions, selectTrailerKey } from './modal-helpers';
 import { Dialog, DialogDescription } from '@radix-ui/react-dialog';
-
-const defaultOptions: Record<string, object> = {
-  playerVars: {
-    // https://developers.google.com/youtube/player_parameters
-    rel: 0,
-    mute: 0,
-    loop: 0,
-    autoplay: 1,
-    controls: 0,
-    showinfo: 0,
-    disablekb: 1,
-    enablejsapi: 1,
-    playsinline: 1,
-    cc_load_policy: 0,
-    modestbranding: 0,
-  },
-};
 
 const PreviewModal = () => {
   const isOpen = use$(previewModal$.isOpen);
@@ -48,7 +30,11 @@ const PreviewModal = () => {
   const router = useRouter();
 
   const [isMuted, setIsMuted] = React.useState<boolean>(false);
-  const options = defaultOptions;
+  // Desktop/full preview: play the trailer once (no loop) with playsinline.
+  const options = React.useMemo(
+    () => makeYoutubeOptions({ loop: 0, playsinline: 1 }),
+    [],
+  );
   const youtubeRef = React.useRef<Youtube | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const [trailerFinished, setTrailerFinished] = React.useState<boolean>(false);
@@ -58,10 +44,10 @@ const PreviewModal = () => {
   const [selectedSeason, setSelectedSeason] = React.useState<number>(1);
   const [seasonEpisodes, setSeasonEpisodes] = React.useState<Episode[]>([]);
 
-  const trailer = React.useMemo(() => {
-    if (!detailedShow?.videos?.results) return '';
-    return detailedShow.videos.results.find((v: VideoResult) => v.type === 'Trailer')?.key ?? '';
-  }, [detailedShow]);
+  const trailer = React.useMemo(
+    () => selectTrailerKey(detailedShow?.videos?.results),
+    [detailedShow],
+  );
 
   const isAnime = React.useMemo(() => {
     return !!detailedShow?.keywords?.find((k: KeyWord) => k.name === 'anime');
@@ -123,11 +109,9 @@ const PreviewModal = () => {
   const onPlay = () => {
     setTrailerFinished(false);
     setLogoTransition('trailer-playing');
-    // setTimeout(() => {
-      if (imageRef.current) {
-        imageRef.current.style.opacity = '0';
-      }
-    // }, 3000);
+    if (imageRef.current) {
+      imageRef.current.style.opacity = '0';
+    }
     if (youtubeRef.current) {
       const iframeRef: HTMLElement | null =
         document.getElementById('video-trailer');
@@ -206,8 +190,6 @@ const PreviewModal = () => {
       console.error('Failed to fetch season episodes:', error);
     }
   };
-
-  const loadingRecommended = isLoading;
 
   const handleHref = (): string => {
     const type = isAnime
@@ -371,7 +353,7 @@ const PreviewModal = () => {
           {/* More like this */}
           <PreviewRecommendations
             detailedShow={detailedShow}
-            loadingRecommended={loadingRecommended}
+            loadingRecommended={isLoading}
             onShowClick={navigateToItem}
           />
 

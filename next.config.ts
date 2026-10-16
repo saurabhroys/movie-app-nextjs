@@ -1,9 +1,16 @@
 import type { NextConfig } from 'next';
+import {
+  CSP_CONNECT_EXTRA_DOMAINS,
+  EMBED_FRAME_SRC_DOMAINS,
+} from './src/config/embed-domains';
 
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
+
+const EMBED_FRAME_SRC = EMBED_FRAME_SRC_DOMAINS.join(' ');
+const CSP_CONNECT_EXTRAS = CSP_CONNECT_EXTRA_DOMAINS.join(' ');
 
 const config: NextConfig = {
     reactStrictMode: true,
@@ -46,9 +53,9 @@ const config: NextConfig = {
                             "style-src 'self' 'unsafe-inline'",
                             "img-src 'self' data: blob: https://image.tmdb.org https://www.googletagmanager.com https://www.google-analytics.com",
                             "font-src 'self' data:",
-                            "connect-src 'self' https://zxcstream.cc https://www.googletagmanager.com https://www.google-analytics.com",
+                            `connect-src 'self' ${CSP_CONNECT_EXTRAS} https://www.googletagmanager.com https://www.google-analytics.com`,
                             "media-src 'self' blob: data:",
-                            "frame-src 'self' https://zxcstream.cc https://vidstuck.cc https://player.vidify.top https://slast430did.com https://vidsrc.to https://vidnest.fun https://vidfast.pro https://player.videasy.net https://player.autoembed.cc https://vidsrc-embed.ru https://www.youtube.com https://www.youtube-nocookie.com",
+                            `frame-src 'self' ${EMBED_FRAME_SRC}`,
                             "object-src 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",
