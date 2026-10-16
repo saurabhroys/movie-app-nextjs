@@ -20,16 +20,14 @@ function EmbedPlayer(props: EmbedPlayerProps) {
 
   React.useEffect(() => {
     setIframeLoaded(false);
-    if (iframeRef.current) {
-      iframeRef.current.src = props.url;
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.src = props.url;
+      iframe.addEventListener('load', handleIframeLoaded);
+      return () => {
+        iframe.removeEventListener('load', handleIframeLoaded);
+      };
     }
-
-    const { current } = iframeRef;
-    const iframe: HTMLIFrameElement | null = current;
-    iframe?.addEventListener('load', handleIframeLoaded);
-    return () => {
-      iframe?.removeEventListener('load', handleIframeLoaded);
-    };
   }, [props.url]);
 
   const loadingRef = React.useRef<HTMLDivElement>(null);

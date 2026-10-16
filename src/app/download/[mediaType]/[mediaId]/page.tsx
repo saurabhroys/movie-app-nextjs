@@ -22,7 +22,7 @@ export default function DownloadPage() {
     return null;
   }
 
-  const downloadUrl = `https://z.zxcstream.xyz/download/${mediaType}/${mediaId}`;
+  const downloadUrl = `https://zxcstream.cc/download/${mediaType}/${mediaId}`;
 
   return (
     <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center">

@@ -67,7 +67,7 @@ const DownloadButton = ({ mediaId, mediaType, zxcOnline }: DownloadButtonProps) 
                 </div>
               )}
               <iframe
-                src={`https://z.zxcstream.xyz/download/${mediaType}/${mediaId}`}
+                src={`https://zxcstream.cc/download/${mediaType}/${mediaId}`}
                 width="100%"
                 height="100%"
                 className="w-full h-full border-none"

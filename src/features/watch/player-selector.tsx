@@ -27,14 +27,13 @@ interface PlayerSelectorProps {
 
 const TV_MOVIE_PLAYERS: PlayerOption[] = [
   { id: 'netflix-live', name: 'Netflix Live' },
+  { id: 'netflix-ii', name: 'Netflix II' },
   { id: 'vidify', name: 'Vidify' },
   { id: 'gemma', name: 'Gemma' },
   { id: 'vidsrc-to', name: 'Vidsrc.to' },
-  { id: 'vidsrc-pk', name: 'VidSrc.pk' },
 ];
 
 const ANIME_PLAYERS: PlayerOption[] = [
-  { id: 'vidsrc-anime', name: 'VidSrc.pk' },
   { id: 'vidnest-anime', name: 'VidNest' },
   { id: 'vidnest-delta-anime', name: 'VidNest (Delta)' },
   { id: 'vidfast-anime', name: 'VidFast' },
@@ -56,7 +55,7 @@ const probeZxcStream = (): Promise<boolean> => {
   const timeout = new Promise<boolean>((resolve) => {
     setTimeout(() => resolve(false), ZXC_PROBE_TIMEOUT);
   });
-  const probe = fetch('https://zxcstream.xyz', { mode: 'no-cors', cache: 'no-store' })
+  const probe = fetch('https://zxcstream.cc', { mode: 'no-cors', cache: 'no-store' })
     .then(() => true)
     .catch(() => false);
   zxcProbePromise = Promise.race([probe, timeout]);
@@ -83,7 +82,10 @@ const buildPlayerUrl = (
     case 'netflix-live':
       const netflixPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       const serverQuery = netflixServerIndex ? `&server=${netflixServerIndex}` : '';
-      return `https://z.zxcstream.xyz/player/${netflixPath}?dubLang=hi${serverQuery}`;
+      return `https://zxcstream.cc/player/${netflixPath}?dubLang=hi${serverQuery}`;
+    case 'netflix-ii':
+      const vidstuckPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
+      return `https://vidstuck.cc/embed/${vidstuckPath}`;
     case 'vidify':
       const vidifyPath = mediaType === 'movie' ? `movie/${mediaId}` : `tv/${mediaId}/${s}/${e}`;
       return `https://player.vidify.top/embed/${vidifyPath}?autoplay=true&pip=true&logourl=${siteConfig.url}/logo.png&download=true`;
@@ -96,13 +98,8 @@ const buildPlayerUrl = (
     case 'vidsrc-to':
       const toPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}/${e}`;
       return `https://vidsrc.to/embed/${toPath}`;
-    case 'vidsrc-pk':
-      const pkPath = mediaType === 'movie' ? `movie/${idOrImdb}` : `tv/${idOrImdb}/${s}-${e}`;
-      return `https://embed.vidsrc.pk/${pkPath}?src=1`;
 
     // Anime Players
-    case 'vidsrc-anime':
-      return `https://embed.vidsrc.pk/tv/${idOrImdb}/${s}-${e}`;
     case 'vidnest-anime':
       return `https://vidnest.fun/anime/${mediaId}/${s}/${e}`;
     case 'vidnest-delta-anime':

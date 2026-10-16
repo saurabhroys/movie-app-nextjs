@@ -8,6 +8,7 @@ import type { NextConfig } from 'next';
 const config: NextConfig = {
     reactStrictMode: true,
     cacheComponents: true,
+    partialPrefetching: true,
     cacheLife: {
         show: {
             stale: 300,
@@ -45,9 +46,9 @@ const config: NextConfig = {
                             "style-src 'self' 'unsafe-inline'",
                             "img-src 'self' data: blob: https://image.tmdb.org https://www.googletagmanager.com https://www.google-analytics.com",
                             "font-src 'self' data:",
-                            "connect-src 'self' https://zxcstream.xyz https://www.googletagmanager.com https://www.google-analytics.com",
+                            "connect-src 'self' https://zxcstream.cc https://www.googletagmanager.com https://www.google-analytics.com",
                             "media-src 'self' blob: data:",
-                            "frame-src 'self' https://z.zxcstream.xyz https://player.vidify.top https://slast430did.com https://vidsrc.to https://embed.vidsrc.pk https://vidnest.fun https://vidfast.pro https://player.videasy.net https://player.autoembed.cc https://vidsrc-embed.ru https://www.youtube.com https://www.youtube-nocookie.com",
+                            "frame-src 'self' https://zxcstream.cc https://vidstuck.cc https://player.vidify.top https://slast430did.com https://vidsrc.to https://vidnest.fun https://vidfast.pro https://player.videasy.net https://player.autoembed.cc https://vidsrc-embed.ru https://www.youtube.com https://www.youtube-nocookie.com",
                             "object-src 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",
