@@ -50,7 +50,9 @@ class MovieService {
    * Deduplicates requests within the same render cycle.
    */
   static findMovie = cache(async (id: number) => {
-    return http.get<Show>(`/movie/${id}?append_to_response=keywords`);
+    return withRetry(() =>
+      http.get<Show>(`/movie/${id}?append_to_response=keywords`),
+    );
   });
 
   /**
@@ -58,7 +60,9 @@ class MovieService {
    * Deduplicates requests within the same render cycle.
    */
   static findTvSeries = cache(async (id: number) => {
-    return http.get<Show>(`/tv/${id}?append_to_response=keywords,external_ids`);
+    return withRetry(() =>
+      http.get<Show>(`/tv/${id}?append_to_response=keywords,external_ids`),
+    );
   });
 
   /**

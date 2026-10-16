@@ -18,54 +18,56 @@ function EmbedPlayer(props: EmbedPlayerProps) {
   const router = useRouter();
   const [iframeLoaded, setIframeLoaded] = React.useState(false);
 
-  React.useEffect(() => {
-    setIframeLoaded(false);
-    const iframe = iframeRef.current;
-    if (iframe) {
-      iframe.src = props.url;
-      iframe.addEventListener('load', handleIframeLoaded);
-      return () => {
-        iframe.removeEventListener('load', handleIframeLoaded);
-      };
-    }
-  }, [props.url]);
-
   const loadingRef = React.useRef<HTMLDivElement>(null);
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
-  const handleIframeLoaded = () => {
-    if (!iframeRef.current) {
-      return;
-    }
-    const iframe: HTMLIFrameElement = iframeRef.current;
-    if (iframe) {
+  React.useEffect(() => {
+    setIframeLoaded(false);
+    const iframe = iframeRef.current;
+    // Guard against a detached/missing ref before DOM operations.
+    if (!iframe || !(iframe instanceof HTMLIFrameElement)) return;
+
+    iframe.src = props.url;
+    const handleIframeLoaded = () => {
+      if (!iframeRef.current) return;
       iframe.style.opacity = '1';
       setIframeLoaded(true);
       iframe.removeEventListener('load', handleIframeLoaded);
-      if (loadingRef.current) loadingRef.current.style.display = 'none';
-    }
-  };
+      if (loadingRef.current) {
+        loadingRef.current.style.display = 'none';
+      }
+    };
+    iframe.addEventListener('load', handleIframeLoaded);
+    return () => {
+      // The node may already be unmounted when the cleanup runs.
+      iframe.removeEventListener('load', handleIframeLoaded);
+    };
+  }, [props.url]);
 
   const isGemma = props.url.includes('gemma416okl.com');
 
   React.useEffect(() => {
-    if (isGemma && iframeLoaded && iframeRef.current?.contentWindow) {
-      const s = props.season || 1;
-      const e = props.episode || 1;
-      const seasonIndex = s - 1;
-      const episodeIndex = e - 1;
-      const episodeId = `xx-${seasonIndex}-${s}-${episodeIndex}-${s}-${e}`;
-      
-      const payload = {
-        api: "play",
-        set: `id:${episodeId}`
-      };
+    if (!isGemma || !iframeLoaded) return;
+    const iframe = iframeRef.current;
+    const contentWindow = iframe?.contentWindow;
+    // Guard every stage: ref, contentWindow and postMessage presence.
+    if (!iframe || !contentWindow) return;
 
-      try {
-        iframeRef.current.contentWindow.postMessage(payload, "https://slast430did.com");
-      } catch (err) {
-        console.error('Failed to postMessage to Gemma player:', err);
-      }
+    const s = props.season || 1;
+    const e = props.episode || 1;
+    const seasonIndex = s - 1;
+    const episodeIndex = e - 1;
+    const episodeId = `xx-${seasonIndex}-${s}-${episodeIndex}-${s}-${e}`;
+
+    const payload = {
+      api: 'play',
+      set: `id:${episodeId}`,
+    };
+
+    try {
+      contentWindow.postMessage(payload, 'https://slast430did.com');
+    } catch (err) {
+      console.error('Failed to postMessage to Gemma player:', err);
     }
   }, [isGemma, iframeLoaded, props.season, props.episode]);
 

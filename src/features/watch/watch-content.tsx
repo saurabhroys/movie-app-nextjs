@@ -30,6 +30,7 @@ export default async function WatchContent({
   let showDetails: Show | null = null;
   let recommendedShows: Show[] = [];
   let seasons: Season[] = [];
+  let redirectTo: string | null = null;
 
   try {
     if (type === 'movie') {
@@ -45,12 +46,13 @@ export default async function WatchContent({
             ? recommendations.value.results || []
             : [];
       } else {
-        try {
-          const tvResponse = await MovieService.findTvSeries(mediaId);
-          if (tvResponse?.data) {
-            redirect(`/watch/${slug}?type=tv`);
-          }
-        } catch {}
+        const tvResponse = await MovieService.findTvSeries(mediaId);
+        if (tvResponse?.data) {
+          // Set the redirect target here, but redirect AFTER the try/catch below —
+          // `redirect()` throws internally, so calling it inside a try/catch
+          // swallows the NEXT_REDIRECT error and breaks the navigation.
+          redirectTo = `/watch/${slug}?type=tv`;
+        }
       }
     } else {
       const [showResponse, recommendations] = await Promise.allSettled([
@@ -82,16 +84,20 @@ export default async function WatchContent({
             .map((r) => r.value.data);
         }
       } else {
-        try {
-          const movieResponse = await MovieService.findMovie(mediaId);
-          if (movieResponse?.data) {
-            redirect(`/watch/${slug}?type=movie`);
-          }
-        } catch {}
+        const movieResponse = await MovieService.findMovie(mediaId);
+        if (movieResponse?.data) {
+          redirectTo = `/watch/${slug}?type=movie`;
+        }
       }
     }
   } catch (error) {
     console.error('Failed to fetch media details:', error);
+  }
+
+  // Perform any type-correction redirect outside try/catch so the
+  // NEXT_REDIRECT error thrown by `redirect()` propagates correctly.
+  if (redirectTo) {
+    redirect(redirectTo);
   }
 
   if (!showDetails) {

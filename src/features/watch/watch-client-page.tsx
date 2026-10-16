@@ -37,12 +37,19 @@ export default function WatchClientPage({
   const [activePlayerId, setActivePlayerId] = useState<string>('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
 
-  // Sync IMDb ID into URL search parameters
+  // Sync IMDb ID into URL search parameters. Build the target from the
+  // explicit absolute pathname: a naked `?imdb=...` query replace resolves
+  // against the router's current pathname and will bounce off /watch if the
+  // pathname is stale or overwritten.
   React.useEffect(() => {
-    if (imdbId && !searchParams.get('imdb')) {
-      const params = new URLSearchParams(window.location.search);
-      params.set('imdb', imdbId);
-      router.replace(`?${params.toString()}`, { scroll: false });
+    if (!imdbId || searchParams.get('imdb')) return;
+    const params = new URLSearchParams(window.location.search);
+    params.set('imdb', imdbId);
+    const pathname = window.location.pathname.startsWith('/watch')
+      ? window.location.pathname
+      : null;
+    if (pathname) {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
   }, [imdbId, searchParams, router]);
 
@@ -66,7 +73,9 @@ export default function WatchClientPage({
     const params = new URLSearchParams(window.location.search);
     params.set('season', season.toString());
     params.set('episode', episode.toString());
-    router.push(`?${params.toString()}`, { scroll: false });
+    // Use the absolute current pathname so the push can never resolve
+    // against a stale router pathname and land off the player page.
+    router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
   };
 
   const idOnly = mediaId.split('-').pop() || mediaId;

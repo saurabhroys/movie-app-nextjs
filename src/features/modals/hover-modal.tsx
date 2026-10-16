@@ -299,9 +299,8 @@ const PreviewModal = () => {
 
   const handleTrailerEnd = (e: { target?: { seekTo?: (seconds: number) => Promise<void> } }) => {
     try {
-      if (e?.target && typeof e.target.seekTo === 'function') {
-        e.target.seekTo(0);
-      }
+      // Guard existence AND catch unhandled promise rejections.
+      e?.target?.seekTo?.(0)?.catch?.(() => {});
     } catch { }
   };
 

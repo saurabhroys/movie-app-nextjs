@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Icons } from '@/components/shared/icons';
 import { Button } from '@/components/ui/button';
 import CustomImage from '@/components/shared/custom-image';
+import { addressBar$ } from '@/state/address-bar';
+import { previewModalActions } from '@/state/preview-modal';
 import type { Show } from '@/services/tmdb/types';
 import type { DetailedShowInfo } from '@/features/modals/detail-fetch-helper';
 
@@ -64,6 +66,19 @@ const PreviewTrailerPane = ({
   onToggleMute,
   onReplay,
 }: PreviewTrailerPaneProps) => {
+  /**
+   * Play from the preview modal navigates away to /watch. Before the
+   * navigation starts we must (a) drop the saved previousUrl so the
+   * address-bar sync can never later revert the address away from
+   * /watch, and (b) dismiss the modal. Otherwise closing the modal
+   * restores the browse URL while the router is resolving /watch and
+   * ends up sending the player back to the home page.
+   */
+  const handlePlayClick = () => {
+    addressBar$.set({ previousUrl: null, activeSlugUrl: null });
+    previewModalActions.reset();
+  };
+
   return (
     <div className="relative z-10 aspect-video overflow-hidden">
       <CustomImage
@@ -129,7 +144,7 @@ const PreviewTrailerPane = ({
 
       <div className="absolute bottom-14 md:bottom-20 z-30 flex w-full items-center justify-between gap-2 px-4 md:px-10">
         <div className="flex items-center gap-2.5">
-          <Link href={playHref}>
+          <Link href={playHref} onClick={handlePlayClick}>
             <Button
               aria-label={`${!trailerFinished ? 'Pause' : 'Play'} show`}
               className="group h-auto rounded-[9px] bg-neutral-50 py-1.5 text-black hover:bg-neutral-300">
