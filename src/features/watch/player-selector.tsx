@@ -9,7 +9,9 @@ import { siteConfig } from '@/configs/site';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside';
 import {
   AUTOEMBED_DOMAIN,
+  BLOCKED_PROVIDER_IDS,
   GEMMA_DOMAIN,
+  SANDBOXED_PROVIDER_IDS,
   VIDEASY_DOMAIN,
   VIDFAST_DOMAIN,
   VIDIFY_DOMAIN,
@@ -228,10 +230,12 @@ const PlayerSelector = ({
   }, []);
 
   const players = React.useMemo(() => {
+    const filterBlocked = (list: PlayerOption[]) =>
+      list.filter((player) => !BLOCKED_PROVIDER_IDS.includes(player.id));
     if (mediaType === 'anime') {
-      return ANIME_PLAYERS;
+      return filterBlocked(ANIME_PLAYERS);
     }
-    return TV_MOVIE_PLAYERS.filter((player) => {
+    return filterBlocked(TV_MOVIE_PLAYERS).filter((player) => {
       if (player.id === 'netflix-live-multi' || player.id === 'netflix-live-default') return zxcOnline !== false;
       if (player.id === 'vidify') return zxcOnline === false;
       if (player.id === 'gemma') return !!imdbId;
@@ -267,6 +271,8 @@ const PlayerSelector = ({
   }, [activePlayerId, onPlayerChange]);
 
   const currentServerName = players.find((p) => p.id === activePlayerId)?.name || 'Select Server';
+
+  const activePlayerSandboxed = SANDBOXED_PROVIDER_IDS.includes(activePlayerId);
 
   if (!players.length) {
     return (
@@ -306,6 +312,7 @@ const PlayerSelector = ({
           episode={episode}
           playerClass={playerClass}
           showControls={showControls}
+          sandboxed={activePlayerSandboxed}
         />
 
         <div

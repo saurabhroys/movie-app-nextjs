@@ -13,6 +13,10 @@ interface EmbedPlayerProps {
   season?: number;
   episode?: number;
   showControls?: boolean;
+  /** Whether this provider tolerates the ad-blocking iframe sandbox.
+   *  Only sandbox-tolerant providers get the attribute; others load
+   *  unsandboxed (some embed runtimes refuse to play when sandboxed). */
+  sandboxed?: boolean;
 }
 
 function EmbedPlayer(props: EmbedPlayerProps) {
@@ -45,7 +49,13 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     };
   }, [props.url]);
 
-  const isGemma = props.url.includes('gemma416okl.com');
+  const isGemma = (() => {
+    try {
+      return new URL(props.url).origin === GEMMA_DOMAIN;
+    } catch {
+      return false;
+    }
+  })();
 
   React.useEffect(() => {
     if (!isGemma || !iframeLoaded) return;
@@ -71,6 +81,8 @@ function EmbedPlayer(props: EmbedPlayerProps) {
       console.error('Failed to postMessage to Gemma player:', err);
     }
   }, [isGemma, iframeLoaded, props.season, props.episode]);
+
+  const SANDBOX_VALUE = 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation';
 
   return (
     <div
@@ -114,7 +126,14 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         ref={iframeRef}
         style={{ opacity: 0 }}
         referrerPolicy="no-referrer"
-        // sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
+        // Conditional ad-block sandbox: applied only when the provider
+        // tolerates it (see SANDBOXED_PROVIDER_IDS in embed-domains.ts).
+        // No `allow-popups` (blocks pop-unders), no `allow-top-navigation`
+        // (blocks parent-page redirects), no `allow-modals` (blocks
+        // alert/confirm spam). Playback still works via allow-scripts /
+        // allow-same-origin / allow-forms / allow-pointer-lock /
+        // allow-presentation + allowFullScreen.
+        sandbox={props.sandboxed ? SANDBOX_VALUE : undefined}
       />
     </div>
   );

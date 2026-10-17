@@ -20,6 +20,21 @@ export const VIDFAST_DOMAIN = 'https://vidfast.pro';
 export const VIDEASY_DOMAIN = 'https://player.videasy.net';
 export const AUTOEMBED_DOMAIN = 'https://player.autoembed.cc';
 
+/**
+ * Players hidden from the server list (one ID per provider, matched against
+ * the `PlayerOption.id` values in player-selector.tsx). Drop an ID here to
+ * pull that provider from every player list; delete the entry to restore it.
+ *
+ * Blocked because providers on this list have a track record of ad
+ * pop-unders and forced page redirects.
+ */
+export const BLOCKED_PROVIDER_IDS: readonly string[] = [
+  'vidsrc-to',
+  'vidsrc-to-tv-anime',
+  'vidsrc-embed-ru',
+  'autoembed-anime',
+];
+
 export const EMBED_FRAME_SRC_DOMAINS = [
   ZXCSTREAM_DOMAIN,
   VIDSTUCK_DOMAIN,
@@ -36,3 +51,19 @@ export const EMBED_FRAME_SRC_DOMAINS = [
 ] as const;
 
 export const CSP_CONNECT_EXTRA_DOMAINS = [ZXCSTREAM_DOMAIN] as const;
+
+/**
+ * Provider ids that tolerate an iframe `sandbox` with popups/top-navigation
+ * blocked. Anything NOT in this list loads unsandboxed — some embed runtimes
+ * (e.g. VidNest) detect the sandbox and refuse to play, so forcing the
+ * attribute on them would break playback entirely.
+ *
+ * Keep every ad-heavy provider you can in here: the sandbox is the only
+ * client-side defense that blocks their pop-unders and page redirects.
+ */
+export const SANDBOXED_PROVIDER_IDS: readonly string[] = [
+  'vidify',
+  'gemma',
+  'vidsrc-to-tv-anime',
+  'videasy-anime',
+];
