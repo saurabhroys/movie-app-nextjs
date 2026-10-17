@@ -317,7 +317,6 @@ const PreviewModal = () => {
           <div className="group relative aspect-video overflow-hidden">
             <CustomImage
               fill
-              preload
               ref={imageRef}
               alt={show?.title ?? 'poster'}
               className="z-1 h-auto w-full object-cover"
@@ -350,6 +349,7 @@ const PreviewModal = () => {
                       objectFit: 'contain',
                       objectPosition: 'left',
                     }}
+                    sizes="(max-width: 768px) 50vw, 256px"
                     fill
                   />
                 </div>
@@ -454,6 +454,7 @@ const PreviewModal = () => {
                             style={{
                               objectFit: 'contain',
                             }}
+                            sizes="32px"
                             fill
                           />
                         </div>

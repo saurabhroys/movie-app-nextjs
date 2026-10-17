@@ -95,6 +95,7 @@ const PreviewRecommendations = ({
                           style={{
                             objectFit: 'contain',
                           }}
+                          sizes="(max-width: 768px) 40vw, 280px"
                           fill
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display = 'none';

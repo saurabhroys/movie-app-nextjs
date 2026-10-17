@@ -155,6 +155,7 @@ export const ShowCard = React.memo(({ show, pathname: _pathname, logoPath = null
               style={{
                 objectFit: 'contain',
               }}
+              sizes="(max-width: 768px) 30vw, 220px"
               fill
               onError={imageOnErrorHandler}
             />
