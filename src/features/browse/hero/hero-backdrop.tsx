@@ -48,7 +48,8 @@ const HeroBackdrop = React.memo(function HeroBackdrop({
         alt={randomShow?.title ?? 'poster'}
         className="z-0 h-auto w-full object-cover transition-opacity duration-500"
         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 100vw, 33vw"
-        preload
+        fill
+        priority
       />
       {trailer && !trailerFinished && (
         <Youtube

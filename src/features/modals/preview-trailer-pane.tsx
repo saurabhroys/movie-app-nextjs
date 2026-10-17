@@ -83,7 +83,7 @@ const PreviewTrailerPane = ({
     <div className="relative z-10 aspect-video overflow-hidden">
       <CustomImage
         fill
-        preload
+        priority
         ref={imageRef}
         alt={show?.title ?? 'poster'}
         className="z-1 h-auto w-full object-cover"
