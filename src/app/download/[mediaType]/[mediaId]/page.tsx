@@ -56,7 +56,6 @@ export default function DownloadPage() {
           allowFullScreen
           onLoad={() => setIsLoading(false)}
           referrerPolicy="no-referrer"
-          {/* sandbox="allow-scripts allow-same-origin allow-downloads allow-popups" */}
         />
       </div>
     </div>
